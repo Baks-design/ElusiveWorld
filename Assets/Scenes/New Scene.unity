@@ -48812,14 +48812,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 926003485254489426, guid: 48642a61bf86650478bc2001e3555494, type: 3}
-      propertyPath: StandbyUpdate
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 926003485254489426, guid: 48642a61bf86650478bc2001e3555494, type: 3}
-      propertyPath: Lens.ModeOverride
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 8578832501663832483, guid: 48642a61bf86650478bc2001e3555494, type: 3}
       propertyPath: m_LocalPosition.x
       value: -25.31

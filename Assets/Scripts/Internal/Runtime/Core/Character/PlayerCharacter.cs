@@ -10,6 +10,8 @@ namespace ElusiveWorld.Core.Character
     {
         public bool Grounded;
         public Stance Stance;
+        public Vector3 Velocity;
+        public Vector3 Acceleration;
     }
     public struct CharacterInput
     {
@@ -35,12 +37,15 @@ namespace ElusiveWorld.Core.Character
         [SerializeField] float airAcceleration = 70f;
         [Space]
         [SerializeField] float jumpSpeed = 20f;
+        [SerializeField] float coyoteTime = 0.2f;
         [SerializeField, Range(0f, 1f)] float jumpSustainGravity = 0.4f;
         [SerializeField] float gravity = -90f;
         [Space]
         [SerializeField] float slideStartSpeed = 25f;
         [SerializeField] float slideEndSpeed = 15f;
         [SerializeField] float slideFriction = 0.8f;
+        [SerializeField] float slideSteerAcceleration = 5f;
+        [SerializeField] float slideGravity = 90f;
         [Space]
         [SerializeField] float standHeight = 2f;
         [SerializeField] float crouchHeight = 1f;
@@ -56,6 +61,10 @@ namespace ElusiveWorld.Core.Character
         bool requestedJump;
         bool requestedSustainedJump;
         bool requestedCrouch;
+        bool requestedCrouchInAir;
+        float timeSinceUngrounded;
+        float timeSinceJumpRequest;
+        bool ungroundedDueToJump;
         Collider[] uncrouchOverlapResults;
 
         public void Initialize()
@@ -75,15 +84,23 @@ namespace ElusiveWorld.Core.Character
             requestedMovement = Vector3.ClampMagnitude(requestedMovement, 1f);
             requestedMovement = input.Rotation * requestedMovement;
 
+            var wasRequestingJump = requestedJump;
             requestedJump = requestedJump || input.Jump;
+            if (requestedJump && !wasRequestingJump)
+                timeSinceJumpRequest = 0f;
             requestedSustainedJump = input.JumpSustain;
 
+            var wasRequestingCrouch = requestedCrouch;
             requestedCrouch = input.Crouch switch
             {
                 CrouchInput.Toggle => !requestedCrouch,
                 CrouchInput.None => requestedCrouch,
                 _ => requestedCrouch
             };
+            if (requestedCrouch && !wasRequestingCrouch)
+                requestedCrouchInAir = !state.Grounded;
+            else if (!requestedCrouch && wasRequestingCrouch)
+                requestedCrouchInAir = false;
         }
 
         public void UpdateBody(float deltaTime)
@@ -111,8 +128,13 @@ namespace ElusiveWorld.Core.Character
 
         public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
         {
+            state.Acceleration = Vector3.zero;
+
             if (motor.GroundingStatus.IsStableOnGround)
             {
+                timeSinceUngrounded = 0f;
+                ungroundedDueToJump = false;
+
                 var groundedMovement = motor.GetDirectionTangentToSurface
                 (
                     requestedMovement,
@@ -129,15 +151,23 @@ namespace ElusiveWorld.Core.Character
                     {
                         state.Stance = Stance.Slide;
 
-                        var slideSpeed = Mathf.Max(slideStartSpeed, currentVelocity.magnitude);
-                        currentVelocity = motor.GetDirectionTangentToSurface
-                        (
-                            currentVelocity,
-                            motor.GroundingStatus.GroundNormal
+                        if (wasInAir)
+                            currentVelocity = Vector3.ProjectOnPlane(lastState.Velocity, motor.GroundingStatus.GroundNormal);
+
+                        var effecttiveSlideStarSpeed = slideStartSpeed;
+                        if (!lastState.Grounded && !requestedCrouchInAir)
+                        {
+                            effecttiveSlideStarSpeed = 0f;
+                            requestedCrouchInAir = false;
+                        }
+
+                        var slideSpeed = Mathf.Max(effecttiveSlideStarSpeed, currentVelocity.magnitude);
+                        currentVelocity = motor.GetDirectionTangentToSurface(
+                            currentVelocity, motor.GroundingStatus.GroundNormal
                         ) * slideSpeed;
                     }
                 }
-                //Move
+                // Move
                 {
                     if (state.Stance is Stance.Stand or Stance.Crouch)
                     {
@@ -145,30 +175,84 @@ namespace ElusiveWorld.Core.Character
                         var response = stance is Stance.Stand ? walkResponse : crouchResponse;
 
                         var targetVelocity = groundedMovement * speed;
-                        currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 1f - Mathf.Exp(-response * deltaTime));
+                        var moveVelocity = Vector3.Lerp(currentVelocity, targetVelocity, 1f - Mathf.Exp(-response * deltaTime));
+                        
+                        state.Acceleration = moveVelocity - currentVelocity;
+
+                        currentVelocity = moveVelocity;
                     }
+                    // Continue sliding
                     else
                     {
+                        // Friction
                         currentVelocity -= currentVelocity * (slideFriction * deltaTime);
 
+                        // Slope
+                        {
+                            var force = Vector3.ProjectOnPlane(-motor.CharacterUp, motor.GroundingStatus.GroundNormal) * slideGravity;
+                            currentVelocity -= force * deltaTime;
+                        }
+
+                        // Steer
+                        {
+                            var currentSpeed = currentVelocity.magnitude;
+                            var targertVelocity = groundedMovement * currentSpeed;
+                            var steerVelocity = currentVelocity;
+                            var steerForce = deltaTime * slideSteerAcceleration * (targertVelocity - steerVelocity);
+                            steerVelocity += steerForce;
+                            steerVelocity = Vector3.ClampMagnitude(steerVelocity, currentSpeed);
+
+                            state.Acceleration = (steerVelocity - currentVelocity) / deltaTime;
+
+                            currentVelocity = steerVelocity;
+                        }
+
+                        // Stop
                         if (currentVelocity.magnitude < slideEndSpeed)
                             state.Stance = Stance.Crouch;
                     }
                 }
             }
+            // in the air
             else
             {
+                timeSinceUngrounded += deltaTime;
+
                 if (requestedMovement.sqrMagnitude > 0f)
                 {
-                    var planarMovement = Vector3.ProjectOnPlane(
-                        requestedMovement, motor.CharacterUp).normalized * requestedMovement.magnitude;
-                    var currentPlanarVelocity = Vector3.ProjectOnPlane(currentVelocity, motor.CharacterUp);
+                    var projection = Vector3.ProjectOnPlane(requestedMovement, motor.CharacterUp).normalized;
+                    var planarMovement = projection * requestedMovement.magnitude;
                     var movementForce = airAcceleration * deltaTime * planarMovement;
-                    var targetPlanarVelocity = currentPlanarVelocity + movementForce;
-                    targetPlanarVelocity = Vector3.ClampMagnitude(targetPlanarVelocity, airSpeed);
-                    currentVelocity += targetPlanarVelocity - currentPlanarVelocity;
+
+                    var currentPlanarVelocity = Vector3.ProjectOnPlane(currentVelocity, motor.CharacterUp);
+                    if (currentPlanarVelocity.magnitude < airSpeed)
+                    {
+                        var targetPlanarVelocity = currentPlanarVelocity + movementForce;
+                        targetPlanarVelocity = Vector3.ClampMagnitude(targetPlanarVelocity, airSpeed);
+                        movementForce = targetPlanarVelocity - currentPlanarVelocity;
+                    }
+                    else if (Vector3.Dot(currentPlanarVelocity, movementForce) > 0f)
+                    {
+                        var constraineMovementForce = Vector3.ProjectOnPlane(movementForce, currentPlanarVelocity.normalized);
+                        movementForce = constraineMovementForce;
+                    }
+
+                    if (motor.GroundingStatus.FoundAnyGround)
+                    {
+                        if (Vector3.Dot(movementForce, currentVelocity + movementForce) > 0)
+                        {
+                            var obstructionNormal = Vector3.Cross
+                            (
+                                motor.CharacterUp, Vector3.Cross(motor.CharacterUp, motor.GroundingStatus.GroundNormal)
+                            ).normalized;
+                            movementForce = Vector3.ProjectOnPlane(movementForce, obstructionNormal);
+                        }
+                    }
+
+                    currentVelocity += movementForce;
                 }
 
+                // Gravity
                 var effectiveGravity = gravity;
                 var verticalSpeed = Vector3.Dot(currentVelocity, motor.CharacterUp);
                 if (requestedSustainedJump && verticalSpeed > 0f)
@@ -178,14 +262,29 @@ namespace ElusiveWorld.Core.Character
 
             if (requestedJump)
             {
-                requestedJump = false;
-                requestedCrouch = false;
+                var grounded = motor.GroundingStatus.IsStableOnGround;
+                var canCoyoteJump = timeSinceUngrounded < coyoteTime && !ungroundedDueToJump;
 
-                motor.ForceUnground(0.1f);
-                
-                var currentVerticalSpeed = Vector3.Dot(currentVelocity, motor.CharacterUp);
-                var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
-                currentVelocity += motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
+                if (grounded || canCoyoteJump)
+                {
+                    requestedJump = false;
+                    requestedCrouch = false;
+                    requestedCrouchInAir = false;
+
+                    motor.ForceUnground(0.1f);
+                    ungroundedDueToJump = true;
+
+                    var currentVerticalSpeed = Vector3.Dot(currentVelocity, motor.CharacterUp);
+                    var targetVerticalSpeed = Mathf.Max(currentVerticalSpeed, jumpSpeed);
+                    currentVelocity += motor.CharacterUp * (targetVerticalSpeed - currentVerticalSpeed);
+                }
+                else
+                {
+                    timeSinceJumpRequest += deltaTime;
+
+                    var canJumpLater = timeSinceJumpRequest < coyoteTime;
+                    requestedJump = canJumpLater;
+                }
             }
         }
 
@@ -231,7 +330,11 @@ namespace ElusiveWorld.Core.Character
                     state.Stance = Stance.Stand;
             }
 
+            var totalAcceleration = (state.Velocity - lastState.Velocity) / deltaTime;
+            state.Acceleration = Vector3.ClampMagnitude(state.Acceleration, totalAcceleration.magnitude);
+
             state.Grounded = motor.GroundingStatus.IsStableOnGround;
+            state.Velocity = motor.Velocity;
             lastState = tempState;
         }
 
@@ -239,9 +342,12 @@ namespace ElusiveWorld.Core.Character
         public void OnGroundHit(
             Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
         { }
-        public void OnMovementHit(
-            Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
-        { }
+
+        public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
+        {
+            state.Acceleration = Vector3.ProjectOnPlane(state.Acceleration, hitNormal);
+        }
+
         public void ProcessHitStabilityReport(
             Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition,
             Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)
@@ -249,6 +355,8 @@ namespace ElusiveWorld.Core.Character
         public void OnDiscreteCollisionDetected(Collider hitCollider) { }
 
         public Transform GetCameraTarget() => cameraTarget;
+        public CharacterState GetState() => state;
+        public CharacterState GetLastState() => lastState;
 
         public void SetPosition(Vector3 position, bool killVelocity = true)
         {
