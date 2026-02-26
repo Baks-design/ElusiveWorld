@@ -138,6 +138,15 @@ namespace ElusiveWorld.Core
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Aim"",
+                    ""type"": ""Button"",
+                    ""id"": ""500cca42-fa5d-432e-9458-03ec5f0c68b6"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -237,6 +246,17 @@ namespace ElusiveWorld.Core
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""Crouch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""90158376-75a4-42f4-8b85-8084171a672e"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -836,6 +856,7 @@ namespace ElusiveWorld.Core
             m_Movement_Crouch = m_Movement.FindAction("Crouch", throwIfNotFound: true);
             m_Movement_Jump = m_Movement.FindAction("Jump", throwIfNotFound: true);
             m_Movement_Sprint = m_Movement.FindAction("Sprint", throwIfNotFound: true);
+            m_Movement_Aim = m_Movement.FindAction("Aim", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -936,6 +957,7 @@ namespace ElusiveWorld.Core
         private readonly InputAction m_Movement_Crouch;
         private readonly InputAction m_Movement_Jump;
         private readonly InputAction m_Movement_Sprint;
+        private readonly InputAction m_Movement_Aim;
         /// <summary>
         /// Provides access to input actions defined in input action map "Movement".
         /// </summary>
@@ -967,6 +989,10 @@ namespace ElusiveWorld.Core
             /// Provides access to the underlying input action "Movement/Sprint".
             /// </summary>
             public InputAction @Sprint => m_Wrapper.m_Movement_Sprint;
+            /// <summary>
+            /// Provides access to the underlying input action "Movement/Aim".
+            /// </summary>
+            public InputAction @Aim => m_Wrapper.m_Movement_Aim;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1008,6 +1034,9 @@ namespace ElusiveWorld.Core
                 @Sprint.started += instance.OnSprint;
                 @Sprint.performed += instance.OnSprint;
                 @Sprint.canceled += instance.OnSprint;
+                @Aim.started += instance.OnAim;
+                @Aim.performed += instance.OnAim;
+                @Aim.canceled += instance.OnAim;
             }
 
             /// <summary>
@@ -1034,6 +1063,9 @@ namespace ElusiveWorld.Core
                 @Sprint.started -= instance.OnSprint;
                 @Sprint.performed -= instance.OnSprint;
                 @Sprint.canceled -= instance.OnSprint;
+                @Aim.started -= instance.OnAim;
+                @Aim.performed -= instance.OnAim;
+                @Aim.canceled -= instance.OnAim;
             }
 
             /// <summary>
@@ -1339,6 +1371,13 @@ namespace ElusiveWorld.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnSprint(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Aim" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnAim(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

@@ -193,8 +193,70 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b774ee086593011448a0acac56f44884, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerCamera
-  sensitivity: 0.1
+  m_EditorClassIdentifier: Assembly-CSharp::ElusiveWorld.Core.Character.PlayerCamera
+  cam: {fileID: 926003485254489426}
+  cameraMovement:
+    horizontalSensitivity: 2
+    verticalSensitivity: 2
+    pitchMin: -80
+    pitchMax: 80
+    smoothTime: 0.1
+  cameraZoom:
+    zoomFOV: 40
+    zoomCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    zoomTransitionDuration: 1
+    runFOV: 70
+    runCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    runTransitionDuration: 0.3
+    runReturnTransitionDuration: 0.2
+    allowZoomWhileRunning: 0
+    smoothInterruption: 1
 --- !u!1 &4262794412969125183
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,7 +268,7 @@ GameObject:
   - component: {fileID: 2971159512589631341}
   - component: {fileID: 926003485254489426}
   m_Layer: 3
-  m_Name: Main Camera
+  m_Name: Virtual Camera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -224,8 +286,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5839839486141165527}
+  m_Children: []
   m_Father: {fileID: 272592339693131824}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &926003485254489426
@@ -244,7 +305,7 @@ MonoBehaviour:
     Enabled: 0
     m_Value: 0
   OutputChannel: 1
-  StandbyUpdate: 1
+  StandbyUpdate: 2
   m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
@@ -271,46 +332,6 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
---- !u!1 &5037006296265494581
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5839839486141165527}
-  - component: {fileID: 1869146200352911267}
-  m_Layer: 3
-  m_Name: Listerner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5839839486141165527
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5037006296265494581}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2971159512589631341}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!81 &1869146200352911267
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5037006296265494581}
-  m_Enabled: 1
 --- !u!1 &5575433819751375476
 GameObject:
   m_ObjectHideFlags: 0
@@ -596,12 +617,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCharacter
   motor: {fileID: 2460714558494904747}
+  playerCamera: {fileID: 2119897692941948417}
   root: {fileID: 2710339142597571325}
   cameraTarget: {fileID: 2895819607707426207}
-  walkSpeed: 20
-  crouchSpeed: 7
-  walkResponse: 25
-  crouchResponse: 20
+  ignoredColliders: []
+  headBobData: {fileID: 11400000, guid: be10e4afe77911f4c9b92d1ec2691b9b, type: 2}
+  smoothHeadBobSpeed: 10
+  moveBackwardsSpeedPercent: 0.5
+  moveSideSpeedPercent: 0.75
+  walkSpeed: 5
+  runSpeed: 15
+  walkResponse: 10
+  runResponse: 25
+  canRunThreshold: 0.8
   airSpeed: 15
   airAcceleration: 70
   jumpSpeed: 20
@@ -613,6 +641,8 @@ MonoBehaviour:
   slideFriction: 0.8
   slideSteerAcceleration: 5
   slideGravity: 90
+  crouchSpeed: 7
+  crouchResponse: 20
   standHeight: 2
   crouchHeight: 1
   crouchHeightResponse: 15
@@ -633,7 +663,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5477414638867887526
 Transform:
   m_ObjectHideFlags: 0

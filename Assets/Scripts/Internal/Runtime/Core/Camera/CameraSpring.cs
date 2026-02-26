@@ -23,7 +23,7 @@ public class CameraSpring : MonoBehaviour
         var springHeight = Vector3.Dot(relativeSpringPosition, up);
 
         transform.localEulerAngles = new Vector3(-springHeight * angularDisplacement, 0f, 0f);
-        transform.position += relativeSpringPosition * linearDisplacement;
+        transform.localPosition = relativeSpringPosition * linearDisplacement;
     }
 
     static void Spring(
