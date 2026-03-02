@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dca691076ddf2d842809cf3e73773067, type: 3}
+  m_Name: ProjectileStraightData
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapon.Projectiles.Data.ProjectileStraightData
+  generalSettings:
+    projectileType: 0
+    damage: 200
+    maxLiveDuration: 5
+  specificSettings:
+    speed: 50

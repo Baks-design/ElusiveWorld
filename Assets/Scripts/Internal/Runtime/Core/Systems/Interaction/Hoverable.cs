@@ -1,18 +1,21 @@
 ﻿using UnityEngine;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {
     [RequireComponent(typeof(MeshRenderer))]
     public class Hoverable : MonoBehaviour, IHoverable
     {
-        [Header("Settings")]
         public string tooltip;
         public Transform tooltipTransform;
         MeshRenderer meshRenderer;
 
-        public Material MyMaterial { get; private set; }
-        public string Tooltip { get => tooltip; set => tooltip = value; }
         public Transform TooltipTransform => tooltipTransform;
+        public Material MyMaterial { get; private set; }
+        public string Tooltip
+        {
+            get => tooltip;
+            set => tooltip = value;
+        }
 
         protected virtual void Awake() => GetComponents();
 

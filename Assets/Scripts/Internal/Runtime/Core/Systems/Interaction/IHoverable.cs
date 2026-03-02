@@ -1,10 +1,10 @@
 ﻿using UnityEngine;
 
-namespace VHS
-{    
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
+{
     public interface IHoverable
     {
-        string Tooltip { get; set;}
+        string Tooltip { get; set; }
         Transform TooltipTransform { get; }
 
         void OnHoverStart(Material hoverMat);

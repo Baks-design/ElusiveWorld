@@ -14,12 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Addressables.Editor::UnityEditor.AddressableAssets.Settings.AddressableAssetGroup
   m_GroupName: Default Local Group
   m_GUID: 92b6b833b5f846f45bbe32bd85d5ee8d
-  m_SerializeEntries:
-  - m_GUID: d66bf1c0cf4a94990815a86b3d55b686
-    m_Address: Assets/Prefabs/PlayerGhosts/ArmaturePlayer_Rifle.prefab
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 34bc09176acb68f409c2a3eb1a4dec67, type: 2}
   m_SchemaSet:

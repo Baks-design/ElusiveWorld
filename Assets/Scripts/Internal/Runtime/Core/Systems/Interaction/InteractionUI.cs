@@ -2,7 +2,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using TMPro;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {
     [RequireComponent(typeof(RectTransform))]
     public class InteractionUI : MonoBehaviour
@@ -12,7 +12,9 @@ namespace VHS
         RectTransform canvasTransform;
         TextMeshProUGUI interactableTooltip;
 
-        public void Init()
+        public void Init() => GetComponents();
+
+        void GetComponents()
         {
             canvasTransform = GetComponent<RectTransform>();
             interactableTooltip = GetComponentInChildren<TextMeshProUGUI>();
@@ -25,7 +27,6 @@ namespace VHS
                 canvasTransform.position = parent.position;
                 canvasTransform.SetParent(parent);
             }
-
             interactableTooltip.SetText(tooltip);
             holdProgressIMG.fillAmount = holdProgress;
         }

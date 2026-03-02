@@ -1,4 +1,4 @@
-﻿namespace VHS
+﻿namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {    
     public interface IInteractable
     {

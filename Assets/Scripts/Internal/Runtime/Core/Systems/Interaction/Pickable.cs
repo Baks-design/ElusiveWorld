@@ -1,21 +1,16 @@
 ﻿using UnityEngine;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {
     [RequireComponent(typeof(Rigidbody))]
     public class Pickable : MonoBehaviour, IPickable
     {
-        Rigidbody rigid;
+        public Rigidbody Rigid { get; set; }
 
-        public Rigidbody Rigid { get => rigid; set => rigid = value; }
-        public bool Picked { get; set; }
-
-        void Start() => rigid = GetComponent<Rigidbody>();
+        void Awake() => Rigid = GetComponent<Rigidbody>();
 
         public void OnHold() { }
-
         public void OnPickUp() { }
-
         public void OnRelease() { }
     }
 }

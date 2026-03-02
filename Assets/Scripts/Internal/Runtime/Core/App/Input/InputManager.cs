@@ -1,43 +1,137 @@
+﻿using System;
+using Assets.Scripts.Internal.Runtime.Core.Utilities.Singletons;
+using ElusiveWorld.Core;
 using UnityEngine;
+using static UnityEngine.InputSystem.InputAction;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.App.Input
 {
-    public class InputManager : MonoBehaviour
+    public class InputManager : Singleton<InputManager>,
+        GameInputActions.IMovementActions,
+        GameInputActions.ILookActions,
+        GameInputActions.ICombatActions,
+        GameInputActions.IInteractionActions,
+        GameInputActions.IUIActions
     {
-        [SerializeField] InputReader inputReader;
-        [SerializeField] CameraInputData cameraInputData;
-        [SerializeField] WeaponInputData weaponInputData;
-        [SerializeField] MovementInputData movementInputData;
-        [SerializeField] InteractionInputData interactionInputData;
+        GameInputActions playerInput;
 
-        void Awake() => inputReader.Init();
+        public static Vector2 MovementAxis { get; private set; }
+        public static Vector2 LookAxis { get; private set; }
 
-        void OnEnable() //TODO: fIX iNPUT
+        public static event Action OnInteractPressed = delegate { };
+        public static event Action OnInteractReleased = delegate { };
+        public static event Action OnSprintPressed = delegate { };
+        public static event Action OnSprintReleased = delegate { };
+        public static event Action OnCrouchPressed = delegate { };
+        public static event Action OnCrouchReleased = delegate { };
+        public static event Action OnZoomPressed = delegate { };
+        public static event Action OnZoomReleased = delegate { };
+        public static event Action OnShootPressed = delegate { };
+        public static event Action OnShootHeld = delegate { };
+        public static event Action OnShootReleased = delegate { };
+        public static event Action OnReloadPressed = delegate { };
+        public static event Action OnJumpPressed = delegate { };
+
+        protected override void Awake()
         {
-            inputReader.Look += look => cameraInputData.InputVector = look;
-            inputReader.Aim += isAim => cameraInputData.IsZooming = isAim;
-            inputReader.Move += movement => movementInputData.InputVector = movement;
-            inputReader.Jump += isJump => movementInputData.IsJumping = isJump;
-            inputReader.Crouch += isCrouch => movementInputData.IsCrouching = isCrouch;
-            inputReader.Sprint += isSprint => movementInputData.IsRunning = isSprint;
-            inputReader.Interact += isInteract => interactionInputData.IsInteracted = isInteract;
-            inputReader.Shoot += isShoot => weaponInputData.IsShoot = isShoot;
-            inputReader.Reload += isReload => weaponInputData.IsReload = isReload;
+            base.Awake();
+            SetCallbacks();
         }
 
-        void OnDisable()
+        void OnEnable() => EnableGameplay();
+
+        void OnDisable() => DisableAllMaps();
+
+        void OnDestroy() => playerInput.Dispose();
+
+        void SetCallbacks()
         {
-            inputReader.Look -= look => cameraInputData.InputVector = look;
-            inputReader.Aim -= isAim => cameraInputData.IsZooming = isAim;
-            inputReader.Move -= movement => movementInputData.InputVector = movement;
-            inputReader.Jump -= isJump => movementInputData.IsJumping = isJump;
-            inputReader.Crouch -= isCrouch => movementInputData.IsCrouching = isCrouch;
-            inputReader.Sprint -= isSprint => movementInputData.IsRunning = isSprint;
-            inputReader.Interact -= isInteract => interactionInputData.IsInteracted = isInteract;
-            inputReader.Shoot -= isShoot => weaponInputData.IsShoot = isShoot;
-            inputReader.Reload -= isReload => weaponInputData.IsReload = isReload;
+            playerInput ??= new GameInputActions();
+            playerInput.Movement.SetCallbacks(this);
+            playerInput.Look.SetCallbacks(this);
+            playerInput.Interaction.SetCallbacks(this);
+            playerInput.Combat.SetCallbacks(this);
+            playerInput.UI.SetCallbacks(this);
         }
 
-        void OnDestroy() => inputReader.Dispose();
+        public void EnableGameplay()
+        {
+            playerInput.Movement.Enable();
+            playerInput.Look.Enable();
+            playerInput.Combat.Enable();
+            playerInput.Interaction.Enable();
+            playerInput.UI.Disable();
+        }
+
+        public void EnableUI()
+        {
+            playerInput.Movement.Disable();
+            playerInput.Look.Disable();
+            playerInput.Combat.Disable();
+            playerInput.Interaction.Disable();
+            playerInput.UI.Enable();
+        }
+
+        public void DisableAllMaps()
+        {
+            playerInput.Movement.Disable();
+            playerInput.Look.Disable();
+            playerInput.Combat.Disable();
+            playerInput.UI.Disable();
+            playerInput.Interaction.Enable();
+        }
+
+        public void OnMove(CallbackContext context) => MovementAxis = context.ReadValue<Vector2>();
+        public void OnSprint(CallbackContext context)
+        {
+            if (context.started) OnSprintPressed();
+            if (context.canceled) OnSprintReleased();
+        }
+        public void OnCrouch(CallbackContext context)
+        {
+            if (context.started) OnCrouchPressed();
+            if (context.canceled) OnCrouchReleased();
+        }
+        public void OnJump(CallbackContext context)
+        {
+            if (context.performed) OnJumpPressed();
+        }
+
+        public void OnLook(CallbackContext context) => LookAxis = context.ReadValue<Vector2>();
+        public void OnAim(CallbackContext context)
+        {
+            if (context.started) OnZoomPressed();
+            if (context.canceled) OnZoomReleased();
+        }
+
+        public void OnInteract(CallbackContext context)
+        {
+            if (context.started) OnInteractPressed();
+            if (context.canceled) OnInteractReleased();
+        }
+
+        public void OnShoot(CallbackContext context)
+        {
+            if (context.started) OnShootPressed();
+            if (context.canceled) OnShootReleased();
+        }
+        public void OnReload(CallbackContext context)
+        {
+            if (context.performed) OnReloadPressed();
+        }
+
+        public void OnNavigate(CallbackContext context) { }
+        public void OnSubmit(CallbackContext context) { }
+        public void OnCancel(CallbackContext context) { }
+        public void OnPoint(CallbackContext context) { }
+        public void OnClick(CallbackContext context) { }
+        public void OnRightClick(CallbackContext context) { }
+        public void OnMiddleClick(CallbackContext context) { }
+        public void OnScrollWheel(CallbackContext context) { }
+        public void OnTrackedDevicePosition(CallbackContext context) { }
+        public void OnTrackedDeviceOrientation(CallbackContext context) { }
+        public void OnTogglePauseMenu(CallbackContext context) { }
+        public void OnShowLeaderboard(CallbackContext context) { }
+        public void OnPause(CallbackContext context) { }
     }
 }

@@ -1,28 +1,22 @@
 ﻿using UnityEngine;
 
-namespace VHS
-{
-    [CreateAssetMenu(menuName = "Systems/Interaction/InteractionData")]
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
+{    
+    [CreateAssetMenu(fileName = "Interaction Data", menuName = "Data/Systems/Interaction/InteractionData")]
     public class InteractionData : ScriptableObject
     {
-        InteractableBase interactable;
-
-        public InteractableBase Interactable
-        {
-            get => interactable;
-            set => interactable = value;
-        }
-        public bool IsEmpty => interactable == null;
+        public InteractableBase Interactable { get; set; }
 
         public void Interact()
         {
-            interactable.OnInteract();
+            Interactable.OnInteract();
             ResetData();
         }
 
-        public bool IsSameInteractable(InteractableBase newInteractable) =>
-            interactable == newInteractable;
+        public bool IsSameInteractable(InteractableBase newInteractable) => Interactable == newInteractable;
 
-        public void ResetData() => interactable = null;
+        public bool IsEmpty() => Interactable == null;
+
+        public void ResetData() => Interactable = null;
     }
 }

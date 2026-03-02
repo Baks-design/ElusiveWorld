@@ -1,40 +1,22 @@
 ﻿using UnityEngine;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {
-    [CreateAssetMenu(menuName = "Data/PickableData")]
+    [CreateAssetMenu(fileName = "PickableData", menuName = "Data/Systems/Interaction/PickableData")]
     public class PickableData : ScriptableObject
     {
-        Pickable pickable;
-        
-        public Pickable PickableItem
-        {
-            get => pickable;
-            set => pickable = value;
-        }
+        public Pickable PickableItem { get; set; }
 
-        public bool IsEmpty()
-        {
-            if (pickable != null)
-                return false;
-            else
-                return true;
-        }
+        public bool IsEmpty() => PickableItem == null;
 
-        public bool IsSamePickable(Pickable pickable)
-        {
-            if (this.pickable == pickable)
-                return true;
-            else
-                return false;
-        }
+        public bool IsSamePickable(Pickable pickable) => PickableItem == pickable;
 
-        public void Pick() => pickable.OnPickUp();
+        public void Pick() => PickableItem.OnPickUp();
 
-        public void Hold() => pickable.OnHold();
+        public void Hold() => PickableItem.OnHold();
 
-        public void Release() => pickable.OnRelease();
+        public void Release() => PickableItem.OnRelease();
 
-        public void ResetData() => pickable = null;
+        public void ResetData() => PickableItem = null;
     }
 }

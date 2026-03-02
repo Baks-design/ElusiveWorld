@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
+using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement;
+using UnityEngine;
 
-namespace VHS
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 {
-    public class InteractionController : MonoBehaviour
+    public class InteractionController : PlayerComponent
     {
         [Header("Data")]
-        [SerializeField] InteractionInputData interactionInputData;
         [SerializeField] InteractionData interactionData;
         [Header("Ray Settings")]
         [SerializeField] float rayDistance = 0f;
@@ -15,12 +16,36 @@ namespace VHS
         bool interacting;
         float holdTimer = 0f;
 
-        void Start() => cam = Camera.main;
+        void Awake() => cam = Camera.main;
+
+        void OnEnable()
+        {
+            InputManager.OnInteractPressed += OnInteractPressed;
+            InputManager.OnInteractReleased += OnInteractReleased;
+        }
 
         void Update()
         {
             CheckForInteractable();
             CheckForInteractableInput();
+        }
+
+        void OnDisable()
+        {
+            InputManager.OnInteractPressed -= OnInteractPressed;
+            InputManager.OnInteractReleased -= OnInteractReleased;
+        }
+
+        void OnInteractPressed()
+        {
+            interacting = true;
+            holdTimer = 0f;
+        }
+
+        void OnInteractReleased()
+        {
+            interacting = false;
+            holdTimer = 0f;
         }
 
         void CheckForInteractable()
@@ -32,7 +57,7 @@ namespace VHS
             {
                 if (hitInfo.transform.TryGetComponent<InteractableBase>(out var interactable))
                 {
-                    if (interactionData.IsEmpty)
+                    if (interactionData.IsEmpty())
                         interactionData.Interactable = interactable;
                     else
                     {
@@ -49,18 +74,7 @@ namespace VHS
 
         void CheckForInteractableInput()
         {
-            if (interactionData.IsEmpty) return;
-
-            if (interactionInputData.IsInteracted)
-            {
-                interacting = true;
-                holdTimer = 0f;
-            }
-            if (interactionInputData.IsInteracted)
-            {
-                interacting = false;
-                holdTimer = 0f;
-            }
+            if (interactionData.IsEmpty()) return;
 
             if (interacting)
             {
