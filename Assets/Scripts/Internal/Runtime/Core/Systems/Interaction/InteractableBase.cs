@@ -9,6 +9,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
         [field: SerializeField] public bool MultipleUse { get; private set; } = false;
         [field: SerializeField] public bool IsInteractable { get; private set; } = true;
 
-        public virtual void OnInteract() => Debug.Log($"INTERACTED: {gameObject.name}");
+        public virtual void OnInteract() { }
     }
 }

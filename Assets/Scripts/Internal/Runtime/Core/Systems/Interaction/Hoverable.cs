@@ -5,24 +5,16 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
     [RequireComponent(typeof(MeshRenderer))]
     public class Hoverable : MonoBehaviour, IHoverable
     {
-        public string tooltip;
-        public Transform tooltipTransform;
-        MeshRenderer meshRenderer;
-
-        public Transform TooltipTransform => tooltipTransform;
+        [SerializeField] MeshRenderer meshRenderer;
+        
+        [field: SerializeField] public Transform TooltipTransform { get; private set; }
+        [field: SerializeField] public string Tooltip { get; set; }
         public Material MyMaterial { get; private set; }
-        public string Tooltip
-        {
-            get => tooltip;
-            set => tooltip = value;
-        }
 
-        protected virtual void Awake() => GetComponents();
-
-        protected virtual void GetComponents()
+        protected virtual void Awake()
         {
-            meshRenderer = GetComponent<MeshRenderer>();
-            MyMaterial = meshRenderer.material;
+            TryGetComponent(out meshRenderer);
+            MyMaterial = meshRenderer.sharedMaterial;
         }
 
         public void OnHoverStart(Material hoverMat) => meshRenderer.material = hoverMat;

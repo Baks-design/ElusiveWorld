@@ -7,6 +7,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
     public class InteractionController : PlayerComponent
     {
         [Header("Data")]
+        [SerializeField] InputReader input;
         [SerializeField] InteractionData interactionData;
         [Header("Ray Settings")]
         [SerializeField] float rayDistance = 0f;
@@ -16,13 +17,13 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
         bool interacting;
         float holdTimer = 0f;
 
-        void Awake() => cam = Camera.main;
-
         void OnEnable()
         {
-            InputManager.OnInteractPressed += OnInteractPressed;
-            InputManager.OnInteractReleased += OnInteractReleased;
+            input.OnInteractPressed += OnInteractPressed;
+            input.OnInteractReleased += OnInteractReleased;
         }
+        
+        void Start() => cam = Camera.main;
 
         void Update()
         {
@@ -32,8 +33,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
 
         void OnDisable()
         {
-            InputManager.OnInteractPressed -= OnInteractPressed;
-            InputManager.OnInteractReleased -= OnInteractReleased;
+            input.OnInteractPressed -= OnInteractPressed;
+            input.OnInteractReleased -= OnInteractReleased;
         }
 
         void OnInteractPressed()

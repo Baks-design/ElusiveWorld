@@ -1,10 +1,12 @@
 ﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement;
+using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 {
     public class WeaponController : PlayerComponent
     {
+        [SerializeField] InputReader input;
         Weapon[] weapons;
         AimController aimController;
         bool shootHeld;
@@ -13,20 +15,28 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnEnable()
         {
-            InputManager.OnShootPressed += OnShootPressed;
-            InputManager.OnShootReleased += OnShootReleased;
-            InputManager.OnReloadPressed += OnReloadPressed;
+            input.OnShootPressed += OnShootPressed;
+            input.OnShootReleased += OnShootReleased;
+            input.OnReloadPressed += OnReloadPressed;
         }
 
         void Start() => aimController = Player.FetchComponent<AimController>();
 
-        void Update() => OnWeaponTick();
+        void Update()
+        {
+            if (shootHeld)
+                foreach (var weapon in weapons)
+                    weapon.OnShootButtonHeld();
+
+            foreach (var weapon in weapons)
+                weapon.CurrentAimPoint = aimController.AimPoint;
+        }
 
         void OnDisable()
         {
-            InputManager.OnShootPressed -= OnShootPressed;
-            InputManager.OnShootReleased -= OnShootReleased;
-            InputManager.OnReloadPressed -= OnReloadPressed;
+            input.OnShootPressed -= OnShootPressed;
+            input.OnShootReleased -= OnShootReleased;
+            input.OnReloadPressed -= OnReloadPressed;
         }
 
         void OnShootPressed()
@@ -47,15 +57,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         {
             foreach (var weapon in weapons)
                 weapon.OnReloadButtonPressed();
-        }
-
-        void OnWeaponTick()
-        {
-            if (shootHeld)
-                foreach (var weapon in weapons)
-                    weapon.OnShootButtonHeld();
-            foreach (var weapon in weapons)
-                weapon.CurrentAimPoint = aimController.AimPoint;
         }
     }
 }

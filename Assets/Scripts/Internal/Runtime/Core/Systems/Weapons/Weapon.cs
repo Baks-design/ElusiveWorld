@@ -1,6 +1,6 @@
-﻿using System;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles;
+﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 {
@@ -19,13 +19,13 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         public bool DuringReload { get => duringReload; set => duringReload = value; }
         public Vector3 CurrentAimPoint { get => currentAimPoint; set => currentAimPoint = value; }
 
-        public Action OnWeaponShootPressed = delegate { };
-        public Action OnWeaponShootHeld = delegate { };
-        public Action OnWeaponShootReleased = delegate { };
-        public Action OnWeaponShootSucceed = delegate { };
-        public Action OnWeaponReloadPressed = delegate { };
-        public Action OnWeaponReloadStarted = delegate { };
-        public Action OnWeaponReloadCompleted = delegate { };
+        public UnityAction OnWeaponShootPressed = delegate { };
+        public UnityAction OnWeaponShootHeld = delegate { };
+        public UnityAction OnWeaponShootReleased = delegate { };
+        public UnityAction OnWeaponShootSucceed = delegate { };
+        public UnityAction OnWeaponReloadPressed = delegate { };
+        public UnityAction OnWeaponReloadStarted = delegate { };
+        public UnityAction OnWeaponReloadCompleted = delegate { };
 
         public virtual void OnShootButtonPressed() => OnWeaponShootPressed();
         public virtual void OnShootButtonHeld() => OnWeaponShootHeld();
@@ -45,24 +45,5 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         }
 
         public virtual void GetComponents() => ProjectileAnchor = GetComponentInChildren<WeaponProjectileAnchor>();
-    }
-
-    public class WeaponComponent<T> : MonoBehaviour where T : WeaponComponent<T>
-    {
-        bool cached;
-        Weapon weapon;
-
-        public Weapon Weapon
-        {
-            get
-            {
-                if (!cached)
-                {
-                    cached = true;
-                    weapon = GetComponentInParent<Weapon>();
-                }
-                return weapon;
-            }
-        }
     }
 }

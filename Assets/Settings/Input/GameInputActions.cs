@@ -202,7 +202,7 @@ namespace ElusiveWorld.Core
                     ""name"": """",
                     ""id"": ""eb40bb66-4559-4dfa-9a2f-820438abb426"",
                     ""path"": ""<Keyboard>/space"",
-                    ""interactions"": ""Press(behavior=1)"",
+                    ""interactions"": ""Press"",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Jump"",
@@ -213,7 +213,7 @@ namespace ElusiveWorld.Core
                     ""name"": """",
                     ""id"": ""36e52cba-0905-478e-a818-f4bfcb9f3b9a"",
                     ""path"": ""<Keyboard>/c"",
-                    ""interactions"": ""Press(behavior=1)"",
+                    ""interactions"": ""Press"",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""Crouch"",
@@ -416,24 +416,6 @@ namespace ElusiveWorld.Core
                     ""name"": ""TogglePauseMenu"",
                     ""type"": ""Button"",
                     ""id"": ""8b486689-a6f8-47ec-be9b-3d6ee4873fdc"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""ShowLeaderboard"",
-                    ""type"": ""Button"",
-                    ""id"": ""7ccacee0-6014-4e70-b30a-c99f482d96d8"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false
-                },
-                {
-                    ""name"": ""Pause"",
-                    ""type"": ""Button"",
-                    ""id"": ""ff38b32a-47c8-4b18-adcb-88ede681ca39"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -869,39 +851,6 @@ namespace ElusiveWorld.Core
                     ""action"": ""TogglePauseMenu"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""903d3bdb-a02c-456f-979d-d9b8d9be86a4"",
-                    ""path"": ""<Keyboard>/tab"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""ShowLeaderboard"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""9748093a-3f1c-4127-8eb8-6c7f2936bfd1"",
-                    ""path"": ""<Gamepad>/select"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Gamepad"",
-                    ""action"": ""ShowLeaderboard"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""c1158455-7a7b-4b9c-ac3c-f3ae9e504f6f"",
-                    ""path"": ""<Keyboard>/escape"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""Pause"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -980,8 +929,6 @@ namespace ElusiveWorld.Core
             m_UI_TrackedDevicePosition = m_UI.FindAction("TrackedDevicePosition", throwIfNotFound: true);
             m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
             m_UI_TogglePauseMenu = m_UI.FindAction("TogglePauseMenu", throwIfNotFound: true);
-            m_UI_ShowLeaderboard = m_UI.FindAction("ShowLeaderboard", throwIfNotFound: true);
-            m_UI_Pause = m_UI.FindAction("Pause", throwIfNotFound: true);
             // Interaction
             m_Interaction = asset.FindActionMap("Interaction", throwIfNotFound: true);
             m_Interaction_Interact = m_Interaction.FindAction("Interact", throwIfNotFound: true);
@@ -1423,8 +1370,6 @@ namespace ElusiveWorld.Core
         private readonly InputAction m_UI_TrackedDevicePosition;
         private readonly InputAction m_UI_TrackedDeviceOrientation;
         private readonly InputAction m_UI_TogglePauseMenu;
-        private readonly InputAction m_UI_ShowLeaderboard;
-        private readonly InputAction m_UI_Pause;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -1480,14 +1425,6 @@ namespace ElusiveWorld.Core
             /// Provides access to the underlying input action "UI/TogglePauseMenu".
             /// </summary>
             public InputAction @TogglePauseMenu => m_Wrapper.m_UI_TogglePauseMenu;
-            /// <summary>
-            /// Provides access to the underlying input action "UI/ShowLeaderboard".
-            /// </summary>
-            public InputAction @ShowLeaderboard => m_Wrapper.m_UI_ShowLeaderboard;
-            /// <summary>
-            /// Provides access to the underlying input action "UI/Pause".
-            /// </summary>
-            public InputAction @Pause => m_Wrapper.m_UI_Pause;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1547,12 +1484,6 @@ namespace ElusiveWorld.Core
                 @TogglePauseMenu.started += instance.OnTogglePauseMenu;
                 @TogglePauseMenu.performed += instance.OnTogglePauseMenu;
                 @TogglePauseMenu.canceled += instance.OnTogglePauseMenu;
-                @ShowLeaderboard.started += instance.OnShowLeaderboard;
-                @ShowLeaderboard.performed += instance.OnShowLeaderboard;
-                @ShowLeaderboard.canceled += instance.OnShowLeaderboard;
-                @Pause.started += instance.OnPause;
-                @Pause.performed += instance.OnPause;
-                @Pause.canceled += instance.OnPause;
             }
 
             /// <summary>
@@ -1597,12 +1528,6 @@ namespace ElusiveWorld.Core
                 @TogglePauseMenu.started -= instance.OnTogglePauseMenu;
                 @TogglePauseMenu.performed -= instance.OnTogglePauseMenu;
                 @TogglePauseMenu.canceled -= instance.OnTogglePauseMenu;
-                @ShowLeaderboard.started -= instance.OnShowLeaderboard;
-                @ShowLeaderboard.performed -= instance.OnShowLeaderboard;
-                @ShowLeaderboard.canceled -= instance.OnShowLeaderboard;
-                @Pause.started -= instance.OnPause;
-                @Pause.performed -= instance.OnPause;
-                @Pause.canceled -= instance.OnPause;
             }
 
             /// <summary>
@@ -1909,20 +1834,6 @@ namespace ElusiveWorld.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnTogglePauseMenu(InputAction.CallbackContext context);
-            /// <summary>
-            /// Method invoked when associated input action "ShowLeaderboard" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnShowLeaderboard(InputAction.CallbackContext context);
-            /// <summary>
-            /// Method invoked when associated input action "Pause" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnPause(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Interaction" which allows adding and removing callbacks.

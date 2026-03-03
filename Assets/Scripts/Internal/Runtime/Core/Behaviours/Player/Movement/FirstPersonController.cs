@@ -3,15 +3,45 @@ using System.Collections;
 using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
-using Assets.Scripts.Internal.Runtime.Core.Utilities;
 using UnityEngine;
+using LitMotion;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 {
-    [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour  //TODO: Change to LitTween
+    public static class MonoBehaviourExtensions
     {
+        static readonly Dictionary<MonoBehaviour, MotionHandle> delayHandles = new();
+
+        public static void Delay(this MonoBehaviour behaviour, float delay, Action action)
+        {
+            // Cancel any existing delay for this behaviour
+            if (delayHandles.TryGetValue(behaviour, out var existingHandle))
+            {
+                existingHandle.Cancel();
+                delayHandles.Remove(behaviour);
+            }
+
+            var handle = LMotion.Create(0f, 1f, delay)
+                .WithOnComplete(() =>
+                {
+                    action?.Invoke();
+                    delayHandles.Remove(behaviour);
+                })
+                .RunWithoutBinding();
+
+            delayHandles[behaviour] = handle;
+        }
+    }
+
+    [RequireComponent(typeof(CharacterController))]
+    public class FirstPersonController : MonoBehaviour
+    {
+        [Header("References")]
+        [SerializeField] CameraController cameraController;
+        [SerializeField] CharacterController characterController;
         [Header("Data")]
+        [SerializeField] InputReader input;
         [SerializeField] HeadBobData headBobData;
         [Header("Locomotion Settings")]
         [SerializeField] float crouchSpeed = 1f;
@@ -56,8 +86,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         [SerializeField] float smoothFinalDirectionSpeed = 5f;
         [SerializeField] float smoothHeadBobSpeed = 5f;
         HeadBob headBob;
-        CameraController cameraController;
-        CharacterController characterController;
+        CompositeMotionHandle slideMotionHandles;
+        CompositeMotionHandle returnMotionHandles;
+        CompositeMotionHandle crouchMotionHandles;
         Transform yawTransform;
         RaycastHit hitInfo;
         IEnumerator LandRoutine;
@@ -79,6 +110,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         float crouchHeight;
         float inAirTimer;
         float crouchCamHeight;
+        float slideHeight;
         bool duringCrouchAnimation;
         bool duringRunAnimation;
         bool hitWall;
@@ -93,11 +125,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void OnEnable()
         {
-            InputManager.OnSprintPressed += OnSprintPressed;
-            InputManager.OnSprintReleased += OnSprintReleased;
-            InputManager.OnCrouchPressed += OnCrouchPressed;
-            InputManager.OnCrouchReleased += OnCrouchReleased;
-            InputManager.OnJumpPressed += OnJumpPressed;
+            input.OnSprintPressed += OnSprintPressed;
+            input.OnSprintReleased += OnSprintReleased;
+            input.OnCrouchPressed += OnCrouchPressed;
+            input.OnCrouchReleased += OnCrouchReleased;
+            input.OnJumpPressed += OnJumpPressed;
         }
 
         void Start()
@@ -128,11 +160,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void OnDisable()
         {
-            InputManager.OnSprintPressed -= OnSprintPressed;
-            InputManager.OnSprintReleased -= OnSprintReleased;
-            InputManager.OnCrouchPressed -= OnCrouchPressed;
-            InputManager.OnCrouchReleased -= OnCrouchReleased;
-            InputManager.OnJumpPressed -= OnJumpPressed;
+            input.OnSprintPressed -= OnSprintPressed;
+            input.OnSprintReleased -= OnSprintReleased;
+            input.OnCrouchPressed -= OnCrouchPressed;
+            input.OnCrouchReleased -= OnCrouchReleased;
+            input.OnJumpPressed -= OnJumpPressed;
         }
 
         void OnSprintPressed()
@@ -175,7 +207,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             var crouchStandHeightDifference = initHeight - crouchHeight;
             crouchCamHeight = initCamHeight - crouchStandHeightDifference;
 
-            var slideHeight = initHeight * slidePercent;
+            slideHeight = initHeight * slidePercent;
             slideCenter = (slideHeight / 2f + characterController.skinWidth) * Vector3.up;
             var slideStandHeightDifference = initHeight - slideHeight;
             slideCamHeight = initCamHeight - slideStandHeightDifference;
@@ -192,20 +224,18 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothInput() => smoothInputVector = Vector2.Lerp(
-            smoothInputVector, InputManager.MovementAxis, Time.deltaTime * smoothInputSpeed);
+            smoothInputVector, input.MovementAxis, Time.deltaTime * smoothInputSpeed);
 
         void SmoothSpeed()
         {
             smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, Time.deltaTime * smoothVelocitySpeed);
 
-            /* WALK TO RUN SPEED TRANSITION || COMMENTED BECAUSE RETURNING FROM SLIDING TO RUNNING IS TOO SNAPPY
             if (isRunning && CanRun() && !isSliding)
             {
-                float walkRunPercent = Mathf.InverseLerp(walkSpeed,runSpeed, smoothCurrentSpeed);
-                finalSmoothCurrentSpeed = runTransitionCurve.Evaluate(_walkRunPercent) * walkRunSpeedDifference + walkSpeed;
+                var walkRunPercent = Mathf.InverseLerp(walkSpeed, runSpeed, smoothCurrentSpeed);
+                finalSmoothCurrentSpeed = runTransitionCurve.Evaluate(walkRunPercent) * walkRunSpeedDifference + walkSpeed;
                 return;
             }
-            */
 
             finalSmoothCurrentSpeed = smoothCurrentSpeed;
         }
@@ -220,18 +250,18 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                 origin, raySphereRadius, Vector3.down, out hitInfo,
                 finalRayLength, groundLayer);
 
-            Debug.DrawRay(origin, Vector3.down * finalRayLength, isGrounded ? Color.red : Color.green);
+            //Debug.DrawRay(origin, Vector3.down * finalRayLength, isGrounded ? Color.red : Color.green);
         }
 
         void CheckIfWall()
         {
             var origin = transform.position + characterController.center;
-            if (InputManager.MovementAxis != Vector2.zero && finalMoveDir.sqrMagnitude > 0)
+            if (input.MovementAxis != Vector2.zero && finalMoveDir.sqrMagnitude > 0)
                 hitWall = Physics.SphereCast(
                     origin, rayObstacleSphereRadius, finalMoveDir,
                     out var _, rayObstacleLength, obstacleLayers);
 
-            Debug.DrawRay(origin, finalMoveDir * rayObstacleLength, hitWall ? Color.red : Color.green);
+            //Debug.DrawRay(origin, finalMoveDir * rayObstacleLength, hitWall ? Color.red : Color.green);
         }
 
         bool CheckIfRoof() => Physics.SphereCast(transform.position, raySphereRadius, Vector3.up, out var _, initHeight);
@@ -266,10 +296,10 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             currentSpeed = isRunning && CanRun() ? runSpeed : walkSpeed;
             currentSpeed = isCrouching ? crouchSpeed : currentSpeed;
             currentSpeed = isSliding ? slideSpeed : currentSpeed;
-            currentSpeed = InputManager.MovementAxis == Vector2.zero ? 0f : currentSpeed;
-            currentSpeed = InputManager.MovementAxis.y == -1f ?
+            currentSpeed = input.MovementAxis == Vector2.zero ? 0f : currentSpeed;
+            currentSpeed = input.MovementAxis.y == -1f ?
                 currentSpeed * moveBackwardsSpeedPercent : currentSpeed;
-            currentSpeed = InputManager.MovementAxis.x != 0f && InputManager.MovementAxis.y == 0f ?
+            currentSpeed = input.MovementAxis.x != 0f && input.MovementAxis.y == 0f ?
                 currentSpeed * moveSideSpeedPercent : currentSpeed;
         }
 
@@ -286,36 +316,57 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         {
             if (!CanCrouch) return;
 
-            if (isRunning && !isCrouching && InputManager.MovementAxis != Vector2.zero && CanRun())
+            if (isRunning && !isCrouching && input.MovementAxis != Vector2.zero && CanRun())
                 HandleSlide();
             else
                 HandleCrouch();
         }
 
+
         void HandleSlide()
         {
             isSliding = true;
-
             headBob.CurrentStateHeight = slideCamHeight;
 
-            // DOTween.To(() => characterController.height,
-            //     x => characterController.height = x, slideHeight, slideTransitionDuration)
-            //     .SetEase(slideTransitionCurve);
-            // DOTween.To(() => characterController.center,
-            //     x => characterController.center = x, slideCenter, slideTransitionDuration)
-            //     .SetEase(slideTransitionCurve);
+            // Cancel any existing slide motions
+            slideMotionHandles?.Cancel();
+            slideMotionHandles = new CompositeMotionHandle();
 
-            // yawTransform.DOLocalMoveY(slideCamHeight, slideTransitionDuration)
-            //     .SetEase(slideTransitionCurve);
+            // Character controller height tween
+            LMotion.Create(characterController.height, slideHeight, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(x => characterController.height = x)
+                .AddTo(slideMotionHandles);
 
-            this.CallWithDelay(ReturnToInitHeight, maxSlideDuration);
+            // Character controller center tween
+            LMotion.Create(characterController.center, slideCenter, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(x => characterController.center = x)
+                .AddTo(slideMotionHandles);
+
+            // Yaw transform local position Y tween
+            LMotion.Create(yawTransform.localPosition.y, slideCamHeight, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(y =>
+                {
+                    var pos = yawTransform.localPosition;
+                    pos.y = y;
+                    yawTransform.localPosition = pos;
+                })
+                .AddTo(slideMotionHandles);
+
+            this.Delay(maxSlideDuration, ReturnToInitHeight);
         }
 
         void ReturnToInitHeight()
         {
             if (CheckIfRoof())
             {
-                //DOTween.Kill(this);
+                // Cancel all motions
+                slideMotionHandles?.Cancel();
+                returnMotionHandles?.Cancel();
+                crouchMotionHandles?.Cancel();
+
                 isSliding = false;
                 HandleCrouch();
                 return;
@@ -323,20 +374,36 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
             if (!isSliding) return;
 
-            //DOTween.Kill(this);
+            // Cancel slide motions and setup return motions
+            slideMotionHandles?.Cancel();
+            returnMotionHandles?.Cancel();
+            returnMotionHandles = new CompositeMotionHandle();
 
             isSliding = false;
-
             headBob.CurrentStateHeight = initCamHeight;
 
-            // DOTween.To(() => characterController.height,
-            //     x => characterController.height = x, initHeight, slideTransitionDuration)
-            //         .SetEase(slideTransitionCurve);
-            // DOTween.To(() => characterController.center,
-            //     x => characterController.center = x, initCenter, slideTransitionDuration)
-            //     .SetEase(slideTransitionCurve);
+            // Character controller height tween
+            LMotion.Create(characterController.height, initHeight, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(x => characterController.height = x)
+                .AddTo(returnMotionHandles);
 
-            // yawTransform.DOLocalMoveY(initCamHeight, slideTransitionDuration).SetEase(slideTransitionCurve);
+            // Character controller center tween
+            LMotion.Create(characterController.center, initCenter, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(x => characterController.center = x)
+                .AddTo(returnMotionHandles);
+
+            // Yaw transform local position Y tween
+            LMotion.Create(yawTransform.localPosition.y, initCamHeight, slideTransitionDuration)
+                .WithEase(slideTransitionCurve)
+                .Bind(y =>
+                {
+                    var pos = yawTransform.localPosition;
+                    pos.y = y;
+                    yawTransform.localPosition = pos;
+                })
+                .AddTo(returnMotionHandles);
         }
 
         void HandleCrouch()
@@ -347,31 +414,42 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
             if (LandRoutine != null) StopCoroutine(LandRoutine);
 
-            duringCrouchAnimation = true;
+            // Cancel any existing crouch motions
+            crouchMotionHandles?.Cancel();
+            crouchMotionHandles = new CompositeMotionHandle();
 
-            var currentHeight = characterController.height;
-            var currentCenter = characterController.center;
+            duringCrouchAnimation = true;
 
             var desiredHeight = isCrouching ? initHeight : crouchHeight;
             var desiredCenter = isCrouching ? initCenter : crouchCenter;
-
-            var camPos = yawTransform.localPosition;
-            var camCurrentHeight = camPos.y;
             var camDesiredHeight = isCrouching ? initCamHeight : crouchCamHeight;
 
             isCrouching = !isCrouching;
             headBob.CurrentStateHeight = isCrouching ? crouchCamHeight : initCamHeight;
 
-            // DOTween.To(() => characterController.height,
-            //     x => characterController.height = x, desiredHeight, crouchTransitionDuration)
-            //     .SetEase(crouchTransitionCurve);
-            // DOTween.To(() => characterController.center,
-            //     x => characterController.center = x, desiredCenter, crouchTransitionDuration)
-            //     .SetEase(crouchTransitionCurve);
+            // Character controller height tween
+            LMotion.Create(characterController.height, desiredHeight, crouchTransitionDuration)
+                .WithEase(crouchTransitionCurve)
+                .Bind(x => characterController.height = x)
+                .AddTo(crouchMotionHandles);
 
-            // yawTransform.DOLocalMoveY(camDesiredHeight, crouchTransitionDuration)
-            //     .SetEase(crouchTransitionCurve)
-            //     .OnComplete(delegate { duringCrouchAnimation = false; });
+            // Character controller center tween
+            LMotion.Create(characterController.center, desiredCenter, crouchTransitionDuration)
+                .WithEase(crouchTransitionCurve)
+                .Bind(x => characterController.center = x)
+                .AddTo(crouchMotionHandles);
+
+            // Yaw transform local position Y tween with completion callback
+            LMotion.Create(yawTransform.localPosition.y, camDesiredHeight, crouchTransitionDuration)
+                .WithEase(crouchTransitionCurve)
+                .WithOnComplete(() => duringCrouchAnimation = false)
+                .Bind(y =>
+                {
+                    var pos = yawTransform.localPosition;
+                    pos.y = y;
+                    yawTransform.localPosition = pos;
+                })
+                .AddTo(crouchMotionHandles);
         }
 
         void HandleLanding()
@@ -412,11 +490,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void HandleHeadBob()
         {
-            if (InputManager.MovementAxis != Vector2.zero && isGrounded && !hitWall)
+            if (input.MovementAxis != Vector2.zero && isGrounded && !hitWall)
             {
                 if (!duringCrouchAnimation && !isSliding)
                 {
-                    headBob.ScrollHeadBob(isRunning && CanRun(), isCrouching, InputManager.MovementAxis);
+                    headBob.ScrollHeadBob(isRunning && CanRun(), isCrouching, input.MovementAxis);
 
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
@@ -438,17 +516,17 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         }
 
-        void HandleCameraSway() => cameraController.HandleSway(smoothInputVector, InputManager.MovementAxis.x);
+        void HandleCameraSway() => cameraController.HandleSway(smoothInputVector, input.MovementAxis.x);
 
         void HandleRunFOV()
         {
-            if (!duringRunAnimation && InputManager.MovementAxis != Vector2.zero && !hitWall && isRunning && CanRun())
+            if (!duringRunAnimation && input.MovementAxis != Vector2.zero && !hitWall && isRunning && CanRun())
             {
                 duringRunAnimation = true;
                 cameraController.ChangeRunFOV(false);
             }
 
-            if (duringRunAnimation && (InputManager.MovementAxis == Vector2.zero || !CanRun() || hitWall))
+            if (duringRunAnimation && (input.MovementAxis == Vector2.zero || !CanRun() || hitWall))
             {
                 duringRunAnimation = false;
                 cameraController.ChangeRunFOV(true);
@@ -457,7 +535,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void ChangeToRunFOV()
         {
-            if (!CanRun() || InputManager.MovementAxis == Vector2.zero)
+            if (!CanRun() || input.MovementAxis == Vector2.zero)
                 return;
 
             duringRunAnimation = true;

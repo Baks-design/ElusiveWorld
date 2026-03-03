@@ -114,7 +114,7 @@
                     "name": "",
                     "id": "eb40bb66-4559-4dfa-9a2f-820438abb426",
                     "path": "<Keyboard>/space",
-                    "interactions": "Press(behavior=1)",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "",
                     "action": "Jump",
@@ -125,7 +125,7 @@
                     "name": "",
                     "id": "36e52cba-0905-478e-a818-f4bfcb9f3b9a",
                     "path": "<Keyboard>/c",
-                    "interactions": "Press(behavior=1)",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "Crouch",
@@ -328,24 +328,6 @@
                     "name": "TogglePauseMenu",
                     "type": "Button",
                     "id": "8b486689-a6f8-47ec-be9b-3d6ee4873fdc",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "ShowLeaderboard",
-                    "type": "Button",
-                    "id": "7ccacee0-6014-4e70-b30a-c99f482d96d8",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Pause",
-                    "type": "Button",
-                    "id": "ff38b32a-47c8-4b18-adcb-88ede681ca39",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -779,39 +761,6 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "TogglePauseMenu",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "903d3bdb-a02c-456f-979d-d9b8d9be86a4",
-                    "path": "<Keyboard>/tab",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "ShowLeaderboard",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "9748093a-3f1c-4127-8eb8-6c7f2936bfd1",
-                    "path": "<Gamepad>/select",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Gamepad",
-                    "action": "ShowLeaderboard",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "c1158455-7a7b-4b9c-ac3c-f3ae9e504f6f",
-                    "path": "<Keyboard>/escape",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "Pause",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

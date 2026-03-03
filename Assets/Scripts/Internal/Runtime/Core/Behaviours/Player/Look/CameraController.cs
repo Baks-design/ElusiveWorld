@@ -6,6 +6,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
     public class CameraController : MonoBehaviour
     {
+        [Header("Data")]
+        [SerializeField] InputReader input;
         [Header("Look Settings")]
         [SerializeField] Vector2 sensitivity = Vector2.zero;
         [SerializeField] Vector2 smoothAmount = Vector2.zero;
@@ -30,8 +32,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void OnEnable()
         {
-            InputManager.OnZoomPressed += OnZoomPressed;
-            InputManager.OnZoomReleased += OnZoomReleased;
+            input.OnZoomPressed += OnZoomPressed;
+            input.OnZoomReleased += OnZoomReleased;
         }
 
         void LateUpdate()
@@ -43,8 +45,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void OnDisable()
         {
-            InputManager.OnZoomPressed -= OnZoomPressed;
-            InputManager.OnZoomReleased -= OnZoomReleased;
+            input.OnZoomPressed -= OnZoomPressed;
+            input.OnZoomReleased -= OnZoomReleased;
         }
 
         static void ChangeCursorState()
@@ -77,8 +79,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void CalculateRotation()
         {
-            desiredYaw += InputManager.LookAxis.x * sensitivity.x * Time.deltaTime;
-            desiredPitch -= InputManager.LookAxis.y * sensitivity.y * Time.deltaTime;
+            desiredYaw += input.LookAxis.x * sensitivity.x * Time.deltaTime;
+            desiredPitch -= input.LookAxis.y * sensitivity.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, lookAngleMinMax.x, lookAngleMinMax.y);
         }
 

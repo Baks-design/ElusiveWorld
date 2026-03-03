@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Managers;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles;
+﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles;
 using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
@@ -10,9 +9,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         {
             get
             {
-                if (Weapon.DuringReload) return false;
+                if (Weapon.DuringReload)
+                    return false;
                 if (Weapon.TimeSinceLastShot + Weapon.Data.TimeBetweenRounds <
-                    Time.time && Weapon.CurrentAmmoCount > 0) return true;
+                    Time.time && Weapon.CurrentAmmoCount > 0)
+                    return true;
                 return false;
             }
         }
@@ -55,21 +56,20 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnWeaponShootReleased() { }
 
-        void OnWeaponShot()
+        void OnWeaponShot() //FIXME: This
         {
             Weapon.OnWeaponShootSucceed();
 
             Weapon.CurrentAmmoCount--;
             Weapon.TimeSinceLastShot = Time.time;
 
-            //TODO: Change to UnityPool
-            // var poolableProjectile = PoolManager.SpawnPoolable( 
-            //     Weapon.Projectile, Weapon.ProjectileAnchor.transform.position,
-            //     Weapon.ProjectileAnchor.transform.rotation, Weapon.Projectile.transform.localScale);
-                
-            // if (poolableProjectile != null &&
-            //     poolableProjectile.Transform.TryGetComponent<Projectile>(out var projectileInstance))
-            //     projectileInstance.OnFire(transform.root);
+            var projectileInstance = ProjectilePoolSpawner.Instance.SpawnProjectile(
+                Weapon.Projectile,
+                Weapon.ProjectileAnchor.transform.position,
+                Weapon.ProjectileAnchor.transform.rotation,
+                Weapon.Projectile.transform.localScale
+            );
+            if (projectileInstance != null) projectileInstance.OnFire(transform.root);
         }
 
         public virtual void OnWeaponReloadStarted() => Weapon.DuringReload = true;
