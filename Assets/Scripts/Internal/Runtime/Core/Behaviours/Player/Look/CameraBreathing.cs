@@ -10,15 +10,15 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         [SerializeField] PerlinNoiseData data;
         [Header("Axis")]
         [SerializeField] bool x = true;
-        [SerializeField] bool y = true;
-        [SerializeField] bool z = true;
+        [SerializeField] bool y = false;
+        [SerializeField] bool z = false;
         PerlinNoiseScroller perlinNoiseScroller;
         Vector3 finalRot;
         Vector3 finalPos;
 
         void Start() => perlinNoiseScroller = new PerlinNoiseScroller(data);
 
-        void LateUpdate() //TODO: REFACTOR
+        void LateUpdate() 
         {
             if (data == null) return;
 

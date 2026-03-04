@@ -30,8 +30,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             }
         }
 
-        void Start() => ProjectilePoolSpawner.Instance.PreWarmPool(Weapon.Projectile, 10);
-
         void OnDisable()
         {
             Weapon.OnWeaponReloadStarted -= OnWeaponReloadStarted;
@@ -58,7 +56,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnWeaponShootReleased() { }
 
-        void OnWeaponShot() 
+        void OnWeaponShot() //FIXME: shooting time
         {
             Weapon.OnWeaponShootSucceed();
 

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 {
-    public class PerlinNoiseScroller //TODO: REFACTOR
+    public class PerlinNoiseScroller 
     {
         readonly PerlinNoiseData data;
         Vector3 noiseOffset;

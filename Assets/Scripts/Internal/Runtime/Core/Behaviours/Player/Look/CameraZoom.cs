@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using LitMotion;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -18,8 +18,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         [SerializeField] float runTransitionDuration = 0f;
         [SerializeField] float runReturnTransitionDuration = 0f;
         CinemachineCamera cam;
-        IEnumerator changeFOVRoutine;
-        IEnumerator changeRunFOVRoutine;
+        MotionHandle zoomHandle;
+        MotionHandle runHandle;
         float initFOV;
         bool running;
         bool zooming;
@@ -30,7 +30,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             initFOV = cam.Lens.FieldOfView;
         }
 
-        public void ChangeFOV(MonoBehaviour mono)
+        public void ChangeFOV()
         {
             if (running)
             {
@@ -38,59 +38,31 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
                 return;
             }
 
-            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
-            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
-
-            changeFOVRoutine = ChangeFOVRoutine();
-            mono.StartCoroutine(changeFOVRoutine);
-        }
-
-        IEnumerator ChangeFOVRoutine() //TODO: Change to async
-        {
-            var percent = 0f;
-            var speed = 1f / zoomTransitionDuration;
-            
-            var currentFOV = cam.Lens.FieldOfView;
-            var targetFOV = zooming ? initFOV : zoomFOV;
+            if (zoomHandle.IsActive()) zoomHandle.Cancel();
 
             zooming = !zooming;
+            var currentFOV = cam.Lens.FieldOfView;
+            var targetFOV = zooming ? zoomFOV : initFOV;
 
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-                var smoothPercent = zoomCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = Mathf.Lerp(currentFOV, targetFOV, smoothPercent);
-                yield return null;
-            }
+            zoomHandle = LMotion.Create(currentFOV, targetFOV, zoomTransitionDuration)
+                .WithEase(zoomCurve)
+                .Bind(x => cam.Lens.FieldOfView = x);
         }
 
-        public void ChangeRunFOV(bool returning, MonoBehaviour mono)
+        public void ChangeRunFOV(bool returning)
         {
-            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
-            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
+            if (zoomHandle.IsActive()) zoomHandle.Cancel();
+            if (runHandle.IsActive()) runHandle.Cancel();
 
-            changeRunFOVRoutine = ChangeRunFOVRoutine(returning);
-            mono.StartCoroutine(changeRunFOVRoutine);
-        }
-
-        IEnumerator ChangeRunFOVRoutine(bool returning)
-        {
-            var percent = 0f;
             var duration = returning ? runReturnTransitionDuration : runTransitionDuration;
-            var speed = 1f / duration;
-
             var currentFOV = cam.Lens.FieldOfView;
             var targetFOV = returning ? initFOV : runFOV;
 
             running = !returning;
 
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-                var smoothPercent = runCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = Mathf.Lerp(currentFOV, targetFOV, smoothPercent);
-                yield return null;
-            }
+            runHandle = LMotion.Create(currentFOV, targetFOV, duration)
+                .WithEase(runCurve)
+                .Bind(x => cam.Lens.FieldOfView = x);
         }
     }
 }

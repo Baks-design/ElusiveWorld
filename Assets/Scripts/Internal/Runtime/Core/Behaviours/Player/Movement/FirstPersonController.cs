@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
@@ -10,7 +9,7 @@ using Assets.Scripts.Internal.Runtime.Core.Utils;
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour //TODO: Change to async
+    public class FirstPersonController : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -64,9 +63,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         CompositeMotionHandle slideMotionHandles;
         CompositeMotionHandle returnMotionHandles;
         CompositeMotionHandle crouchMotionHandles;
+        MotionHandle landMotionHandle;
         Transform yawTransform;
         RaycastHit hitInfo;
-        IEnumerator LandRoutine;
         Vector3 finalMoveDir;
         Vector3 smoothFinalMoveDir;
         Vector3 finalMoveVector;
@@ -128,9 +127,15 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             HandleRunFOV();
             HandleCameraSway();
             HandleLanding();
+            //ApplyGravity();
+            //ApplyMovement();
+            previouslyGrounded = isGrounded;
+        }
+
+        void FixedUpdate()
+        {
             ApplyGravity();
             ApplyMovement();
-            previouslyGrounded = isGrounded;
         }
 
         void OnDisable()
@@ -199,11 +204,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothInput() => smoothInputVector = Vector2.Lerp(
-            smoothInputVector, input.MovementAxis, 1f - Mathf.Exp(-smoothInputSpeed * Time.deltaTime));
+            smoothInputVector, input.MovementAxis, FloatExtensions.SmoothFactor(smoothInputSpeed));
 
         void SmoothSpeed()
         {
-            smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, 1f - Mathf.Exp(-smoothVelocitySpeed * Time.deltaTime));
+            smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, FloatExtensions.SmoothFactor(smoothVelocitySpeed));
 
             if (isRunning && CanRun() && !isSliding)
             {
@@ -216,7 +221,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothDir() => smoothFinalMoveDir = Vector3.Lerp(
-            smoothFinalMoveDir, finalMoveDir, 1f - Mathf.Exp(-smoothFinalDirectionSpeed * Time.deltaTime));
+            smoothFinalMoveDir, finalMoveDir, FloatExtensions.SmoothFactor(smoothFinalDirectionSpeed));
 
         void CheckIfGrounded()
         {
@@ -296,7 +301,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             else
                 HandleCrouch();
         }
-
 
         void HandleSlide()
         {
@@ -385,7 +389,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                 if (CheckIfRoof())
                     return;
 
-            if (LandRoutine != null) StopCoroutine(LandRoutine);
+            if (landMotionHandle.IsActive())
+                landMotionHandle.Cancel();
 
             crouchMotionHandles?.Cancel();
             crouchMotionHandles = new CompositeMotionHandle();
@@ -432,32 +437,26 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void InvokeLandingRoutine()
         {
-            if (LandRoutine != null) StopCoroutine(LandRoutine);
+            if (landMotionHandle.IsActive())
+                landMotionHandle.Cancel();
 
-            LandRoutine = LandingRoutine();
-            StartCoroutine(LandRoutine);
+            StartLandingMotion();
         }
 
-        IEnumerator LandingRoutine()
+        void StartLandingMotion()
         {
-            var percent = 0f;
-            var speed = 1f / landDuration;
-
-            var localPos = yawTransform.localPosition;
-            var initLandHeight = localPos.y;
-
+            var startPos = yawTransform.localPosition;
+            var startHeight = startPos.y;
             var landAmount = inAirTimer > landTimer ? highLandAmount : lowLandAmount;
 
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-                var desiredY = landCurve.Evaluate(percent) * landAmount;
-
-                localPos.y = initLandHeight + desiredY;
-                yawTransform.localPosition = localPos;
-
-                yield return null;
-            }
+            // Create and bind the motion
+            landMotionHandle = LMotion.Create(0f, 1f, landDuration)
+                .Bind(x =>
+                {
+                    var pos = yawTransform.localPosition;
+                    pos.y = startHeight + (landCurve.Evaluate(x) * landAmount);
+                    yawTransform.localPosition = pos;
+                });
         }
 
         void HandleHeadBob()
@@ -471,7 +470,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
-                        1f - Mathf.Exp(-smoothHeadBobSpeed * Time.deltaTime));
+                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed));
                 }
             }
             else
@@ -483,7 +482,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         new Vector3(0f, headBob.CurrentStateHeight, 0f),
-                        1f - Mathf.Exp(-smoothHeadBobSpeed * Time.deltaTime));
+                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed));
             }
         }
 
@@ -548,6 +547,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         void ApplyMovement() => characterController.Move(finalMoveVector * Time.deltaTime);
 
         void RotateTowardsCamera() => transform.rotation = Quaternion.Slerp(
-            transform.rotation, yawTransform.rotation, 1f - Mathf.Exp(-smoothRotateSpeed * Time.deltaTime));
+            transform.rotation, yawTransform.rotation, FloatExtensions.SmoothFactor(smoothRotateSpeed));
     }
 }

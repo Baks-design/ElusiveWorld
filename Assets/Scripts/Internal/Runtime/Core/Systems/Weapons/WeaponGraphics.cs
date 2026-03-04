@@ -3,6 +3,7 @@ using LitMotion;
 using LitMotion.Extensions;
 using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Unity.Cinemachine;
+using Assets.Scripts.Internal.Runtime.Core.Utils;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 {
@@ -36,8 +37,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             desiredPitch = Mathf.Clamp(desiredPitch, minMaxPitchRotationAngle.x, minMaxPitchRotationAngle.y);
 
             var targetRotation = Quaternion.Euler(desiredPitch, desiredYaw, 0f);
-            var smoothFactor = 1f - Mathf.Exp(-smoothTime * Time.deltaTime);
-            transform.localRotation = Quaternion.Slerp(transform.localRotation, targetRotation, smoothFactor);
+            transform.localRotation = Quaternion.Slerp(
+                transform.localRotation, targetRotation, FloatExtensions.SmoothFactor(smoothTime));
         }
 
         void OnDisable()
@@ -65,13 +66,13 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             Weapon.OnWeaponReloadStarted();
         }
 
-        void OnWeaponShootSucceed()
+        void OnWeaponShootSucceed() //FIXME: shooting FORCE
         {
             if (shootRotationMotion.IsActive()) shootRotationMotion.Cancel();
             if (shootPositionMotion.IsActive()) shootPositionMotion.Cancel();
 
             var originalRot = transform.localEulerAngles;
-            var punchRot = Vector3.right * 30f;
+            var punchRot = Vector3.right;
             shootRotationMotion = LMotion.Create(originalRot, originalRot + punchRot, 0.2f)
                 .WithEase(Ease.OutQuad)
                 .WithLoops(2, LoopType.Yoyo)

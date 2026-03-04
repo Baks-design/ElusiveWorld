@@ -1,10 +1,11 @@
 ﻿using System;
+using Assets.Scripts.Internal.Runtime.Core.Utils;
 using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
     [Serializable]
-    public class CameraSwaying //TODO: REFACTOR
+    public class CameraSwaying
     {
         [Header("Sway Settings")]
         [SerializeField] float swayAmount = 0f;
@@ -26,7 +27,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
             xAmountThisFrame = rawXInput;
 
-            if (rawXInput != 0f) 
+            if (rawXInput != 0f)
             {
                 if (xAmountThisFrame != xAmountPreviousFrame && xAmountPreviousFrame != 0f)
                     diffrentDirection = true;
@@ -34,12 +35,12 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
                 var speedMultiplier = diffrentDirection ? changeDirectionMultiplier : 1f;
                 scrollSpeed += xAmount * swaySpeed * Time.deltaTime * speedMultiplier;
             }
-            else 
+            else
             {
                 if (xAmountThisFrame == xAmountPreviousFrame)
                     diffrentDirection = false;
 
-                scrollSpeed = Mathf.Lerp(scrollSpeed, 0f, Time.deltaTime * returnSpeed);
+                scrollSpeed = Mathf.Lerp(scrollSpeed, 0f, FloatExtensions.SmoothFactor(returnSpeed));
             }
 
             scrollSpeed = Mathf.Clamp(scrollSpeed, -1f, 1f);

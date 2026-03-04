@@ -1,5 +1,5 @@
-using System.Collections;
 using Assets.Scripts.Internal.Runtime.Core.Utils;
+using LitMotion;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
@@ -8,33 +8,31 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
 {
     public class ProjectileDecalPoolSpawner : Singleton<ProjectileDecalPoolSpawner>
     {
-        [SerializeField] DecalProjector decalProjector;
         [SerializeField] Material decalMaterial;
-        [SerializeField] bool collisionCheck = true;
-        [SerializeField] int initialCapacity = 10;
-        [SerializeField] int maxCapacity = 20;
         [SerializeField] Vector3 decalSize = new(0.5f, 0.5f, 0.5f);
         [SerializeField] float fadeDuration = 5f;
         IObjectPool<DecalProjector> decalPool;
 
         void Start() => decalPool = new ObjectPool<DecalProjector>
         (
-            () =>
+            createFunc: () =>
             {
-                decalProjector.transform.parent = transform;
-                decalProjector.material = decalMaterial;
-                decalProjector.fadeFactor = 1f;
-                decalProjector.fadeScale = 0.95f;
-                decalProjector.startAngleFade = 0f;
-                decalProjector.endAngleFade = 30f;
-                return decalProjector;
+                var go = new GameObject("DecalProjector");
+                var dp = go.AddComponent<DecalProjector>();
+                go.transform.parent = transform;
+                dp.material = decalMaterial;
+                dp.fadeFactor = 1f;
+                dp.fadeScale = 0.95f;
+                dp.startAngleFade = 0f;
+                dp.endAngleFade = 30f;
+                return dp;
             },
-            decalProjector => decalProjector.gameObject.SetActive(true),
-            decalProjector => decalProjector.gameObject.SetActive(false),
-            decalProjector => Destroy(decalProjector.gameObject),
-            collisionCheck,
-            initialCapacity,
-            maxCapacity
+            actionOnGet: dp => dp.gameObject.SetActive(true),
+            actionOnRelease: dp => dp.gameObject.SetActive(false),
+            actionOnDestroy: dp => Destroy(dp.gameObject),
+            collectionCheck: false,
+            defaultCapacity: 10,
+            maxSize: 20
         );
 
         public void SpawnDecal(RaycastHit hit)
@@ -48,27 +46,25 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
 
             projector.size = decalSize;
 
-            StartCoroutine(FadeAndRelease(projector, fadeDuration));
+            FadeAndRelease(projector, fadeDuration);
         }
 
-        IEnumerator FadeAndRelease(DecalProjector projector, float duration) //TODO: Change to Async
+        void FadeAndRelease(DecalProjector projector, float duration)
         {
-            var time = 0f;
+            if (projector == null) return;
+
             var initialFade = projector.fadeFactor;
 
-            while (time < duration)
-            {
-                if (projector == null) yield break;
-
-                projector.fadeFactor = Mathf.Lerp(initialFade, 0f, 1f - Mathf.Exp(-duration * Time.deltaTime));
-                yield return null;
-            }
-
-            if (projector != null)
-            {
-                projector.fadeFactor = initialFade;
-                decalPool.Release(projector);
-            }
+            LMotion.Create(initialFade, 0f, duration)
+                .WithOnComplete(() =>
+                {
+                    if (projector != null)
+                    {
+                        projector.fadeFactor = initialFade;
+                        decalPool.Release(projector);
+                    }
+                })
+                .Bind(x => projector.fadeFactor = x);
         }
     }
 }

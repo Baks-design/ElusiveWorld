@@ -6,43 +6,18 @@ using UnityEngine.Pool;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
 {
-    public class ProjectilePoolSpawner : Singleton<ProjectilePoolSpawner>
+    public class ProjectilePoolSpawner : Singleton<ProjectilePoolSpawner> 
     {
-        [SerializeField] int defaultPoolCapacity = 10;
-        [SerializeField] int defaultMaxPoolSize = 20;
-        [SerializeField] bool collectionCheck = true;
         readonly Dictionary<GameObject, IObjectPool<Projectile>> pools = new();
-
-        public void PreWarmPool(Projectile prefab, int count)
-        {
-            if (prefab == null || count <= 0) return;
-
-            var pool = GetOrCreatePool(prefab);
-
-            if (count == 1)
-            {
-                var projectile = pool.Get();
-                pool.Release(projectile);
-                return;
-            }
-
-            var preWarmed = new Projectile[count];
-            for (var i = 0; i < count; i++)
-                preWarmed[i] = pool.Get();
-
-            foreach (var projectile in preWarmed)
-                pool.Release(projectile);
-        }
 
         public Projectile SpawnProjectile(
             Projectile prefab, Vector3 position,
-            Quaternion rotation, Vector3 scale, Transform parent = null)
+            Quaternion rotation, Vector3 scale)
         {
-            if (prefab == null) return null;
             var pool = GetOrCreatePool(prefab);
             var projectile = pool.Get();
             projectile.transform.SetPositionAndRotation(position, rotation);
-            projectile.transform.SetParent(parent);
+            projectile.transform.SetParent(transform);
             projectile.transform.localScale = scale;
             projectile.gameObject.SetActive(true);
             return projectile;
@@ -57,9 +32,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
                     OnGetProjectile,
                     OnReleaseProjectile,
                     OnDestroyProjectile,
-                    collectionCheck,
-                    defaultPoolCapacity,
-                    defaultMaxPoolSize
+                    false,
+                    10,
+                    20
                 );
                 pools[prefab.gameObject] = pool;
             }

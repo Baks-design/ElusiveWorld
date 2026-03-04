@@ -1,10 +1,11 @@
 ﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
+using Assets.Scripts.Internal.Runtime.Core.Utils;
 using Unity.Cinemachine;
 using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
-    public class CameraController : MonoBehaviour // TODO: REFACTOR
+    public class CameraController : MonoBehaviour
     {
         [Header("Data")]
         [SerializeField] InputReader input;
@@ -77,9 +78,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             cameraSway.Init(cam.transform);
         }
 
-        void OnZoomPressed() => cameraZoom.ChangeFOV(this);
+        void OnZoomPressed() => cameraZoom.ChangeFOV();
 
-        void OnZoomReleased() => cameraZoom.ChangeFOV(this);
+        void OnZoomReleased() => cameraZoom.ChangeFOV();
 
         void CalculateRotation()
         {
@@ -96,8 +97,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void SmoothRotation()
         {
-            finalYaw = Quaternion.Lerp(finalYaw, targetYaw, 1f - Mathf.Exp(-smoothAmount.x * Time.deltaTime));
-            finalPitch = Quaternion.Lerp(finalPitch, targetPitch, 1f - Mathf.Exp(-smoothAmount.y * Time.deltaTime));
+            finalYaw = Quaternion.Lerp(finalYaw, targetYaw, FloatExtensions.SmoothFactor(smoothAmount.x));
+            finalPitch = Quaternion.Lerp(finalPitch, targetPitch, FloatExtensions.SmoothFactor(smoothAmount.y));
         }
 
         void ApplyRotation()
@@ -108,6 +109,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         public void HandleSway(Vector3 inputVector, float rawXInput) => cameraSway.SwayPlayer(inputVector, rawXInput);
 
-        public void ChangeRunFOV(bool returning) => cameraZoom.ChangeRunFOV(returning, this);
+        public void ChangeRunFOV(bool returning) => cameraZoom.ChangeRunFOV(returning);
     }
 }
