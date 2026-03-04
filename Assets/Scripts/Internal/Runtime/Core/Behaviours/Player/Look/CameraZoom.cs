@@ -45,7 +45,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             mono.StartCoroutine(changeFOVRoutine);
         }
 
-        IEnumerator ChangeFOVRoutine()
+        IEnumerator ChangeFOVRoutine() //TODO: Change to async
         {
             var percent = 0f;
             var speed = 1f / zoomTransitionDuration;

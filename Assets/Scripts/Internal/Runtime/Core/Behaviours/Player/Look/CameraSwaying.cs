@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
     [Serializable]
-    public class CameraSwaying
+    public class CameraSwaying //TODO: REFACTOR
     {
         [Header("Sway Settings")]
         [SerializeField] float swayAmount = 0f;
@@ -57,6 +57,5 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
             xAmountPreviousFrame = xAmountThisFrame;
         }
-
     }
 }

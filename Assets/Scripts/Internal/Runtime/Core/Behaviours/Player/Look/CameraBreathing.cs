@@ -18,7 +18,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void Start() => perlinNoiseScroller = new PerlinNoiseScroller(data);
 
-        void LateUpdate()
+        void LateUpdate() //TODO: REFACTOR
         {
             if (data == null) return;
 

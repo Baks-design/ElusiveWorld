@@ -106,4 +106,4 @@ MonoBehaviour:
   projectileData: {fileID: 11400000, guid: fda0543b988610a4f84d88843c4b89d9, type: 2}
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 119
+    m_Bits: 247

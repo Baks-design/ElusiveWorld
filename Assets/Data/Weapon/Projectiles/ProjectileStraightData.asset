@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapon.Projectiles.Data.ProjectileStraightData
   generalSettings:
     projectileType: 0
-    damage: 200
+    damage: 0
     maxLiveDuration: 5
   specificSettings:
     speed: 50

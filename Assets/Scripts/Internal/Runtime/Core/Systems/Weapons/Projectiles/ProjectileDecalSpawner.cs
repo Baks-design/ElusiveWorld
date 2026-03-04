@@ -10,7 +10,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
     {
         [SerializeField] DecalProjector decalProjector;
         [SerializeField] Material decalMaterial;
-        [SerializeField] bool collisionCheck = false;
+        [SerializeField] bool collisionCheck = true;
         [SerializeField] int initialCapacity = 10;
         [SerializeField] int maxCapacity = 20;
         [SerializeField] Vector3 decalSize = new(0.5f, 0.5f, 0.5f);
@@ -21,6 +21,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
         (
             () =>
             {
+                decalProjector.transform.parent = transform;
                 decalProjector.material = decalMaterial;
                 decalProjector.fadeFactor = 1f;
                 decalProjector.fadeScale = 0.95f;
@@ -59,10 +60,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
             {
                 if (projector == null) yield break;
 
-                time += Time.deltaTime;
-                var t = time / duration;
-                projector.fadeFactor = Mathf.Lerp(initialFade, 0f, t);
-
+                projector.fadeFactor = Mathf.Lerp(initialFade, 0f, 1f - Mathf.Exp(-duration * Time.deltaTime));
                 yield return null;
             }
 

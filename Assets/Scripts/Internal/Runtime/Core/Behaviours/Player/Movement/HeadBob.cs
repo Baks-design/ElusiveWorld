@@ -31,7 +31,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             finalOffset = Vector3.zero;
         }
 
-        public void ScrollHeadBob(bool running, bool crouching, Vector2 input)
+        public void ScrollHeadBob(bool running, bool crouching, Vector2 input) // TODO: REFACTOR
         {
             Resetted = false;
 

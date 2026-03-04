@@ -45,10 +45,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1728e943d20319d48a3046e0c8725cd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.ProjectileDecalPoolSpawner
-  AutoUnparentOnAwake: 0
+  AutoUnparentOnAwake: 1
   decalProjector: {fileID: 4436832802567837805}
   decalMaterial: {fileID: 2100000, guid: 1cc7b7f57687d6d4c816eb08521dc377, type: 2}
-  collisionCheck: 0
+  collisionCheck: 1
   initialCapacity: 10
   maxCapacity: 20
   decalSize: {x: 1, y: 1, z: 1}
@@ -175,9 +175,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07fa8082254e27447ab55082c3c967ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.ProjectilePoolSpawner
-  AutoUnparentOnAwake: 0
+  AutoUnparentOnAwake: 1
   defaultPoolCapacity: 10
   defaultMaxPoolSize: 20
+  collectionCheck: 1
 --- !u!1 &7647702968319603830
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,15 +226,15 @@ MonoBehaviour:
   m_Material: {fileID: 2100000, guid: 1cc7b7f57687d6d4c816eb08521dc377, type: 2}
   m_DrawDistance: 1000
   m_FadeScale: 0.9
-  m_StartAngleFade: 180
-  m_EndAngleFade: 180
+  m_StartAngleFade: 0
+  m_EndAngleFade: 32.426453
   m_UVScale: {x: 1, y: 1}
   m_UVBias: {x: 0, y: 0}
   m_RenderingLayerMask:
     serializedVersion: 0
     m_Bits: 1
   m_ScaleMode: 0
-  m_Offset: {x: 0, y: 0, z: 0.5}
+  m_Offset: {x: 0, y: 0, z: 0}
   m_Size: {x: 1, y: 1, z: 1}
   m_FadeFactor: 1
   version: 1
@@ -263,7 +264,7 @@ Transform:
   m_GameObject: {fileID: 7711857109772534550}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -68.96453, y: 3.09563, z: 0.41893}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

@@ -10,7 +10,29 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
     {
         [SerializeField] int defaultPoolCapacity = 10;
         [SerializeField] int defaultMaxPoolSize = 20;
+        [SerializeField] bool collectionCheck = true;
         readonly Dictionary<GameObject, IObjectPool<Projectile>> pools = new();
+
+        public void PreWarmPool(Projectile prefab, int count)
+        {
+            if (prefab == null || count <= 0) return;
+
+            var pool = GetOrCreatePool(prefab);
+
+            if (count == 1)
+            {
+                var projectile = pool.Get();
+                pool.Release(projectile);
+                return;
+            }
+
+            var preWarmed = new Projectile[count];
+            for (var i = 0; i < count; i++)
+                preWarmed[i] = pool.Get();
+
+            foreach (var projectile in preWarmed)
+                pool.Release(projectile);
+        }
 
         public Projectile SpawnProjectile(
             Projectile prefab, Vector3 position,
@@ -35,7 +57,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
                     OnGetProjectile,
                     OnReleaseProjectile,
                     OnDestroyProjectile,
-                    true,
+                    collectionCheck,
                     defaultPoolCapacity,
                     defaultMaxPoolSize
                 );
@@ -47,7 +69,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
 
         Projectile CreateProjectile(Projectile prefab)
         {
-            Projectile projectile = Instantiate(prefab);
+            var projectile = Instantiate(prefab);
             projectile.gameObject.SetActive(false);
             projectile.SetPool(pools[prefab.gameObject]);
             DontDestroyOnLoad(projectile.gameObject);
@@ -59,25 +81,5 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
         void OnReleaseProjectile(Projectile projectile) => projectile.gameObject.SetActive(false);
 
         void OnDestroyProjectile(Projectile projectile) => Destroy(projectile.gameObject);
-
-        public void PreWarmPool(Projectile prefab, int count)
-        {
-            var pool = GetOrCreatePool(prefab);
-
-            var preWarmed = new List<Projectile>();
-            for (var i = 0; i < count; i++)
-                preWarmed.Add(pool.Get());
-
-            foreach (var projectile in preWarmed)
-                pool.Release(projectile);
-        }
-
-        public void ClearPools()
-        {
-            foreach (var pool in pools.Values)
-                pool.Clear();
-
-            pools.Clear();
-        }
     }
 }

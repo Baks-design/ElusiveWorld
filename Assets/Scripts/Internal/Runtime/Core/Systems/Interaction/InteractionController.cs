@@ -70,7 +70,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
             else
                 interactionData.ResetData();
 
-            Debug.DrawRay(ray.origin, ray.direction * rayDistance, hitSomething ? Color.green : Color.red);
+            //Debug.DrawRay(ray.origin, ray.direction * rayDistance, hitSomething ? Color.green : Color.red);
         }
 
         void CheckForInteractableInput()

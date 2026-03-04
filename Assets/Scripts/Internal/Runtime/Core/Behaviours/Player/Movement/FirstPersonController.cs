@@ -5,37 +5,12 @@ using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
 using UnityEngine;
 using LitMotion;
-using System.Collections.Generic;
+using Assets.Scripts.Internal.Runtime.Core.Utils;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 {
-    public static class MonoBehaviourExtensions
-    {
-        static readonly Dictionary<MonoBehaviour, MotionHandle> delayHandles = new();
-
-        public static void Delay(this MonoBehaviour behaviour, float delay, Action action)
-        {
-            // Cancel any existing delay for this behaviour
-            if (delayHandles.TryGetValue(behaviour, out var existingHandle))
-            {
-                existingHandle.Cancel();
-                delayHandles.Remove(behaviour);
-            }
-
-            var handle = LMotion.Create(0f, 1f, delay)
-                .WithOnComplete(() =>
-                {
-                    action?.Invoke();
-                    delayHandles.Remove(behaviour);
-                })
-                .RunWithoutBinding();
-
-            delayHandles[behaviour] = handle;
-        }
-    }
-
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : MonoBehaviour //TODO: Change to async
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -224,11 +199,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothInput() => smoothInputVector = Vector2.Lerp(
-            smoothInputVector, input.MovementAxis, Time.deltaTime * smoothInputSpeed);
+            smoothInputVector, input.MovementAxis, 1f - Mathf.Exp(-smoothInputSpeed * Time.deltaTime));
 
         void SmoothSpeed()
         {
-            smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, Time.deltaTime * smoothVelocitySpeed);
+            smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, 1f - Mathf.Exp(-smoothVelocitySpeed * Time.deltaTime));
 
             if (isRunning && CanRun() && !isSliding)
             {
@@ -241,7 +216,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothDir() => smoothFinalMoveDir = Vector3.Lerp(
-            smoothFinalMoveDir, finalMoveDir, Time.deltaTime * smoothFinalDirectionSpeed);
+            smoothFinalMoveDir, finalMoveDir, 1f - Mathf.Exp(-smoothFinalDirectionSpeed * Time.deltaTime));
 
         void CheckIfGrounded()
         {
@@ -362,7 +337,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         {
             if (CheckIfRoof())
             {
-                // Cancel all motions
                 slideMotionHandles?.Cancel();
                 returnMotionHandles?.Cancel();
                 crouchMotionHandles?.Cancel();
@@ -374,7 +348,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
             if (!isSliding) return;
 
-            // Cancel slide motions and setup return motions
             slideMotionHandles?.Cancel();
             returnMotionHandles?.Cancel();
             returnMotionHandles = new CompositeMotionHandle();
@@ -414,7 +387,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
             if (LandRoutine != null) StopCoroutine(LandRoutine);
 
-            // Cancel any existing crouch motions
             crouchMotionHandles?.Cancel();
             crouchMotionHandles = new CompositeMotionHandle();
 
@@ -499,7 +471,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
-                        Time.deltaTime * smoothHeadBobSpeed);
+                        1f - Mathf.Exp(-smoothHeadBobSpeed * Time.deltaTime));
                 }
             }
             else
@@ -511,9 +483,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         new Vector3(0f, headBob.CurrentStateHeight, 0f),
-                        Time.deltaTime * smoothHeadBobSpeed);
+                        1f - Mathf.Exp(-smoothHeadBobSpeed * Time.deltaTime));
             }
-
         }
 
         void HandleCameraSway() => cameraController.HandleSway(smoothInputVector, input.MovementAxis.x);
@@ -577,6 +548,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         void ApplyMovement() => characterController.Move(finalMoveVector * Time.deltaTime);
 
         void RotateTowardsCamera() => transform.rotation = Quaternion.Slerp(
-            transform.rotation, yawTransform.rotation, Time.deltaTime * smoothRotateSpeed);
+            transform.rotation, yawTransform.rotation, 1f - Mathf.Exp(-smoothRotateSpeed * Time.deltaTime));
     }
 }

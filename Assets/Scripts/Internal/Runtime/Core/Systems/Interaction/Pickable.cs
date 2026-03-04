@@ -5,9 +5,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
     [RequireComponent(typeof(Rigidbody))]
     public class Pickable : MonoBehaviour, IPickable
     {
-        public Rigidbody Rigid { get; set; }
+        [field: SerializeField] public Rigidbody Rigid { get; set; }
 
-        void Awake() => Rigid = GetComponent<Rigidbody>();
+        void Start() => Rigid = GetComponent<Rigidbody>();
 
         public void OnHold() { }
         public void OnPickUp() { }

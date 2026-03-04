@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
-    public class CameraController : MonoBehaviour
+    public class CameraController : MonoBehaviour // TODO: REFACTOR
     {
         [Header("Data")]
         [SerializeField] InputReader input;
@@ -17,8 +17,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         [SerializeField] CameraSwaying cameraSway;
         Transform pitchTranform;
         CinemachineCamera cam;
+        Quaternion finalYaw;
+        Quaternion finalPitch;
+        Quaternion targetYaw;
+        Quaternion targetPitch;
         float yaw;
-        float pitch;
         float desiredYaw;
         float desiredPitch;
 
@@ -39,6 +42,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         void LateUpdate()
         {
             CalculateRotation();
+            PassRotation();
             SmoothRotation();
             ApplyRotation();
         }
@@ -84,16 +88,22 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             desiredPitch = Mathf.Clamp(desiredPitch, lookAngleMinMax.x, lookAngleMinMax.y);
         }
 
+        void PassRotation()
+        {
+            targetYaw = Quaternion.Euler(0f, desiredYaw, 0f);
+            targetPitch = Quaternion.Euler(desiredPitch, 0f, 0f);
+        }
+
         void SmoothRotation()
         {
-            yaw = Mathf.Lerp(yaw, desiredYaw, smoothAmount.x * Time.deltaTime);
-            pitch = Mathf.Lerp(pitch, desiredPitch, smoothAmount.y * Time.deltaTime);
+            finalYaw = Quaternion.Lerp(finalYaw, targetYaw, 1f - Mathf.Exp(-smoothAmount.x * Time.deltaTime));
+            finalPitch = Quaternion.Lerp(finalPitch, targetPitch, 1f - Mathf.Exp(-smoothAmount.y * Time.deltaTime));
         }
 
         void ApplyRotation()
         {
-            transform.eulerAngles = new Vector3(0f, yaw, 0f);
-            pitchTranform.localEulerAngles = new Vector3(pitch, 0f, 0f);
+            transform.rotation = finalYaw;
+            pitchTranform.localRotation = finalPitch;
         }
 
         public void HandleSway(Vector3 inputVector, float rawXInput) => cameraSway.SwayPlayer(inputVector, rawXInput);
