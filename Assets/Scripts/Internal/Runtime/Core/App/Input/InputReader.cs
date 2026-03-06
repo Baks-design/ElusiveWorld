@@ -32,6 +32,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.App.Input
         public event UnityAction OnReloadPressed = delegate { };
         public event UnityAction OnJumpPressed = delegate { };
 
+        // Control
         public void Init()
         {
             input ??= new GameInputActions();
@@ -40,9 +41,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.App.Input
             input.Interaction.AddCallbacks(this);
             input.Combat.AddCallbacks(this);
             input.UI.AddCallbacks(this);
-            input.Enable();
         }
-
         public void Dispose()
         {
             input.Disable();
@@ -51,7 +50,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.App.Input
             input.Interaction.RemoveCallbacks(this);
             input.Combat.RemoveCallbacks(this);
             input.UI.RemoveCallbacks(this);
-            input.Dispose();
         }
 
         // Maps

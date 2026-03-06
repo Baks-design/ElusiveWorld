@@ -9,26 +9,16 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
     {
         [SerializeField] Image holdProgressIMG;
         [SerializeField] Image tooltipBG;
-        RectTransform canvasTransform;
-        TextMeshProUGUI interactableTooltip;
+        [SerializeField] RectTransform canvasTransform;
+        [SerializeField] TextMeshProUGUI interactableTooltip;
 
-        public void Init() => GetComponents();
+        public bool IsTooltipActive => interactableTooltip.gameObject.activeSelf;
 
-        void GetComponents()
+        void Start()
         {
             canvasTransform = GetComponent<RectTransform>();
             interactableTooltip = GetComponentInChildren<TextMeshProUGUI>();
-        }
-
-        public void SetToolTip(Transform parent, string tooltip, float holdProgress)
-        {
-            if (parent)
-            {
-                canvasTransform.position = parent.position;
-                canvasTransform.SetParent(parent);
-            }
-            interactableTooltip.SetText(tooltip);
-            holdProgressIMG.fillAmount = holdProgress;
+            ResetUI();
         }
 
         public void SetTooltipActiveState(bool state)
@@ -38,12 +28,18 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
             tooltipBG.gameObject.SetActive(state);
         }
 
+        public void SetToolTip(string tooltip) => interactableTooltip.SetText(tooltip);
+
         public void UpdateChargeProgress(float progress) => holdProgressIMG.fillAmount = progress;
 
         public void LookAtPlayer(Transform player) => canvasTransform.LookAt(player, Vector3.up);
 
         public void UnparentToltip() => canvasTransform.SetParent(null);
 
-        public bool IsTooltipActive() => interactableTooltip.gameObject.activeSelf;
+        public void ResetUI()
+        {
+            holdProgressIMG.fillAmount = 0f;
+            interactableTooltip.SetText("");
+        }
     }
 }

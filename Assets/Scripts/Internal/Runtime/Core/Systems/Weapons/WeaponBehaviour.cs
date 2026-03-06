@@ -56,7 +56,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnWeaponShootReleased() { }
 
-        void OnWeaponShot() //FIXME: shooting time
+        void OnWeaponShot() 
         {
             Weapon.OnWeaponShootSucceed();
 

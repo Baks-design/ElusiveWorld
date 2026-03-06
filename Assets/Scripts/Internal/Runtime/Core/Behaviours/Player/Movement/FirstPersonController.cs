@@ -5,6 +5,7 @@ using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
 using UnityEngine;
 using LitMotion;
 using Assets.Scripts.Internal.Runtime.Core.Utils;
+using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 {
@@ -204,11 +205,12 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothInput() => smoothInputVector = Vector2.Lerp(
-            smoothInputVector, input.MovementAxis, FloatExtensions.SmoothFactor(smoothInputSpeed));
+            smoothInputVector, input.MovementAxis, FloatExtensions.SmoothFactor(smoothInputSpeed, Time.deltaTime));
 
         void SmoothSpeed()
         {
-            smoothCurrentSpeed = Mathf.Lerp(smoothCurrentSpeed, currentSpeed, FloatExtensions.SmoothFactor(smoothVelocitySpeed));
+            smoothCurrentSpeed = Mathf.Lerp(
+                smoothCurrentSpeed, currentSpeed, FloatExtensions.SmoothFactor(smoothVelocitySpeed, Time.deltaTime));
 
             if (isRunning && CanRun() && !isSliding)
             {
@@ -221,7 +223,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         }
 
         void SmoothDir() => smoothFinalMoveDir = Vector3.Lerp(
-            smoothFinalMoveDir, finalMoveDir, FloatExtensions.SmoothFactor(smoothFinalDirectionSpeed));
+            smoothFinalMoveDir, finalMoveDir, FloatExtensions.SmoothFactor(smoothFinalDirectionSpeed, Time.deltaTime));
 
         void CheckIfGrounded()
         {
@@ -470,7 +472,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
-                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed));
+                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed, Time.deltaTime));
                 }
             }
             else
@@ -482,7 +484,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     yawTransform.localPosition = Vector3.Lerp(
                         yawTransform.localPosition,
                         new Vector3(0f, headBob.CurrentStateHeight, 0f),
-                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed));
+                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed, Time.deltaTime));
             }
         }
 
@@ -547,6 +549,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         void ApplyMovement() => characterController.Move(finalMoveVector * Time.deltaTime);
 
         void RotateTowardsCamera() => transform.rotation = Quaternion.Slerp(
-            transform.rotation, yawTransform.rotation, FloatExtensions.SmoothFactor(smoothRotateSpeed));
+            transform.rotation, yawTransform.rotation, FloatExtensions.SmoothFactor(smoothRotateSpeed, Time.deltaTime));
     }
 }

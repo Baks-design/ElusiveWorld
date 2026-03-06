@@ -3,7 +3,7 @@ using LitMotion;
 using LitMotion.Extensions;
 using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Unity.Cinemachine;
-using Assets.Scripts.Internal.Runtime.Core.Utils;
+using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 {
@@ -26,7 +26,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             Weapon.OnWeaponShootSucceed += OnWeaponShootSucceed;
         }
 
-        void LateUpdate()
+        void Update()
         {
             if (Weapon.DuringReload) return;
 
@@ -35,10 +35,15 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
             desiredPitch -= inputReader.LookAxis.y * smoothAmount.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, minMaxPitchRotationAngle.x, minMaxPitchRotationAngle.y);
+        }
+
+        void LateUpdate()
+        {
+            if (Weapon.DuringReload) return;
 
             var targetRotation = Quaternion.Euler(desiredPitch, desiredYaw, 0f);
             transform.localRotation = Quaternion.Slerp(
-                transform.localRotation, targetRotation, FloatExtensions.SmoothFactor(smoothTime));
+                transform.localRotation, targetRotation, FloatExtensions.SmoothFactor(smoothTime, Time.deltaTime));
         }
 
         void OnDisable()
@@ -66,7 +71,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             Weapon.OnWeaponReloadStarted();
         }
 
-        void OnWeaponShootSucceed() //FIXME: shooting FORCE
+        void OnWeaponShootSucceed()
         {
             if (shootRotationMotion.IsActive()) shootRotationMotion.Cancel();
             if (shootPositionMotion.IsActive()) shootPositionMotion.Cancel();

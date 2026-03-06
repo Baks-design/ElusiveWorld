@@ -8,6 +8,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Interaction
         [field: SerializeField] public bool HoldInteract { get; private set; } = true;
         [field: SerializeField] public bool MultipleUse { get; private set; } = false;
         [field: SerializeField] public bool IsInteractable { get; private set; } = true;
+        [field: SerializeField] public string TooltipMessage { get; private set; } = "Interact";
 
         public virtual void OnInteract() { }
     }

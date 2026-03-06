@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Assets.Scripts.Internal.Runtime.Core.Utils;
+using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
 using Unity.Cinemachine;
 using UnityEngine;
 
@@ -31,7 +32,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             GetComponents();
             InitValues();
             InitComponents();
-            ChangeCursorState();
         }
 
         void OnEnable()
@@ -40,24 +40,19 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
             input.OnZoomReleased += OnZoomReleased;
         }
 
-        void LateUpdate()
+        void Update()
         {
             CalculateRotation();
             PassRotation();
             SmoothRotation();
-            ApplyRotation();
         }
+
+        void LateUpdate() => ApplyRotation();
 
         void OnDisable()
         {
             input.OnZoomPressed -= OnZoomPressed;
             input.OnZoomReleased -= OnZoomReleased;
-        }
-
-        static void ChangeCursorState()
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
         }
 
         void GetComponents()
@@ -85,6 +80,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         void CalculateRotation()
         {
             desiredYaw += input.LookAxis.x * sensitivity.x * Time.deltaTime;
+            
             desiredPitch -= input.LookAxis.y * sensitivity.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, lookAngleMinMax.x, lookAngleMinMax.y);
         }
@@ -97,8 +93,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void SmoothRotation()
         {
-            finalYaw = Quaternion.Lerp(finalYaw, targetYaw, FloatExtensions.SmoothFactor(smoothAmount.x));
-            finalPitch = Quaternion.Lerp(finalPitch, targetPitch, FloatExtensions.SmoothFactor(smoothAmount.y));
+            var deltaTime = Time.deltaTime;
+            finalYaw = QuaternionExtensions.ExpDecay(finalYaw, targetYaw, smoothAmount.x, deltaTime);
+            finalPitch = QuaternionExtensions.ExpDecay(finalPitch, targetPitch, smoothAmount.y, deltaTime);
         }
 
         void ApplyRotation()
