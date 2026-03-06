@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 {
     [Serializable]
-    public class CameraZoom //TODO: Apply Extension
+    public class CameraZoom 
     {
         [Header("Zoom Settings")]
         [SerializeField, Range(20f, 60f)] float zoomFOV = 20f;

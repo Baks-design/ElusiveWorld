@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
 {
-    public class StraightProjectile : Projectile
+    public class StraightProjectile : Projectile //TODO: Apply Damage
     {
         ProjectileStraightData projectileStraightData;
 

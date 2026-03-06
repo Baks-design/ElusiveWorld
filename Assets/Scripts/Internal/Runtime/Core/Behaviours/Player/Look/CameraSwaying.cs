@@ -41,7 +41,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
                 if (xAmountThisFrame == xAmountPreviousFrame)
                     diffrentDirection = false;
 
-                scrollSpeed = Mathf.Lerp(scrollSpeed, 0f, FloatExtensions.SmoothFactor(returnSpeed, Time.deltaTime));
+                scrollSpeed = FloatExtensions.ExpDecay(scrollSpeed, 0f, returnSpeed, Time.deltaTime);
             }
 
             scrollSpeed = Mathf.Clamp(scrollSpeed, -1f, 1f);

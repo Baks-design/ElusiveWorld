@@ -4,7 +4,6 @@ using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look;
 using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
 using UnityEngine;
 using LitMotion;
-using Assets.Scripts.Internal.Runtime.Core.Utils;
 using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
@@ -204,17 +203,17 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             walkRunSpeedDifference = runSpeed - walkSpeed;
         }
 
-        void SmoothInput() => smoothInputVector = Vector2.Lerp(
-            smoothInputVector, input.MovementAxis, FloatExtensions.SmoothFactor(smoothInputSpeed, Time.deltaTime));
+        void SmoothInput() => smoothInputVector = Vector2Extensions.ExpDecay(
+            smoothInputVector, input.MovementAxis, smoothInputSpeed, Time.deltaTime);
 
         void SmoothSpeed()
         {
-            smoothCurrentSpeed = Mathf.Lerp(
-                smoothCurrentSpeed, currentSpeed, FloatExtensions.SmoothFactor(smoothVelocitySpeed, Time.deltaTime));
+            smoothCurrentSpeed = FloatExtensions.ExpDecay(
+                smoothCurrentSpeed, currentSpeed, smoothVelocitySpeed, Time.deltaTime);
 
             if (isRunning && CanRun() && !isSliding)
             {
-                var walkRunPercent = Mathf.InverseLerp(walkSpeed, runSpeed, smoothCurrentSpeed);
+                var walkRunPercent = FloatExtensions.InverseEerp(walkSpeed, runSpeed, smoothCurrentSpeed);
                 finalSmoothCurrentSpeed = runTransitionCurve.Evaluate(walkRunPercent) * walkRunSpeedDifference + walkSpeed;
                 return;
             }
@@ -222,8 +221,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             finalSmoothCurrentSpeed = smoothCurrentSpeed;
         }
 
-        void SmoothDir() => smoothFinalMoveDir = Vector3.Lerp(
-            smoothFinalMoveDir, finalMoveDir, FloatExtensions.SmoothFactor(smoothFinalDirectionSpeed, Time.deltaTime));
+        void SmoothDir() => smoothFinalMoveDir = Vector3Extensions.ExpDecay(
+            smoothFinalMoveDir, finalMoveDir, smoothFinalDirectionSpeed, Time.deltaTime);
 
         void CheckIfGrounded()
         {
@@ -469,10 +468,10 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                 {
                     headBob.ScrollHeadBob(isRunning && CanRun(), isCrouching, input.MovementAxis);
 
-                    yawTransform.localPosition = Vector3.Lerp(
+                    yawTransform.localPosition = Vector3Extensions.ExpDecay(
                         yawTransform.localPosition,
                         (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
-                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed, Time.deltaTime));
+                        smoothHeadBobSpeed, Time.deltaTime);
                 }
             }
             else
@@ -481,10 +480,10 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
                     headBob.ResetHeadBob();
 
                 if (!duringCrouchAnimation)
-                    yawTransform.localPosition = Vector3.Lerp(
+                    yawTransform.localPosition = Vector3Extensions.ExpDecay(
                         yawTransform.localPosition,
                         new Vector3(0f, headBob.CurrentStateHeight, 0f),
-                        FloatExtensions.SmoothFactor(smoothHeadBobSpeed, Time.deltaTime));
+                        smoothHeadBobSpeed, Time.deltaTime);
             }
         }
 
@@ -548,7 +547,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void ApplyMovement() => characterController.Move(finalMoveVector * Time.deltaTime);
 
-        void RotateTowardsCamera() => transform.rotation = Quaternion.Slerp(
-            transform.rotation, yawTransform.rotation, FloatExtensions.SmoothFactor(smoothRotateSpeed, Time.deltaTime));
+        void RotateTowardsCamera() => transform.rotation = QuaternionExtensions.ExpDecay(
+            transform.rotation, yawTransform.rotation, smoothRotateSpeed, Time.deltaTime);
     }
 }

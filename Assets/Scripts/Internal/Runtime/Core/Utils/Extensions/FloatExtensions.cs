@@ -7,8 +7,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Utils.Extensions
     {
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
-        public static float SmoothFactor(float value, float deltaTime) => 1f - Mathf.Exp(-value * deltaTime); //TODO: REMOVE
-
         [MethodImpl(INLINE)]
         public static float ExpDecay(float a, float b, float decay, float deltaTime) =>
             b + (a - b) * Mathf.Exp(-decay * deltaTime);

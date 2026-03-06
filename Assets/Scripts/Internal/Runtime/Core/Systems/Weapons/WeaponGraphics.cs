@@ -42,8 +42,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
             if (Weapon.DuringReload) return;
 
             var targetRotation = Quaternion.Euler(desiredPitch, desiredYaw, 0f);
-            transform.localRotation = Quaternion.Slerp(
-                transform.localRotation, targetRotation, FloatExtensions.SmoothFactor(smoothTime, Time.deltaTime));
+            transform.localRotation = QuaternionExtensions.ExpDecay(
+                transform.localRotation, targetRotation, smoothTime, Time.deltaTime);
         }
 
         void OnDisable()
