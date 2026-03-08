@@ -17,8 +17,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Base
 
         protected virtual void Awake()
         {
-            if (health == null)
-                health = GetComponent<Health>();
+            if (health == null) health = GetComponent<Health>();
         }
 
         protected virtual void Start() { }

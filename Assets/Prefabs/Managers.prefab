@@ -1,54 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &339298597601517997
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3933363738068355426}
-  - component: {fileID: 8403447542427292403}
-  m_Layer: 0
-  m_Name: Audio
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3933363738068355426
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 339298597601517997}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 6550874386866070959}
-  - {fileID: 2896640724918564178}
-  m_Father: {fileID: 7496464954061406034}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8403447542427292403
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 339298597601517997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e3170f0e1a2d75449dd2af6442d0fed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.MusicManager
-  AutoUnparentOnAwake: 0
-  initialPlaylist: []
-  musicMixerGroup: {fileID: 24300002, guid: 3fc3cc8bce87b964faaa6134503a228c, type: 2}
 --- !u!1 &672543451804528990
 GameObject:
   m_ObjectHideFlags: 0
@@ -128,6 +79,7 @@ Transform:
   m_Children:
   - {fileID: 4764585551044857070}
   - {fileID: 1259129392653255092}
+  - {fileID: 2896640724918564178}
   m_Father: {fileID: 7496464954061406034}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3565061605775542128
@@ -155,12 +107,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3565061605775542128}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3933363738068355426}
+  m_Father: {fileID: 7496464954061406034}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &142886089821011052
 MonoBehaviour:
@@ -175,8 +127,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.MusicManager
   AutoUnparentOnAwake: 0
-  initialPlaylist: []
   musicMixerGroup: {fileID: 24300002, guid: 3fc3cc8bce87b964faaa6134503a228c, type: 2}
+  initialPlaylist: []
 --- !u!1 &4182411624665105874
 GameObject:
   m_ObjectHideFlags: 0
@@ -247,12 +199,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5932622498809289026}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3933363738068355426}
+  m_Father: {fileID: 198586140268332369}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2294392174622086583
 MonoBehaviour:
@@ -266,11 +218,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a1a0166e160f004ba04d28d51dc86dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.SoundManager
-  AutoUnparentOnAwake: 0
+  AutoUnparentOnAwake: 1
   soundEmitterPrefab: {fileID: 5127941474855430305, guid: a65e4309951b3b742ad1d0f293c734d4, type: 3}
   collectionCheck: 0
   defaultCapacity: 10
-  maxPoolSize: 100
+  maxPoolSize: 60
   maxSoundInstances: 30
 --- !u!1 &7711857109772534550
 GameObject:
@@ -303,7 +255,8 @@ Transform:
   m_Children:
   - {fileID: 3917863831498334675}
   - {fileID: 198586140268332369}
-  - {fileID: 3933363738068355426}
+  - {fileID: 6550874386866070959}
+  - {fileID: 1063267782820079316}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8771803732845800713
@@ -351,3 +304,59 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.ProjectilePoolSpawner
   AutoUnparentOnAwake: 1
+--- !u!1 &8913574392003120741
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1063267782820079316}
+  - component: {fileID: 2327525832580093027}
+  m_Layer: 0
+  m_Name: Tendency
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1063267782820079316
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8913574392003120741}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7496464954061406034}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2327525832580093027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8913574392003120741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: adacfaea7f2d36f41b9486252165b09c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.WorldTendency.TendencyManager
+  AutoUnparentOnAwake: 1
+  globalTendency: 0
+  minTendency: -3
+  maxTendency: 3
+  thresholds:
+  - state: -1
+    minValue: -1
+    maxValue: 0
+  - state: 1
+    minValue: 0
+    maxValue: 1
+  actionImpacts: []

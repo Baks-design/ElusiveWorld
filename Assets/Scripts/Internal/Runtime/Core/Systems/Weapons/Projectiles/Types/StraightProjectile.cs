@@ -1,8 +1,9 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
+﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base;
+using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
 {
-    public class StraightProjectile : Projectile //TODO: Apply Damage
+    public class StraightProjectile : Projectile 
     {
         ProjectileStraightData projectileStraightData;
 

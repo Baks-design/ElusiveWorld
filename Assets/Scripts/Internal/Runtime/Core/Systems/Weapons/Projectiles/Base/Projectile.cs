@@ -1,8 +1,9 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
+﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Interfaces;
+using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
+namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base
 {
     public abstract class Projectile : MonoBehaviour
     {
@@ -37,8 +38,10 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
                     hitInfo.collider.transform.IsChildOf(owner))
                     return;
 
-                ProjectileDecalPoolSpawner.Instance.SpawnDecal(hitInfo);
                 OnHit();
+                ProjectileDecalPoolSpawner.Instance.SpawnDecal(hitInfo);
+                if (hitInfo.transform.TryGetComponent<IDamageReceiver>(out var damage))
+                    damage.TakeDamage(projectileData.GeneralSettings.Damage);
             }
         }
 
@@ -63,5 +66,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
         protected void ReleaseToPool() => pool?.Release(this);
 
         public void SetPool(IObjectPool<Projectile> pool) => this.pool = pool;
+
+        public void DealDamage(IDamageReceiver target)
+        {
+            throw new System.NotImplementedException();
+        }
+
     }
 }

@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Components
 {
-    public class Health : MonoBehaviour
+    public class Health : MonoBehaviour //TODO: Verify if works
     {
-        [field: SerializeField] public int MaxLives { get; private set; } = 3;
-        [field: SerializeField] public float MaxHealth { get; } = 100f;
+        [field: SerializeField, Range(1, 3)] public int MaxLives { get; private set; } = 3;
+        [field: SerializeField, Range(10f, 100f)] public float MaxHealth { get; private set; } = 100f;
+        public bool IsAlive => CurrentHealth > 0f;
         public float CurrentHealth { get; private set; }
         public int CurrentLives { get; private set; }
-        public bool IsAlive => CurrentHealth > 0f;
 
         void Start()
         {

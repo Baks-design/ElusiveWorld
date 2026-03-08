@@ -43,11 +43,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Types
                     delayTiming: PlayerLoopTiming.FixedUpdate,
                     cancellationToken: token);
 
-                if (!token.IsCancellationRequested && this != null)
-                {
-                    if (!gameObject.activeSelf)
-                        Resurrect();
-                }
+                if (!token.IsCancellationRequested && this != null && !gameObject.activeSelf)
+                    Resurrect();
             }
             catch (OperationCanceledException)
             {

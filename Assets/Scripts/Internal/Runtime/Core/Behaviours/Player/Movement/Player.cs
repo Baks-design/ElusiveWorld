@@ -14,7 +14,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             foreach (var baseComp in playerComponents)
                 baseComp.InitPlayerReference(this);
         }
-        
+
         public T FetchComponent<T>() where T : PlayerComponent
         {
             var temp = default(T);

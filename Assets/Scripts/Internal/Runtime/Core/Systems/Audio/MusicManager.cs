@@ -6,8 +6,7 @@ using UnityEngine.Audio;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
 {
-    [RequireComponent(typeof(MusicManager))]
-    public class MusicManager : Singleton<MonoBehaviour>
+    public class MusicManager : Singleton<MonoBehaviour> //TODO: Apply Musics
     {
         [SerializeField] AudioMixerGroup musicMixerGroup;
         [SerializeField] List<AudioClip> initialPlaylist;

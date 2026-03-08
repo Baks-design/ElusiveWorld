@@ -11,8 +11,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
     [RequireComponent(typeof(AudioSource))]
     public class SoundEmitter : MonoBehaviour
     {
+        [SerializeField] AudioSource audioSource;
         CancellationTokenSource playCTS;
-        AudioSource audioSource;
 
         public SoundData Data { get; private set; }
         public LinkedListNode<SoundEmitter> Node { get; set; }
@@ -22,6 +22,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
         public void Initialize(SoundData data)
         {
             Data = data;
+
             audioSource.clip = data.clip;
             audioSource.outputAudioMixerGroup = data.mixerGroup;
             audioSource.loop = data.loop;

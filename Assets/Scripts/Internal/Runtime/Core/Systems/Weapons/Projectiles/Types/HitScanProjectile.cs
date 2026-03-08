@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
+﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base;
+using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
 using UnityEngine;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types

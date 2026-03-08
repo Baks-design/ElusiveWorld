@@ -21,7 +21,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         [SerializeField] float crouchSpeed = 1f;
         [SerializeField] float walkSpeed = 2f;
         [SerializeField] float runSpeed = 3f;
-        [SerializeField] float jumpSpeed = 5f;
         [SerializeField] float slideSpeed = 7f;
         [SerializeField, Range(0f, 1f)] float moveBackwardsSpeedPercent = 0.5f;
         [SerializeField, Range(0f, 1f)] float moveSideSpeedPercent = 0.75f;
@@ -85,6 +84,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         float inAirTimer;
         float crouchCamHeight;
         float slideHeight;
+        float jumpSpeed;
         bool duringCrouchAnimation;
         bool duringRunAnimation;
         bool hitWall;
@@ -127,8 +127,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             HandleRunFOV();
             HandleCameraSway();
             HandleLanding();
-            //ApplyGravity();
-            //ApplyMovement();
             previouslyGrounded = isGrounded;
         }
 
@@ -201,6 +199,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
             headBob.CurrentStateHeight = initCamHeight;
 
             walkRunSpeedDifference = runSpeed - walkSpeed;
+
+            jumpSpeed = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * 2f);
         }
 
         void SmoothInput() => smoothInputVector = Vector2Extensions.ExpDecay(
@@ -524,7 +524,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         void HandleJump()
         {
             if (!CanJump) return;
-
             finalMoveVector.y = jumpSpeed;
             previouslyGrounded = true;
             isGrounded = false;

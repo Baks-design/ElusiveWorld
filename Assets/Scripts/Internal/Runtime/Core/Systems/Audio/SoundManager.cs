@@ -5,7 +5,7 @@ using UnityEngine.Pool;
 
 namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
 {
-    public class SoundManager : Singleton<SoundManager> //TODO: Apply Sound
+    public class SoundManager : Singleton<SoundManager>
     {
         [SerializeField] SoundEmitter soundEmitterPrefab;
         [SerializeField] bool collectionCheck = false;
@@ -14,7 +14,9 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
         [SerializeField] int maxSoundInstances = 30;
         IObjectPool<SoundEmitter> soundEmitterPool;
         readonly List<SoundEmitter> activeSoundEmitters = new();
-        public readonly LinkedList<SoundEmitter> FrequentSoundEmitters = new();
+        readonly LinkedList<SoundEmitter> frequentSoundEmitters = new();
+
+        public LinkedList<SoundEmitter> FrequentSoundEmitters => frequentSoundEmitters;
 
         void Start() => InitializePool();
 
@@ -24,11 +26,11 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
         {
             if (!data.frequentSound) return true;
 
-            if (FrequentSoundEmitters.Count >= maxSoundInstances)
+            if (frequentSoundEmitters.Count >= maxSoundInstances)
             {
                 try
                 {
-                    FrequentSoundEmitters.First.Value.Stop();
+                    frequentSoundEmitters.First.Value.Stop();
                     return true;
                 }
                 catch
@@ -49,7 +51,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
             var tempList = new LinkedList<SoundEmitter>(activeSoundEmitters);
             foreach (var soundEmitter in tempList) soundEmitter.Stop();
 
-            FrequentSoundEmitters.Clear();
+            frequentSoundEmitters.Clear();
         }
 
         void InitializePool() =>
@@ -79,7 +81,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Audio
         {
             if (soundEmitter.Node != null)
             {
-                FrequentSoundEmitters.Remove(soundEmitter.Node);
+                frequentSoundEmitters.Remove(soundEmitter.Node);
                 soundEmitter.Node = null;
             }
             soundEmitter.gameObject.SetActive(false);
