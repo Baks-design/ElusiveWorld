@@ -1,6 +1,6 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Interaction;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Bases;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Interactables
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Interactables
 {
     public class DestroyInteractable : InteractableBase
     {

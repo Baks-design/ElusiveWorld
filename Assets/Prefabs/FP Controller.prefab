@@ -46,7 +46,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 936f6e2d4ca3baa4bbd0cf9542a30161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapon.WeaponController
-  input: {fileID: 11400000, guid: d3ed6788837e21d4381cc68a579d5761, type: 2}
 --- !u!1 &882286263181331191
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,7 +91,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a9df64f95ec004ebf407cca903393c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look.CameraController
-  input: {fileID: 11400000, guid: d3ed6788837e21d4381cc68a579d5761, type: 2}
   sensitivity: {x: 3, y: 3}
   smoothAmount: {x: 5, y: 5}
   lookAngleMinMax: {x: -60, y: 60}
@@ -227,7 +225,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9131983810076495391
 Transform:
   m_ObjectHideFlags: 0
@@ -1224,7 +1222,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.FirstPersonController
   cameraController: {fileID: 925931920593651635}
   characterController: {fileID: 8847257110923100009}
-  input: {fileID: 11400000, guid: d3ed6788837e21d4381cc68a579d5761, type: 2}
   headBobData: {fileID: 11400000, guid: 7d290f0f2b06daa4b9f02ca0a02c567e, type: 2}
   crouchSpeed: 1
   walkSpeed: 3
@@ -1376,7 +1373,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 791a343f6b880954d9483e2d55347140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Interaction.InteractionController
-  input: {fileID: 11400000, guid: d3ed6788837e21d4381cc68a579d5761, type: 2}
   interactionData: {fileID: 11400000, guid: 880e78584e9e4d74daa969dcfcf37b1c, type: 2}
   interactionUI: {fileID: 2316607272570347528}
   rayDistance: 5

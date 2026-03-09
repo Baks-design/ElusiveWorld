@@ -2,7 +2,7 @@ using UnityEditor.Toolbars;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts.Internal.Editor.Toolbar
+namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
 {
     public class MainToolbarTimescaleSlider
     {
@@ -18,10 +18,10 @@ namespace Assets.Scripts.Internal.Editor.Toolbar
 
             return new MainToolbarSlider(
                 new MainToolbarContent("Time Scale", "Time Scale"),
-                Time.timeScale,//Value
-                k_minTimeScale,//Min Value
-                k_maxTimeScale,//Max Value
-                value => Time.timeScale = value//Action
+                Time.timeScale,
+                k_minTimeScale,
+                k_maxTimeScale,
+                value => Time.timeScale = value
             );
         }
     }

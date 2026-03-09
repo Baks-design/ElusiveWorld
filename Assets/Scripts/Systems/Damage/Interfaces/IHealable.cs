@@ -1,4 +1,4 @@
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Interfaces
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces
 {
     public interface IHealable
     {

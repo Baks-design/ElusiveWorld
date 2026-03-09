@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Data
 {
     public enum ProjectileType { Straight, HitScan, Missile, Arc }
 

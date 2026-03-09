@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Utils.Helpers
+namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
 {
     public static class InputHelpers
     {

@@ -3,7 +3,7 @@ using LitMotion;
 using Unity.Cinemachine;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
     [Serializable]
     public class CameraZoom 

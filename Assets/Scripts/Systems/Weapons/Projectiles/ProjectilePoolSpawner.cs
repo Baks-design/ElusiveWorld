@@ -1,18 +1,18 @@
 using System.Collections.Generic;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types;
-using Assets.Scripts.Internal.Runtime.Core.Utils;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Base;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles
 {
     public class ProjectilePoolSpawner : MonoBehaviour, IService
     {
         readonly Dictionary<GameObject, IObjectPool<Projectile>> pools = new();
 
         void Awake() => IServiceLocator.Default.TryRegisterService(this);
+
+        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
 
         public Projectile SpawnProjectile(
             Projectile prefab, Vector3 position,

@@ -1,8 +1,8 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Base;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Types
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Types
 {
     public class HitScanProjectile : Projectile
     {

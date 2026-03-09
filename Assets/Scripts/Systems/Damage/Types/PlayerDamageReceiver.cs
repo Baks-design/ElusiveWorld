@@ -1,15 +1,15 @@
 using System;
 using System.Threading;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Base;
 using Cysharp.Threading.Tasks;
-using UnityEngine;  
+using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Base;
+using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Types
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Types
 {
     public class PlayerHealthController : EntityHealthController
     {
         [SerializeField] float respawnDelay = 3f;
-        private CancellationToken DestroyToken => this.GetCancellationTokenOnDestroy();
+        CancellationToken DestroyToken => this.GetCancellationTokenOnDestroy();
 
         protected override void OnDamageTaken(float amount) => base.OnDamageTaken(amount);
         protected override void OnHealed(float amount) => base.OnHealed(amount);
@@ -42,13 +42,13 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Types
             try
             {
                 await UniTask.Delay(
-                    TimeSpan.FromSeconds(delay), 
+                    TimeSpan.FromSeconds(delay),
                     delayTiming: PlayerLoopTiming.FixedUpdate,
                     cancellationToken: token);
 
                 if (!token.IsCancellationRequested && this != null)
                     Resurrect();
-                
+
             }
             catch (OperationCanceledException)
             {

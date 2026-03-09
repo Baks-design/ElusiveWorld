@@ -1,8 +1,8 @@
 using System;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Audio;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Sound.Data
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound.Data
 {
     [Serializable]
     public class GroundTypeSettings

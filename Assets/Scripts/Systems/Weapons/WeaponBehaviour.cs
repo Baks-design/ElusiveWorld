@@ -1,8 +1,9 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Services;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Data;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 {
     public class WeaponBehaviour : WeaponComponent<WeaponBehaviour>
     {
@@ -23,6 +24,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnEnable()
         {
+            projectilePool = IServiceLocator.Default.GetService<ProjectilePoolSpawner>();
+
             Weapon.OnWeaponReloadStarted += OnWeaponReloadStarted;
             Weapon.OnWeaponReloadCompleted += OnWeaponReloadCompleted;
             Weapon.OnWeaponShootReleased += OnWeaponShootReleased;
@@ -32,8 +35,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
                 case WeaponTriggerType.Continous: Weapon.OnWeaponShootHeld += OnWeaponShootHeld; break;
             }
         }
-
-        void Start() => projectilePool = IServiceLocator.Default.GetService<ProjectilePoolSpawner>();
 
         void OnDisable()
         {

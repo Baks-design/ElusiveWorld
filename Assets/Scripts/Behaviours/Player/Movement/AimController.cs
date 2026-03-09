@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     public class AimController : PlayerComponent
     {

@@ -142,3 +142,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71472c659723bf544a5ea32397e78a1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.SoundEmitter
+  audioSource: {fileID: 2814089227792753307}

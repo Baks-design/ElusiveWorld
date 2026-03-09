@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Utils.Services
+namespace ElusiveWorld.Core.Assets.Scripts.Utils.Services
 {
     public class DefaultServiceLocator : IServiceLocator
     {

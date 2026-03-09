@@ -1,10 +1,10 @@
-using Assets.Scripts.Internal.Runtime.Core.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using LitMotion;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles
 {
     public class ProjectileDecalPoolSpawner : MonoBehaviour, IService
     {
@@ -36,6 +36,8 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles
             defaultCapacity: 10,
             maxSize: 20
         );
+
+        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
 
         public void SpawnDecal(RaycastHit hit)
         {

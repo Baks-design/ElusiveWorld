@@ -1,9 +1,8 @@
 ﻿using System;
-using Assets.Scripts.Internal.Runtime.Core.Utils;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
     [Serializable]
     public class CameraSwaying

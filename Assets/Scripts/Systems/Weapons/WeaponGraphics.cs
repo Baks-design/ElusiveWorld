@@ -1,19 +1,20 @@
 ﻿using UnityEngine;
 using LitMotion;
 using LitMotion.Extensions;
-using Assets.Scripts.Internal.Runtime.Core.App.Input;
 using Unity.Cinemachine;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 {
     public class WeaponGraphics : WeaponComponent<WeaponGraphics>
     {
-        [SerializeField] InputReader inputReader;
         [SerializeField] Vector2 smoothAmount = new(30f, 30f);
         [SerializeField, MinMaxRangeSlider(-90f, 90f)] Vector2 minMaxYawRotationAngle = new(-30f, 30f);
         [SerializeField, MinMaxRangeSlider(-90f, 90f)] Vector2 minMaxPitchRotationAngle = new(-30f, 30f);
         [SerializeField] float smoothTime = 10f;
+        InputManager input;
         MotionHandle reloadMotion;
         MotionHandle shootRotationMotion;
         MotionHandle shootPositionMotion;
@@ -22,6 +23,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnEnable()
         {
+            input = IServiceLocator.Default.GetService<InputManager>();
             Weapon.OnWeaponReloadPressed += OnWeaponReloadPressed;
             Weapon.OnWeaponShootSucceed += OnWeaponShootSucceed;
         }
@@ -30,10 +32,10 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         {
             if (Weapon.DuringReload) return;
 
-            desiredYaw += inputReader.LookAxis.x * smoothAmount.x * Time.deltaTime;
+            desiredYaw += input.LookAxis.x * smoothAmount.x * Time.deltaTime;
             desiredYaw = Mathf.Clamp(desiredYaw, minMaxYawRotationAngle.x, minMaxYawRotationAngle.y);
 
-            desiredPitch -= inputReader.LookAxis.y * smoothAmount.y * Time.deltaTime;
+            desiredPitch -= input.LookAxis.y * smoothAmount.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, minMaxPitchRotationAngle.x, minMaxPitchRotationAngle.y);
         }
 

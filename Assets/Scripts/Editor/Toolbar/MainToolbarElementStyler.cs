@@ -2,7 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Assets.Scripts.Internal.Editor.Toolbar
+namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
 {
     public static class MainToolbarElementStyler
     {

@@ -179,7 +179,8 @@ MonoBehaviour:
   - {fileID: -2598663366032087634}
   - {fileID: -5255448118695504552}
   - {fileID: 7045111030123782142}
-  m_RendererFeatureMap: f7ecad8917faf9bfd2970d349f96f0aaaee9414008a6027374c83d29bc00eb0dae25d6d86fb1efdb58d5a8d5c7e510b7fedfb6c12743c561
+  - {fileID: 1918125241053662751}
+  m_RendererFeatureMap: f7ecad8917faf9bfd2970d349f96f0aaaee9414008a6027374c83d29bc00eb0dae25d6d86fb1efdb58d5a8d5c7e510b7fedfb6c12743c5611fceb67bbe8c9e1a
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -249,6 +250,26 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 40
+--- !u!114 &1918125241053662751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Name: Screen Damage
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
+  m_Active: 0
+  injectionPoint: 600
+  fetchColorBuffer: 1
+  requirements: -1
+  passMaterial: {fileID: 2100000, guid: 8e7ad8bce87c8734ab4f77afc0679eb1, type: 2}
+  passIndex: 0
+  bindDepthStencilAttachment: 1
+  m_Version: 1
 --- !u!114 &7045111030123782142
 MonoBehaviour:
   m_ObjectHideFlags: 0

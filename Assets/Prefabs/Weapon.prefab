@@ -98,7 +98,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 60c42fb470eea2b4198867ba20e2b905, type: 2}
+  - {fileID: 2100000, guid: 29ec938bb925af840a9ce014b4b4d4d4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -272,7 +272,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d460227180d193a46addc1310b0da55a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.WeaponGraphics
-  inputReader: {fileID: 11400000, guid: d3ed6788837e21d4381cc68a579d5761, type: 2}
   smoothAmount: {x: 0.1, y: 0.1}
   minMaxYawRotationAngle: {x: -10, y: 10}
   minMaxPitchRotationAngle: {x: -10, y: 10}

@@ -1,4 +1,4 @@
-namespace Assets.Scripts.Internal.Runtime.Core.Utils.Services
+namespace ElusiveWorld.Core.Assets.Scripts.Utils.Services
 {
     public interface IServiceLocator
     {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data
 {
     [CreateAssetMenu(fileName = "HeadBobData", menuName = "Data/Behaviours/Movement/HeadBobData")]
     public class HeadBobData : ScriptableObject

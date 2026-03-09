@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Sound.Data;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Audio;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound.Data;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Sound
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
 {
     [Serializable]
     public class FootstepsSounds //FIXME: Footsteps sounds

@@ -1,12 +1,13 @@
 ﻿using System;
-using Assets.Scripts.Internal.Runtime.Core.App.Input;
-using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look;
-using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
 using UnityEngine;
 using LitMotion;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
     public class FirstPersonController : MonoBehaviour
@@ -15,7 +16,6 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         [SerializeField] CameraController cameraController;
         [SerializeField] CharacterController characterController;
         [Header("Data")]
-        [SerializeField] InputReader input;
         [SerializeField] HeadBobData headBobData;
         [Header("Locomotion Settings")]
         [SerializeField] float crouchSpeed = 1f;
@@ -58,6 +58,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         [SerializeField] float smoothVelocitySpeed = 5f;
         [SerializeField] float smoothFinalDirectionSpeed = 5f;
         [SerializeField] float smoothHeadBobSpeed = 5f;
+        InputManager input;
         HeadBob headBob;
         CompositeMotionHandle slideMotionHandles;
         CompositeMotionHandle returnMotionHandles;
@@ -99,6 +100,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
 
         void OnEnable()
         {
+            input = IServiceLocator.Default.GetService<InputManager>();
             input.OnSprintPressed += OnSprintPressed;
             input.OnSprintReleased += OnSprintReleased;
             input.OnCrouchPressed += OnCrouchPressed;
@@ -239,7 +241,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
         {
             var colliding = characterController.GetPenetrationsInLayer(obstacleLayers, out var correction);
             correction += correction.normalized * 0.001f;
-            if (colliding) 
+            if (colliding)
                 transform.position += Vector3Extensions.ExpDecay(Vector3.zero, correction, 0.05f, Time.deltaTime);
         }
 

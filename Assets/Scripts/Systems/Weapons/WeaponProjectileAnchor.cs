@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 {
     public class WeaponProjectileAnchor : MonoBehaviour { }
 }

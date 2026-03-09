@@ -1,8 +1,8 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement;
-using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
+﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
     public class CameraBreathing : MonoBehaviour
     {

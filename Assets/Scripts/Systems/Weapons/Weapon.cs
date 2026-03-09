@@ -1,8 +1,10 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base;
+﻿using System;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Data;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Base;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 {
     public class Weapon : MonoBehaviour
     {
@@ -19,13 +21,13 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
         public bool DuringReload { get => duringReload; set => duringReload = value; }
         public Vector3 CurrentAimPoint { get => currentAimPoint; set => currentAimPoint = value; }
 
-        public UnityAction OnWeaponShootPressed = delegate { };
-        public UnityAction OnWeaponShootHeld = delegate { };
-        public UnityAction OnWeaponShootReleased = delegate { };
-        public UnityAction OnWeaponShootSucceed = delegate { };
-        public UnityAction OnWeaponReloadPressed = delegate { };
-        public UnityAction OnWeaponReloadStarted = delegate { };
-        public UnityAction OnWeaponReloadCompleted = delegate { };
+        public Action OnWeaponShootPressed = delegate { };
+        public Action OnWeaponShootHeld = delegate { };
+        public Action OnWeaponShootReleased = delegate { };
+        public Action OnWeaponShootSucceed = delegate { };
+        public Action OnWeaponReloadPressed = delegate { };
+        public Action OnWeaponReloadStarted = delegate { };
+        public Action OnWeaponReloadCompleted = delegate { };
 
         public virtual void OnShootButtonPressed() => OnWeaponShootPressed();
         public virtual void OnShootButtonHeld() => OnWeaponShootHeld();

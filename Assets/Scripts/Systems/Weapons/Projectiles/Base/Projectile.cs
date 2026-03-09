@@ -1,10 +1,10 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Interfaces;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Data;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Services;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Data;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 using UnityEngine.Pool;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons.Projectiles.Base
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles.Base
 {
     public abstract class Projectile : MonoBehaviour
     {

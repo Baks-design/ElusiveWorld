@@ -1,12 +1,12 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
-using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement;
-using UnityEngine;
+﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 {
-    public class WeaponController : PlayerComponent
+    public class WeaponController : PlayerComponent 
     {
-        [SerializeField] InputReader input;
+        InputManager input;
         Weapon[] weapons;
         AimController aimController;
         bool shootHeld;
@@ -15,6 +15,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Weapons
 
         void OnEnable()
         {
+            input = IServiceLocator.Default.GetService<InputManager>();
             input.OnShootPressed += OnShootPressed;
             input.OnShootReleased += OnShootReleased;
             input.OnReloadPressed += OnReloadPressed;

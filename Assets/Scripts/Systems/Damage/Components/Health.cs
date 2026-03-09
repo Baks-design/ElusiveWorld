@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Components
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Components
 {
     public class Health : MonoBehaviour //TODO: Verify if works
     {
@@ -19,7 +19,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Components
         public void ModifyHealth(float amount) =>
             CurrentHealth = Mathf.Clamp(CurrentHealth + amount, 0f, MaxHealth);
 
-        public void DecreaseLife()
+        public void DecreaseHealth()
         {
             if (CurrentLives > 0)
                 CurrentLives--;

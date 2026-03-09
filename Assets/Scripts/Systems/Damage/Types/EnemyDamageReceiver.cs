@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Base;
 using Cysharp.Threading.Tasks;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Base;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Types
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Types
 {
     public class EnemyHealthController : EntityHealthController
     {

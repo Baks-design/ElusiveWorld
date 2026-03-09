@@ -1,15 +1,13 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.App.Input;
-using Assets.Scripts.Internal.Runtime.Core.Utils;
-using Assets.Scripts.Internal.Runtime.Core.Utils.Extensions;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using Unity.Cinemachine;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
     public class CameraController : MonoBehaviour
     {
-        [Header("Data")]
-        [SerializeField] InputReader input;
         [Header("Look Settings")]
         [SerializeField] Vector2 sensitivity = Vector2.zero;
         [SerializeField] Vector2 smoothAmount = Vector2.zero;
@@ -17,6 +15,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         [Header("Custom Classes")]
         [SerializeField] CameraZoom cameraZoom;
         [SerializeField] CameraSwaying cameraSway;
+        InputManager input;
         Transform pitchTranform;
         CinemachineCamera cam;
         Quaternion finalYaw;
@@ -36,6 +35,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
 
         void OnEnable()
         {
+            input = IServiceLocator.Default.GetService<InputManager>();
             input.OnZoomPressed += OnZoomPressed;
             input.OnZoomReleased += OnZoomReleased;
         }
@@ -80,7 +80,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Look
         void CalculateRotation()
         {
             desiredYaw += input.LookAxis.x * sensitivity.x * Time.deltaTime;
-            
+
             desiredPitch -= input.LookAxis.y * sensitivity.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, lookAngleMinMax.x, lookAngleMinMax.y);
         }

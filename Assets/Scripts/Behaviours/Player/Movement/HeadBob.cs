@@ -1,7 +1,7 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Data;
+﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     public class HeadBob
     {

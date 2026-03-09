@@ -1,7 +1,7 @@
-﻿using Assets.Scripts.Internal.Runtime.Core.Utils.Services;
+﻿using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement
+namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     public class PlayerController : MonoBehaviour, IService
     {

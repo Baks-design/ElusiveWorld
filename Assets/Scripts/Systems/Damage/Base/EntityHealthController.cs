@@ -1,8 +1,8 @@
-using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Components;
-using Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Components;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces;
 using UnityEngine;
 
-namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Base
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Base
 {
     [RequireComponent(typeof(Health))]
     public abstract class EntityHealthController : 
@@ -50,7 +50,7 @@ namespace Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Base
         {
             if (!CanResurrect || health == null) return;
 
-            health.DecreaseLife();
+            health.DecreaseHealth();
             health.ResetHealth();
             OnResurrected();
         }
