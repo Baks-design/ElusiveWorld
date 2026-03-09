@@ -30,9 +30,9 @@
   <Project Path="Unity.Burst.csproj" />
   <Project Path="Unity.Behavior.csproj" />
   <Project Path="LitMotion.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.ProBuilder.Csg.csproj" />
   <Project Path="Unity.Animation.Rigging.csproj" />
+  <Project Path="ElusiveWorld.Core.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.Animation.Rigging.Editor.csproj" />
@@ -46,6 +46,7 @@
   <Project Path="UnityEditor.TestRunner.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
+  <Project Path="ZLinq.Unity.UnityCollectoins.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.ConversionSystem.csproj" />
   <Project Path="Unity.Cinemachine.csproj" />
   <Project Path="Unity.VisualEffectGraph.Runtime.csproj" />
@@ -64,9 +65,11 @@
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="Unity.Performance.Profile-Analyzer.Editor.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
+  <Project Path="ElusiveWorld.Core.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.013.csproj" />
   <Project Path="Unity.AI.Navigation.Editor.csproj" />
+  <Project Path="NuGetForUnity.csproj" />
   <Project Path="Unity.AppUI.MVVM.csproj" />
   <Project Path="Unity.Muse.Behavior.csproj" />
   <Project Path="Unity.MemoryProfiler.Editor.MemoryProfilerModule.csproj" />
@@ -82,6 +85,7 @@
   <Project Path="Unity.ProjectAuditor.Editor.Utils.csproj" />
   <Project Path="UnityEditor.UI.Analytics.csproj" />
   <Project Path="UniTask.TextMeshPro.csproj" />
+  <Project Path="ZLinq.Unity.csproj" />
   <Project Path="Unity.ProjectAuditor.Editor.UI.csproj" />
   <Project Path="Unity.ScriptableBuildPipeline.csproj" />
   <Project Path="Unity.ProBuilder.AssetIdRemapUtility.csproj" />

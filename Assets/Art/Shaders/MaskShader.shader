@@ -1,14 +1,14 @@
 Shader "Custom/StencilMask"
 {
 	Properties{}
-    //TODO: Change to SG
-	SubShader{
-
-		Tags {
+	SubShader
+    {
+		Tags 
+        {
 			"RenderType" = "Opaque"
 		}
-
-		Pass {
+		Pass 
+        {
 			ZWrite Off
 
 			HLSLPROGRAM
