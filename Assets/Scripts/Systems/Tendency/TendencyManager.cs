@@ -24,15 +24,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency
         public event Action<string, float> OnActionRegistered = delegate { };
         public event Action<TendencyState> OnTendencyChanged = delegate { };
 
-        void Awake() => IServiceLocator.Default.TryRegisterService(this);
-
-        void Start()
+        public void Initialize()
         {
-            if (thresholds.Count == 0)
-                InitializeDefaultThresholds();
+            IServiceLocator.Default.TryRegisterService(this);
+            if (thresholds.Count == 0) InitializeDefaultThresholds();
         }
 
-        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
 
         void InitializeDefaultThresholds()
         {

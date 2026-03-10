@@ -23,14 +23,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         bool interacting;
         float holdTimer = 0f;
 
-        void OnEnable()
+        void Start()
         {
+            cam = Camera.main;
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnInteractPressed += OnInteractPressed;
             input.OnInteractReleased += OnInteractReleased;
         }
-
-        void Start() => cam = Camera.main;
 
         void Update()
         {

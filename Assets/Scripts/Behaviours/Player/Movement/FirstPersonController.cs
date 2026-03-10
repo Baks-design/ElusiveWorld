@@ -10,7 +10,7 @@ using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : MonoBehaviour //FIXME: Fix Movement
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -24,6 +24,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         [SerializeField] float slideSpeed = 7f;
         [SerializeField, Range(0f, 1f)] float moveBackwardsSpeedPercent = 0.5f;
         [SerializeField, Range(0f, 1f)] float moveSideSpeedPercent = 0.75f;
+        [SerializeField] float displacementSpeed = 0.05f;
         [Header("Run Settings")]
         [SerializeField, Range(-1f, 1f)] float canRunThreshold = 0.8f;
         [SerializeField] AnimationCurve runTransitionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -58,6 +59,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         [SerializeField] float smoothVelocitySpeed = 5f;
         [SerializeField] float smoothFinalDirectionSpeed = 5f;
         [SerializeField] float smoothHeadBobSpeed = 5f;
+        [Header("Slope Detection")]
+        [SerializeField] float slopeLimit = 45f;
+        [SerializeField] float groundCheckDistance = 1.2f;
+        [SerializeField] int numberOfRaycasts = 5;
+        [SerializeField] float baseSlideSpeed = 5f;
+        [SerializeField] float maxSlideSpeed = 15f;
+        [SerializeField] float slideAcceleration = 2f;
+        [SerializeField] float slideFriction = 1f;
+        [SerializeField] AnimationCurve slopeSpeedCurve;
+        [SerializeField] bool canControlWhileSliding = false;
+        [SerializeField] float controlStrength = 0.5f;
+        [SerializeField] float minSlideAngle = 30f;
         InputManager input;
         HeadBob headBob;
         CompositeMotionHandle slideMotionHandles;
@@ -86,6 +99,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         float crouchCamHeight;
         float slideHeight;
         float jumpSpeed;
+        float currentSlopeSpeed;
+        float currentSlopeAngle;
         bool duringCrouchAnimation;
         bool duringRunAnimation;
         bool hitWall;
@@ -94,24 +109,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         bool isRunning;
         bool isGrounded;
         bool previouslyGrounded;
+        bool isSloping;
 
         bool CanJump => !isSliding && !isCrouching && characterController.isGrounded;
-        bool CanCrouch => characterController.isGrounded;
-
-        void OnEnable()
-        {
-            input = IServiceLocator.Default.GetService<InputManager>();
-            input.OnSprintPressed += OnSprintPressed;
-            input.OnSprintReleased += OnSprintReleased;
-            input.OnCrouchPressed += OnCrouchPressed;
-            input.OnCrouchReleased += OnCrouchReleased;
-            input.OnJumpPressed += OnJumpPressed;
-        }
+        bool CanCrouch => characterController.isGrounded && !isSloping;
 
         void Start()
         {
             GetComponents();
             InitVariables();
+            SubscribeInputs();
         }
 
         void Update()
@@ -125,6 +132,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             SmoothDir();
             CalculateMovementDirection();
             CalculateSpeed();
+            DetectSlopeAndSlide();
             CalculateFinalMovement();
             HandleHeadBob();
             HandleRunFOV();
@@ -139,13 +147,25 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             ApplyMovement();
         }
 
-        void OnDisable()
+        void OnDisable() => UnsubscribeInputs();
+
+        void UnsubscribeInputs()
         {
             input.OnSprintPressed -= OnSprintPressed;
             input.OnSprintReleased -= OnSprintReleased;
             input.OnCrouchPressed -= OnCrouchPressed;
             input.OnCrouchReleased -= OnCrouchReleased;
             input.OnJumpPressed -= OnJumpPressed;
+        }
+
+        void SubscribeInputs()
+        {
+            input = IServiceLocator.Default.GetService<InputManager>();
+            input.OnSprintPressed += OnSprintPressed;
+            input.OnSprintReleased += OnSprintReleased;
+            input.OnCrouchPressed += OnCrouchPressed;
+            input.OnCrouchReleased += OnCrouchReleased;
+            input.OnJumpPressed += OnJumpPressed;
         }
 
         void OnSprintPressed()
@@ -204,6 +224,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             walkRunSpeedDifference = runSpeed - walkSpeed;
 
             jumpSpeed = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * 2f);
+
+            if (slopeSpeedCurve.length == 0)
+                slopeSpeedCurve = AnimationCurve.EaseInOut(minSlideAngle, 0.5f, 90f, 1f);
         }
 
         void SmoothInput() => smoothInputVector = Vector2Extensions.ExpDecay(
@@ -242,7 +265,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             var colliding = characterController.GetPenetrationsInLayer(obstacleLayers, out var correction);
             correction += correction.normalized * 0.001f;
             if (colliding)
-                transform.position += Vector3Extensions.ExpDecay(Vector3.zero, correction, 0.05f, Time.deltaTime);
+                transform.position += Vector3Extensions.ExpDecay(Vector3.zero, correction, displacementSpeed, Time.deltaTime);
         }
 
         void CheckIfWall()
@@ -471,6 +494,82 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 });
         }
 
+        void DetectSlopeAndSlide()
+        {
+            if (FindGroundWithMultipleRays(out var groundHit))
+            {
+                var slopeAngle = Vector3.Angle(Vector3.up, groundHit.normal);
+                currentSlopeAngle = slopeAngle;
+                if (slopeAngle > slopeLimit && slopeAngle > minSlideAngle)
+                    StartSliding(groundHit.normal);
+                else if (isSloping && slopeAngle <= slopeLimit)
+                    StopSliding();
+            }
+            else if (isSloping)
+                isSloping = false;
+        }
+
+        bool FindGroundWithMultipleRays(out RaycastHit bestHit)
+        {
+            bestHit = new RaycastHit();
+            var hitFound = false;
+            var maxDistance = -1f;
+            for (var i = 0; i < numberOfRaycasts; i++)
+            {
+                var angle = i / (float)(numberOfRaycasts - 1) * 360f;
+                var direction = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+                var rayOrigin = transform.position + 0.5f * characterController.radius * direction;
+                if (Physics.Raycast(rayOrigin, Vector3.down, out var hit, groundCheckDistance,
+                    groundLayer, QueryTriggerInteraction.Ignore))
+                {
+                    if (hit.distance > maxDistance)
+                    {
+                        maxDistance = hit.distance;
+                        bestHit = hit;
+                        hitFound = true;
+                    }
+                }
+            }
+            return hitFound;
+        }
+
+        void StartSliding(Vector3 groundNormal)
+        {
+            if (!isSloping)
+            {
+                isSloping = true;
+                currentSlopeSpeed = baseSlideSpeed;
+            }
+
+            var slideDirection = Vector3.ProjectOnPlane(Vector3.down, groundNormal).normalized;
+
+            var speedMultiplier = slopeSpeedCurve.Evaluate(currentSlopeAngle);
+
+            currentSlopeSpeed = Mathf.MoveTowards(
+                currentSlopeSpeed, maxSlideSpeed * speedMultiplier, slideAcceleration * Time.deltaTime);
+
+            if (canControlWhileSliding)
+            {
+                var inputDirection = new Vector3(input.MovementAxis.x, 0f, input.MovementAxis.y).normalized;
+                if (inputDirection.magnitude > 0.1f)
+                {
+                    var worldInput = transform.TransformDirection(inputDirection);
+                    worldInput = Vector3.ProjectOnPlane(worldInput, groundNormal).normalized;
+                    slideDirection = Vector3Extensions.ExpDecay(
+                        slideDirection, worldInput, controlStrength, Time.deltaTime).normalized;
+                }
+            }
+
+            finalMoveVector = slideDirection * currentSlopeSpeed;
+        }
+
+        void StopSliding()
+        {
+            isSloping = false;
+            finalMoveVector = Vector3Extensions.ExpDecay(
+                finalMoveVector, Vector3.zero, slideFriction, Time.deltaTime);
+        }
+
         void HandleHeadBob()
         {
             if (input.MovementAxis != Vector2.zero && isGrounded && !hitWall)
@@ -517,9 +616,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 
         void ChangeToRunFOV()
         {
-            if (!CanRun() || input.MovementAxis == Vector2.zero)
-                return;
-
+            if (!CanRun() || input.MovementAxis == Vector2.zero) return;
             duringRunAnimation = true;
             cameraController.ChangeRunFOV(false);
         }
@@ -527,7 +624,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         void ChangeToInitFOV()
         {
             if (!duringRunAnimation) return;
-
             duringRunAnimation = false;
             cameraController.ChangeRunFOV(true);
         }
@@ -555,7 +651,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             }
         }
 
-        void ApplyMovement() => characterController.Move(finalMoveVector * Time.deltaTime);
+        void ApplyMovement()
+        {
+           characterController.Move(finalMoveVector * Time.deltaTime);
+            // if ((flags & CollisionFlags.Above) != 0)
+            //     finalMoveVector.y = -0.5f;
+        }
 
         void RotateTowardsCamera() => transform.rotation = QuaternionExtensions.ExpDecay(
             transform.rotation, yawTransform.rotation, smoothRotateSpeed, Time.deltaTime);

@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -6,22 +7,20 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
 {
     public static class MainToolbarElementStyler
     {
-        public static void StyleElement<T>(string elementName, System.Action<T> styleAction) where T : VisualElement
+        public static void StyleElement<T>(string elementName, Action<T> styleAction) where T : VisualElement
         {
-#pragma warning disable UDR0004
             EditorApplication.delayCall += () =>
             {
                 ApplyStyle(elementName, (element) =>
                 {
-                    T targetElement = element is T typedElement ? typedElement : element.Query<T>().First();
+                    var targetElement = element is T typedElement ? typedElement : element.Query<T>().First();
                     if (targetElement == null) return;
                     styleAction(targetElement);
                 });
             };
-#pragma warning restore UDR0004 
         }
 
-        static void ApplyStyle(string elementName, System.Action<VisualElement> styleCallback)
+        static void ApplyStyle(string elementName, Action<VisualElement> styleCallback)
         {
             var element = FindElementByName(elementName);
             if (element == null) return;

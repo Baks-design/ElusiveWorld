@@ -8,15 +8,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
         [MethodImpl(INLINE)]
-        public static Vector2 ExpDecay(Vector2 a, Vector2 b, float decay, float deltaTime) =>
-            b + (a - b) * Mathf.Exp(-decay * deltaTime);
+        public static Vector2 ExpDecay(this Vector2 a, Vector2 b, float decay, float deltaTime) =>
+            b.normalized + (a.normalized - b.normalized) * Mathf.Exp(-decay * deltaTime);
 
         /// <summary>Exponential interpolation, the multiplicative version of lerp, useful for values such as scaling or zooming</summary>
         /// <param name="a">The start value</param>
         /// <param name="b">The end value</param>
         /// <param name="t">The t-value from 0 to 1 representing position along the eerp</param>
         [MethodImpl(INLINE)]
-        public static Vector2 Eerp(Vector2 a, Vector2 b, float t) =>
+        public static Vector2 Eerp(this Vector2 a, Vector2 b, float t) =>
             t switch
             {
                 0f => a,
@@ -32,7 +32,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         /// <param name="b">The end value</param>
         /// <param name="v">A value between a and b. Note: values outside this range are still valid, and will be extrapolated</param>
         [MethodImpl(INLINE)]
-        public static Vector2 InverseEerp(Vector2 a, Vector2 b, Vector2 v)
+        public static Vector2 InverseEerp(this Vector2 a, Vector2 b, Vector2 v)
         {
             if (v == a) return Vector2.zero;
             if (v == b) return Vector2.one;

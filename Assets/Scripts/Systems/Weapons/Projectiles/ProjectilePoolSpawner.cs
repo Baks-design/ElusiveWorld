@@ -10,9 +10,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles
     {
         readonly Dictionary<GameObject, IObjectPool<Projectile>> pools = new();
 
-        void Awake() => IServiceLocator.Default.TryRegisterService(this);
+        public void Initialize() => IServiceLocator.Default.TryRegisterService(this);
 
-        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
 
         public Projectile SpawnProjectile(
             Projectile prefab, Vector3 position,

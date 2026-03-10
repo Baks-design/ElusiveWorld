@@ -8,15 +8,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
         [MethodImpl(INLINE)]
-        public static Vector3 ExpDecay(Vector3 a, Vector3 b, float decay, float deltaTime) =>
-            b + (a - b) * Mathf.Exp(-decay * deltaTime);
+        public static Vector3 ExpDecay(this Vector3 a, Vector3 b, float decay, float deltaTime) =>
+            b.normalized + (a.normalized - b.normalized) * Mathf.Exp(-decay * deltaTime);
 
-        /// <summary>Exponential interpolation, the multiplicative version of lerp, useful for values such as scaling or zooming</summary>
+        /// <summary>
+        /// Exponential interpolation, the multiplicative version of lerp, 
+        /// useful for values such as scaling or zooming
+        /// </summary>
         /// <param name="a">The start value</param>
         /// <param name="b">The end value</param>
         /// <param name="t">The t-value from 0 to 1 representing position along the eerp</param>
         [MethodImpl(INLINE)]
-        public static Vector3 Eerp(Vector3 a, Vector3 b, float t) =>
+        public static Vector3 Eerp(this Vector3 a, Vector3 b, float t) =>
             t switch
             {
                 0f => a,
@@ -28,12 +31,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
                 )
             };
 
-        /// <summary>Inverse exponential interpolation, the multiplicative version of InverseLerp, useful for values such as scaling or zooming</summary>
+        /// <summary>
+        /// Inverse exponential interpolation, the multiplicative version of InverseLerp, 
+        /// useful for values such as scaling or zooming
+        /// </summary>
         /// <param name="a">The start value</param>
         /// <param name="b">The end value</param>
-        /// <param name="v">A value between a and b. Note: values outside this range are still valid, and will be extrapolated</param>
+        /// <param name="v">
+        /// A value between a and b. 
+        /// Note: values outside this range are still valid, and will be extrapolated
+        /// </param>
         [MethodImpl(INLINE)]
-        public static Vector3 InverseEerp(Vector3 a, Vector3 b, Vector3 v)
+        public static Vector3 InverseEerp(this Vector3 a, Vector3 b, Vector3 v)
         {
             if (v == a) return Vector3.zero;
             if (v == b) return Vector3.one;

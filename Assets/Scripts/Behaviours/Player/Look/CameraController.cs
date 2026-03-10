@@ -33,7 +33,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
             InitComponents();
         }
 
-        void OnEnable()
+        void Start()
         {
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnZoomPressed += OnZoomPressed;
@@ -80,7 +80,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
         void CalculateRotation()
         {
             desiredYaw += input.LookAxis.x * sensitivity.x * Time.deltaTime;
-
             desiredPitch -= input.LookAxis.y * sensitivity.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, lookAngleMinMax.x, lookAngleMinMax.y);
         }

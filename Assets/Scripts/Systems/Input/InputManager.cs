@@ -33,22 +33,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
         public event Action OnReloadPressed = delegate { };
         public event Action OnJumpPressed = delegate { };
 
-        void Awake()
+        public void Initialize()
         {
             IServiceLocator.Default.TryRegisterService(this);
             InputHelpers.ChangeCursorState(CursorLockMode.Locked);
-            Init();
-            EnableGameplay();
+            AddCallbacks();
         }
 
-        void OnDestroy()
+        public void Dispose()
         {
             IServiceLocator.Default.TryUnregisterService(this);
-            DisableAllMaps();
-            Dispose();
+            RemoveCallbacks();
         }
 
-        public void Init()
+        void AddCallbacks()
         {
             input ??= new GameInputActions();
             input.Movement.AddCallbacks(this);
@@ -58,8 +56,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
             input.UI.AddCallbacks(this);
         }
 
-        public void Dispose()
+        void RemoveCallbacks()
         {
+            if (input == null) return;
             input.Disable();
             input.Movement.RemoveCallbacks(this);
             input.Look.RemoveCallbacks(this);

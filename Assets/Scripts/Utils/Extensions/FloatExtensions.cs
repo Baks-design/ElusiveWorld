@@ -8,7 +8,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
         [MethodImpl(INLINE)]
-        public static float ExpDecay(float a, float b, float decay, float deltaTime) =>
+        public static float ExpDecay(this float a, float b, float decay, float deltaTime) =>
             b + (a - b) * Mathf.Exp(-decay * deltaTime);
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         /// <param name="b">The end value</param>
         /// <param name="t">The t-value from 0 to 1 representing position along the eerp</param>
         [MethodImpl(INLINE)]
-        public static float Eerp(float a, float b, float t) =>
+        public static float Eerp(this float a, float b, float t) =>
             t switch
             {
                 0f => a,
@@ -37,7 +37,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         /// A value between a and b. Note: values outside this range are still valid, 
         /// and will be extrapolated</param>
 		[MethodImpl(INLINE)]
-        public static float InverseEerp(float a, float b, float v)
+        public static float InverseEerp(this float a, float b, float v)
         {
             if (v == a) return 0f;
             if (v == b) return 1f;

@@ -21,7 +21,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
         float desiredYaw;
         float desiredPitch;
 
-        void OnEnable()
+        void Start()
         {
             input = IServiceLocator.Default.GetService<InputManager>();
             Weapon.OnWeaponReloadPressed += OnWeaponReloadPressed;

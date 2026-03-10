@@ -22,7 +22,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
             }
         }
 
-        void OnEnable()
+        void Start()
         {
             projectilePool = IServiceLocator.Default.GetService<ProjectilePoolSpawner>();
 

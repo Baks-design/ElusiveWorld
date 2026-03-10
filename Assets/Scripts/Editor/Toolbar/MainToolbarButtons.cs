@@ -15,10 +15,10 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
                 () => { SettingsService.OpenProjectSettings(); }
             );
 
-        [MainToolbarElement("Timescale/Reset", defaultDockPosition = MainToolbarDockPosition.Middle)]
+        [MainToolbarElement("TimeScale/Reset", defaultDockPosition = MainToolbarDockPosition.Middle)]
         public static MainToolbarElement ResetTimeScaleButton()
         {
-            MainToolbarElementStyler.StyleElement<EditorToolbarButton>("Timescale/Reset", element =>
+            MainToolbarElementStyler.StyleElement<EditorToolbarButton>("TimeScale/Reset", element =>
             {
                 element.style.paddingLeft = 0f;
                 element.style.paddingRight = 0f;
@@ -35,7 +35,31 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
 
             return new MainToolbarButton(
                 new MainToolbarContent(EditorGUIUtility.IconContent("Refresh").image as Texture2D, "Reset"),
-                () => { Time.timeScale = 1f; MainToolbar.Refresh("Timescale/Slider"); }
+                () => { Time.timeScale = 1f; MainToolbar.Refresh("TimeScale/Slider"); }
+            );
+        }
+
+        [MainToolbarElement("FramesPerSecond/Reset", defaultDockPosition = MainToolbarDockPosition.Middle)]
+        public static MainToolbarElement ResetFramesPerSecondButton()
+        {
+            MainToolbarElementStyler.StyleElement<EditorToolbarButton>("FramesPerSecond/Reset", element =>
+            {
+                element.style.paddingLeft = 0f;
+                element.style.paddingRight = 0f;
+                element.style.marginLeft = 0f;
+                element.style.marginRight = 0f;
+                element.style.minWidth = 20f;
+                element.style.maxWidth = 20f;
+
+                var image = element.Q<Image>();
+                if (image == null) return;
+                image.style.width = 12f;
+                image.style.height = 12f;
+            });
+
+            return new MainToolbarButton(
+                new MainToolbarContent(EditorGUIUtility.IconContent("Refresh").image as Texture2D, "Reset"),
+                () => { Application.targetFrameRate = 60; MainToolbar.Refresh("FramesPerSecond/Slider"); }
             );
         }
     }

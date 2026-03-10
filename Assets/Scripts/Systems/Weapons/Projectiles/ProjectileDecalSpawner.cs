@@ -13,31 +13,34 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons.Projectiles
         [SerializeField] float fadeDuration = 5f;
         IObjectPool<DecalProjector> decalPool;
 
-        void Awake() => IServiceLocator.Default.TryRegisterService(this);
+        public void Initialize()
+        {
+            IServiceLocator.Default.TryRegisterService(this);
 
-        void Start() => decalPool = new ObjectPool<DecalProjector>
-        (
-            createFunc: () =>
-            {
-                var go = new GameObject("DecalProjector");
-                var dp = go.AddComponent<DecalProjector>();
-                go.transform.parent = transform;
-                dp.material = decalMaterial;
-                dp.fadeFactor = 1f;
-                dp.fadeScale = 0.95f;
-                dp.startAngleFade = 0f;
-                dp.endAngleFade = 30f;
-                return dp;
-            },
-            actionOnGet: dp => dp.gameObject.SetActive(true),
-            actionOnRelease: dp => dp.gameObject.SetActive(false),
-            actionOnDestroy: dp => Destroy(dp.gameObject),
-            collectionCheck: false,
-            defaultCapacity: 10,
-            maxSize: 20
-        );
+            decalPool = new ObjectPool<DecalProjector>
+           (
+               createFunc: () =>
+               {
+                   var go = new GameObject("DecalProjector");
+                   var dp = go.AddComponent<DecalProjector>();
+                   go.transform.parent = transform;
+                   dp.material = decalMaterial;
+                   dp.fadeFactor = 1f;
+                   dp.fadeScale = 0.95f;
+                   dp.startAngleFade = 0f;
+                   dp.endAngleFade = 30f;
+                   return dp;
+               },
+               actionOnGet: dp => dp.gameObject.SetActive(true),
+               actionOnRelease: dp => dp.gameObject.SetActive(false),
+               actionOnDestroy: dp => Destroy(dp.gameObject),
+               collectionCheck: false,
+               defaultCapacity: 10,
+               maxSize: 20
+           );
+        }
 
-        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
 
         public void SpawnDecal(RaycastHit hit)
         {

@@ -6,14 +6,14 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
 {
     public class MainToolbarTimescaleSlider
     {
-        const float k_minTimeScale = 0f, k_maxTimeScale = 5f;
+        const float k_minTimeScale = 0.1f, k_maxTimeScale = 3f;
 
-        [MainToolbarElement("Timescale/Slider", defaultDockPosition = MainToolbarDockPosition.Middle)]
+        [MainToolbarElement("TimeScale/Slider", defaultDockPosition = MainToolbarDockPosition.Middle)]
         public static MainToolbarElement TimeSlider()
         {
-            MainToolbarElementStyler.StyleElement<VisualElement>("Timescale/Slider", (element) =>
+            MainToolbarElementStyler.StyleElement<VisualElement>("TimeScale/Slider", (element) =>
             {
-                element.style.paddingLeft = 10f;
+                element.style.paddingRight = 10f;
             });
 
             return new MainToolbarSlider(

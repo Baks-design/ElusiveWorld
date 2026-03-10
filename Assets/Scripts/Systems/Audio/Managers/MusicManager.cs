@@ -6,7 +6,7 @@ using UnityEngine.Audio;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 {
-    public class MusicManager : MonoBehaviour, IService 
+    public class MusicManager : MonoBehaviour, IService
     {
         [SerializeField] AudioMixerGroup musicMixerGroup;
         [SerializeField] List<AudioClip> initialPlaylist;
@@ -19,10 +19,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
         const float crossFadeTime = 1f;
         float fading;
 
-        void Awake() => IServiceLocator.Default.TryRegisterService(this);
-
-        void Start()
+        public void Initialize()
         {
+            IServiceLocator.Default.TryRegisterService(this);
+
             originalPlaylist = new List<AudioClip>(initialPlaylist);
             foreach (var clip in initialPlaylist)
                 AddToPlaylist(clip);
@@ -36,7 +36,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 PlayNextTrack();
         }
 
-        void OnDestroy() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
 
         void HandleCrossFade()
         {

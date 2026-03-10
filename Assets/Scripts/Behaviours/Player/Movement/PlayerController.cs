@@ -7,11 +7,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
     {
         PlayerComponent[] playerComponents;
 
-        void Awake()
+        public void Initialize()
         {
             IServiceLocator.Default.TryRegisterService(this);
             InitPlayerComponents();
         }
+
+        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
 
         public void InitPlayerComponents()
         {
@@ -28,5 +30,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                     temp = playerComponent as T;
             return temp;
         }
+
+        public void MoveToRandomPosition() { }
     }
 }

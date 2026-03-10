@@ -13,15 +13,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Weapons
 
         void Awake() => weapons = GetComponentsInChildren<Weapon>();
 
-        void OnEnable()
+        void Start()
         {
+            aimController = Player.FetchComponent<AimController>();
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnShootPressed += OnShootPressed;
             input.OnShootReleased += OnShootReleased;
             input.OnReloadPressed += OnReloadPressed;
         }
-
-        void Start() => aimController = Player.FetchComponent<AimController>();
 
         void Update()
         {
