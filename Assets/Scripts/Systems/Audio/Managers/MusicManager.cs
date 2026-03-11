@@ -21,14 +21,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public void Initialize()
         {
-            IServiceLocator.Default.TryRegisterService(this);
-
             originalPlaylist = new List<AudioClip>(initialPlaylist);
             foreach (var clip in initialPlaylist)
                 AddToPlaylist(clip);
         }
 
-        void Update()
+        void LateUpdate()
         {
             HandleCrossFade();
 
@@ -36,7 +34,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 PlayNextTrack();
         }
 
-        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() { }
 
         void HandleCrossFade()
         {

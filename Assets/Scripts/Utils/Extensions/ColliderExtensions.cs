@@ -1,11 +1,14 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
 {
     public static class ColliderExtensions
     {
+        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
         static readonly Collider[] overlapCache = new Collider[32];
 
+        [MethodImpl(INLINE)]
         public static bool GetPenetrationsInLayer(
            this Collider source, LayerMask layerMask, out Vector3 totalCorrection)
         {
@@ -39,6 +42,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
             return collided;
         }
 
+        [MethodImpl(INLINE)]
         public static bool ComputePenetration(
             this Collider source, Collider target, out Vector3 direction, out float distance)
         {

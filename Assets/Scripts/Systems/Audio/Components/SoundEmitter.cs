@@ -21,9 +21,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
         public SoundData Data { get; private set; }
         public LinkedListNode<SoundEmitter> Node { get; set; }
 
-        void Awake() => audioSource = gameObject.GetOrAdd<AudioSource>();
-
-        void Start() => soundManager = IServiceLocator.Default.GetService<SoundManager>();
+        void Awake()
+        {
+            audioSource = gameObject.GetOrAdd<AudioSource>();
+            soundManager = IServiceLocator.Default.GetService<SoundManager>();
+        }
 
         public void Initialize(SoundData data)
         {

@@ -9,7 +9,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
 
         [MethodImpl(INLINE)]
         public static Vector3 ExpDecay(this Vector3 a, Vector3 b, float decay, float deltaTime) =>
-            b.normalized + (a.normalized - b.normalized) * Mathf.Exp(-decay * deltaTime);
+            b + (a - b) * Mathf.Exp(-decay * deltaTime);
 
         /// <summary>
         /// Exponential interpolation, the multiplicative version of lerp, 

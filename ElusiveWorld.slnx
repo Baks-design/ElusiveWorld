@@ -30,6 +30,7 @@
   <Project Path="Unity.Burst.csproj" />
   <Project Path="Unity.Behavior.csproj" />
   <Project Path="LitMotion.csproj" />
+  <Project Path="Eflatun.SceneReference.Editor.csproj" />
   <Project Path="Unity.ProBuilder.Csg.csproj" />
   <Project Path="Unity.Animation.Rigging.csproj" />
   <Project Path="ElusiveWorld.Core.csproj" />
@@ -58,6 +59,7 @@
   <Project Path="Unity.InternalAPIEngineBridge.013.csproj" />
   <Project Path="Unity.TextMeshPro.csproj" />
   <Project Path="UniTask.Linq.csproj" />
+  <Project Path="Eflatun.SceneReference.csproj" />
   <Project Path="Unity.TextMeshPro.Editor.csproj" />
   <Project Path="Unity.AppUI.Navigation.Editor.csproj" />
   <Project Path="Unity.Burst.Editor.csproj" />

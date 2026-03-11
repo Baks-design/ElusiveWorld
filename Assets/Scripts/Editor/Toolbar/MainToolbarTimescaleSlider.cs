@@ -13,7 +13,7 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
         {
             MainToolbarElementStyler.StyleElement<VisualElement>("TimeScale/Slider", (element) =>
             {
-                element.style.paddingRight = 10f;
+                element.style.paddingRight = 0f;
             });
 
             return new MainToolbarSlider(

@@ -35,16 +35,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
 
         public void Initialize()
         {
-            IServiceLocator.Default.TryRegisterService(this);
-            InputHelpers.ChangeCursorState(CursorLockMode.Locked);
+            Helpers.ChangeCursorState(CursorLockMode.Locked);
             AddCallbacks();
         }
 
-        public void Dispose()
-        {
-            IServiceLocator.Default.TryUnregisterService(this);
-            RemoveCallbacks();
-        }
+        public void Dispose() => RemoveCallbacks();
 
         void AddCallbacks()
         {

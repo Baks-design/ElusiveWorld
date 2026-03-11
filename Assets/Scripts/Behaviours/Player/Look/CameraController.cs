@@ -40,14 +40,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
             input.OnZoomReleased += OnZoomReleased;
         }
 
-        void Update()
+        void LateUpdate()
         {
             CalculateRotation();
             PassRotation();
             SmoothRotation();
+            ApplyRotation();
         }
-
-        void LateUpdate() => ApplyRotation();
 
         void OnDisable()
         {
@@ -93,8 +92,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
         void SmoothRotation()
         {
             var deltaTime = Time.deltaTime;
-            finalYaw = QuaternionExtensions.ExpDecay(finalYaw, targetYaw, smoothAmount.x, deltaTime);
-            finalPitch = QuaternionExtensions.ExpDecay(finalPitch, targetPitch, smoothAmount.y, deltaTime);
+            finalYaw = finalYaw.ExpDecay(targetYaw, smoothAmount.x, deltaTime);
+            finalPitch = finalPitch.ExpDecay(targetPitch, smoothAmount.y, deltaTime);
         }
 
         void ApplyRotation()

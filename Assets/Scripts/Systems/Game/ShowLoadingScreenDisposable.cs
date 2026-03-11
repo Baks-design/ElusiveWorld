@@ -1,17 +1,20 @@
 using System;
 
-public class ShowLoadingScreenDisposable : IDisposable
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
-    readonly LoadingScreen loadingScreen;
-
-    public ShowLoadingScreenDisposable(LoadingScreen loadingScreen)
+    public class ShowLoadingScreenDisposable : IDisposable
     {
-        this.loadingScreen = loadingScreen;
-        loadingScreen.Show();
+        readonly LoadingScreen loadingScreen;
+
+        public ShowLoadingScreenDisposable(LoadingScreen loadingScreen)
+        {
+            this.loadingScreen = loadingScreen;
+            loadingScreen.Show();
+        }
+
+        public void SetLoadingBarPercent(float percent)
+            => loadingScreen.SetLoadingBarPercent(percent);
+
+        public void Dispose() => loadingScreen.Hide();
     }
-
-    public void SetLoadingBarPercent(float percent)
-        => loadingScreen.SetLoadingBarPercent(percent);
-
-    public void Dispose() => loadingScreen.Hide();
 }

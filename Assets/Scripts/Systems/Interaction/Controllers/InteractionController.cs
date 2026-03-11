@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 {
-    public class InteractionController : PlayerComponent //TODO: Add get Item from Env
+    public class InteractionController : PlayerComponent //TODO: Add get itens from Environment
     {
         [Header("Data")]
         [SerializeField] InteractionData interactionData;
@@ -68,7 +68,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
                     if (interactionData.IsEmpty())
                     {
                         interactionData.Interactable = interactable;
-                        //interactionUI.SetTooltipActiveState(hitSomething);
                         interactionUI.SetToolTip(interactable.TooltipMessage);
                     }
                     else

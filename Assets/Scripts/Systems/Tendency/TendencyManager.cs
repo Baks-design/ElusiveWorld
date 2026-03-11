@@ -24,17 +24,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency
         public event Action<string, float> OnActionRegistered = delegate { };
         public event Action<TendencyState> OnTendencyChanged = delegate { };
 
-        public void Initialize()
-        {
-            IServiceLocator.Default.TryRegisterService(this);
-            if (thresholds.Count == 0) InitializeDefaultThresholds();
-        }
+        public void Initialize() { if (thresholds.Count == 0) InitializeDefaultThresholds(); }
 
-        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() { }
 
-        void InitializeDefaultThresholds()
-        {
-            thresholds = new List<TendencyThreshold>
+        void InitializeDefaultThresholds() => thresholds = new List<TendencyThreshold>
             {
                 new() { state = TendencyState.PureBlack, minValue = -3f, maxValue = -2.1f },
                 new() { state = TendencyState.Black, minValue = -2f, maxValue = -1.1f },
@@ -44,7 +38,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency
                 new() { state = TendencyState.White, minValue = 1.1f, maxValue = 2f },
                 new() { state = TendencyState.PureWhite, minValue = 2.1f, maxValue = 3f }
             };
-        }
 
         public void AddTendency(float amount)
         {
@@ -76,7 +69,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency
                     AddTendency(finalImpact);
 
                 OnActionRegistered.Invoke(actionId, finalImpact);
-                Debug.Log($"Action {actionId}: {finalImpact}");
             }
         }
 
@@ -127,6 +119,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency
             AddTendency(amount * 0.1f);
         }
 
-        string GetCurrentRegion() => "Default"; // Override this based on your game's region system
+        string GetCurrentRegion() => "Default";
     }
 }

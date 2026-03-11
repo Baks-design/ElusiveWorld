@@ -13,7 +13,7 @@ namespace ElusiveWorld.Core.Editor.Assets.Scripts.Editor.Toolbar
         {
             MainToolbarElementStyler.StyleElement<VisualElement>("FramesPerSecond/Slider", (element) =>
             {
-                element.style.paddingRight = 20f;
+                element.style.paddingRight = 0f;
             });
 
             return new MainToolbarSlider(

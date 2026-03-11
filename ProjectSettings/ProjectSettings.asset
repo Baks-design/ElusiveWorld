@@ -840,7 +840,7 @@ PlayerSettings:
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
     Server: UNITY_SERVER;UGS_SERVER
-    Standalone: 
+    Standalone: URP_COMPATIBILITY_MODE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

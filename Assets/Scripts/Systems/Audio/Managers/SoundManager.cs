@@ -20,13 +20,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public LinkedList<SoundEmitter> FrequentSoundEmitters => frequentSoundEmitters;
 
-        public void Initialize()
-        {
-            IServiceLocator.Default.TryRegisterService(this);
-            InitializePool();
-        }
+        public void Initialize() => InitializePool();
 
-        public void Dispose() => IServiceLocator.Default.TryUnregisterService(this);
+        public void Dispose() { }
 
         public SoundBuilder CreateSoundBuilder() => new(this);
 

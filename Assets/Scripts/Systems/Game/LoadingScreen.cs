@@ -1,8 +1,18 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-public class LoadingScreen : MonoBehaviour
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
-    public void Show() { }
-    public void Hide() { }
-    public void SetLoadingBarPercent(float percent) { }
+    public class LoadingScreen : MonoBehaviour 
+    {
+        [SerializeField] GameObject loadingPanel;
+        [SerializeField] Slider loadingBarSlider;
+
+        public void Show() => loadingPanel.SetActive(true);
+
+        public void Hide() => loadingPanel.SetActive(false);
+
+        public void SetLoadingBarPercent(float percent) 
+            => loadingBarSlider.value += percent;
+    }
 }

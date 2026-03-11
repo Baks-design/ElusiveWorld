@@ -1,9 +1,12 @@
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
 {
     public static class AudioExtensions
     {
+        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
+
         /// <summary>
         /// Converts a float value representing a volume slider position into a logarithmic volume,
         /// giving us a smoother and more natural-sounding progression when a volume slider is moved.
@@ -14,7 +17,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         ///   to what the human ear perceives as a doubling or halving of the volume, hence the multiplication by 20.
         /// This method is useful for normalizing UI Volume Sliders used with Unity's Audio Mixer.
         /// </summary>
-        public static float ToLogarithmicVolume(this float sliderValue) 
+        [MethodImpl(INLINE)]
+        public static float ToLogarithmicVolume(this float sliderValue)
             => Mathf.Log10(Mathf.Max(sliderValue, 0.0001f)) * 20f;
 
         /// <summary>
@@ -28,6 +32,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         ///   since as we know the input to Log10 function can vary between 1 and 10 after the interpolation.
         /// This method is useful for improved fading effects between Audio Clips.
         /// </summary>
+        [MethodImpl(INLINE)]
         public static float ToLogarithmicFraction(this float fraction) 
             => Mathf.Log10(1f + 9f * fraction) / Mathf.Log10(10f);
     }

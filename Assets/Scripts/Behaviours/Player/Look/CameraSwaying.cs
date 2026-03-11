@@ -40,7 +40,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
                 if (xAmountThisFrame == xAmountPreviousFrame)
                     diffrentDirection = false;
 
-                scrollSpeed = FloatExtensions.ExpDecay(scrollSpeed, 0f, returnSpeed, Time.deltaTime);
+                scrollSpeed = scrollSpeed.ExpDecay(0f, returnSpeed, Time.deltaTime);
             }
 
             scrollSpeed = Mathf.Clamp(scrollSpeed, -1f, 1f);

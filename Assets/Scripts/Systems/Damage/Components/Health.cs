@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Components
 {
-    public class Health : MonoBehaviour //TODO: Verify if works
+    public class Health : MonoBehaviour //TODO: Adjust Health Function
     {
         [field: SerializeField, Range(1, 3)] public int MaxLives { get; private set; } = 3;
         [field: SerializeField, Range(10f, 100f)] public float MaxHealth { get; private set; } = 100f;

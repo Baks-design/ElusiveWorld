@@ -621,6 +621,7 @@ GameObject:
   - component: {fileID: 7381742695805626767}
   - component: {fileID: 881720394126368477}
   - component: {fileID: 629586521764251436}
+  - component: {fileID: 1711785055580326559}
   m_Layer: 3
   m_Name: FP Controller
   m_TagString: Player
@@ -931,6 +932,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9828d733f3eb744cbb1cc3926401180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.WorldTendency.PlayerActionTracker
+--- !u!114 &1711785055580326559
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9152343567267482405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71737bfc0b8197c478a6885f7719544f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities.PlayerEntity
+  <Id>k__BackingField:
+    Part1: 256188179
+    Part2: 1122651020
+    Part3: 3754393993
+    Part4: 3317539891
 --- !u!1001 &2577826469383075977
 PrefabInstance:
   m_ObjectHideFlags: 0

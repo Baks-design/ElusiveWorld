@@ -42,6 +42,19 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 40
+--- !u!114 &-5707466504660862084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3277e3c6431244fb960cbd72870858e2, type: 3}
+  m_Name: FogRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.FogRenderFeature
+  m_Active: 1
 --- !u!114 &-5255448118695504552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147,6 +160,32 @@ MonoBehaviour:
       restoreCamera: 1
       offset: {x: 0, y: 0, z: 0, w: 0}
       cameraFieldOfView: 40
+--- !u!114 &-2164522133020602524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7813741425bf9df4b8f6b5a4f6b1f66f, type: 3}
+  m_Name: CRTRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.CRTRenderFeature
+  m_Active: 1
+--- !u!114 &-849317610495667074
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a17da147615463497e4bd9e04f0dce1, type: 3}
+  m_Name: DitheringRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.DitheringRenderFeature
+  m_Active: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -180,7 +219,11 @@ MonoBehaviour:
   - {fileID: -5255448118695504552}
   - {fileID: 7045111030123782142}
   - {fileID: 1918125241053662751}
-  m_RendererFeatureMap: f7ecad8917faf9bfd2970d349f96f0aaaee9414008a6027374c83d29bc00eb0dae25d6d86fb1efdb58d5a8d5c7e510b7fedfb6c12743c5611fceb67bbe8c9e1a
+  - {fileID: -5707466504660862084}
+  - {fileID: 343768544194983830}
+  - {fileID: -849317610495667074}
+  - {fileID: -2164522133020602524}
+  m_RendererFeatureMap: f7ecad8917faf9bfd2970d349f96f0aaaee9414008a6027374c83d29bc00eb0dae25d6d86fb1efdb58d5a8d5c7e510b7fedfb6c12743c5611fceb67bbe8c9e1a7cbb3f167401cbb096f7b169ab4fc5047e14ec14229e36f4640fd6909612f6e1
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -207,7 +250,20 @@ MonoBehaviour:
   m_DepthAttachmentFormat: 0
   m_DepthTextureFormat: 0
   m_AccurateGbufferNormals: 0
-  m_IntermediateTextureMode: 0
+  m_IntermediateTextureMode: 1
+--- !u!114 &343768544194983830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df6534dd185a4f18b50629b58de296b6, type: 3}
+  m_Name: PixelationRenderFeature
+  m_EditorClassIdentifier: Assembly-CSharp::PSX.PixelationRenderFeature
+  m_Active: 1
 --- !u!114 &1002896150165833844
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +318,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
   m_Name: Screen Damage
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
-  m_Active: 0
+  m_Active: 1
   injectionPoint: 600
   fetchColorBuffer: 1
   requirements: -1

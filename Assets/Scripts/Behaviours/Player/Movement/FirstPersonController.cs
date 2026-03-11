@@ -10,7 +10,7 @@ using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour //FIXME: Fix Movement
+    public class FirstPersonController : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -229,17 +229,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 slopeSpeedCurve = AnimationCurve.EaseInOut(minSlideAngle, 0.5f, 90f, 1f);
         }
 
-        void SmoothInput() => smoothInputVector = Vector2Extensions.ExpDecay(
-            smoothInputVector, input.MovementAxis, smoothInputSpeed, Time.deltaTime);
+        void SmoothInput() => smoothInputVector = smoothInputVector.ExpDecay(
+            input.MovementAxis, smoothInputSpeed, Time.deltaTime);
 
         void SmoothSpeed()
         {
-            smoothCurrentSpeed = FloatExtensions.ExpDecay(
-                smoothCurrentSpeed, currentSpeed, smoothVelocitySpeed, Time.deltaTime);
+            smoothCurrentSpeed = smoothCurrentSpeed.ExpDecay(currentSpeed, smoothVelocitySpeed, Time.deltaTime);
 
             if (isRunning && CanRun() && !isSliding)
             {
-                var walkRunPercent = FloatExtensions.InverseEerp(walkSpeed, runSpeed, smoothCurrentSpeed);
+                var walkRunPercent = walkSpeed.InverseEerp(runSpeed, smoothCurrentSpeed);
                 finalSmoothCurrentSpeed = runTransitionCurve.Evaluate(walkRunPercent) * walkRunSpeedDifference + walkSpeed;
                 return;
             }
@@ -247,8 +246,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             finalSmoothCurrentSpeed = smoothCurrentSpeed;
         }
 
-        void SmoothDir() => smoothFinalMoveDir = Vector3Extensions.ExpDecay(
-            smoothFinalMoveDir, finalMoveDir, smoothFinalDirectionSpeed, Time.deltaTime);
+        void SmoothDir() => smoothFinalMoveDir = smoothFinalMoveDir.ExpDecay(
+            finalMoveDir, smoothFinalDirectionSpeed, Time.deltaTime);
 
         void CheckIfGrounded()
         {
@@ -265,13 +264,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             var colliding = characterController.GetPenetrationsInLayer(obstacleLayers, out var correction);
             correction += correction.normalized * 0.001f;
             if (colliding)
-                transform.position += Vector3Extensions.ExpDecay(Vector3.zero, correction, displacementSpeed, Time.deltaTime);
+                transform.position += Vector3.zero.ExpDecay(correction, displacementSpeed, Time.deltaTime);
         }
 
         void CheckIfWall()
         {
             var origin = transform.position + characterController.center;
-            if (input.MovementAxis != Vector2.zero && finalMoveDir.sqrMagnitude > 0)
+            if (input.MovementAxis != Vector2.zero && finalMoveDir.sqrMagnitude > 0f)
                 hitWall = Physics.SphereCast(
                     origin, rayObstacleSphereRadius, finalMoveDir,
                     out var _, rayObstacleLength, obstacleLayers);
@@ -545,8 +544,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 
             var speedMultiplier = slopeSpeedCurve.Evaluate(currentSlopeAngle);
 
-            currentSlopeSpeed = Mathf.MoveTowards(
-                currentSlopeSpeed, maxSlideSpeed * speedMultiplier, slideAcceleration * Time.deltaTime);
+            currentSlopeSpeed = currentSlopeSpeed.ExpDecay(
+                maxSlideSpeed * speedMultiplier, slideAcceleration, Time.deltaTime);
 
             if (canControlWhileSliding)
             {
@@ -555,8 +554,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 {
                     var worldInput = transform.TransformDirection(inputDirection);
                     worldInput = Vector3.ProjectOnPlane(worldInput, groundNormal).normalized;
-                    slideDirection = Vector3Extensions.ExpDecay(
-                        slideDirection, worldInput, controlStrength, Time.deltaTime).normalized;
+                    slideDirection = slideDirection.ExpDecay(worldInput, controlStrength, Time.deltaTime).normalized;
                 }
             }
 
@@ -566,8 +564,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         void StopSliding()
         {
             isSloping = false;
-            finalMoveVector = Vector3Extensions.ExpDecay(
-                finalMoveVector, Vector3.zero, slideFriction, Time.deltaTime);
+            finalMoveVector = finalMoveVector.ExpDecay(Vector3.zero, slideFriction, Time.deltaTime);
         }
 
         void HandleHeadBob()
@@ -578,8 +575,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 {
                     headBob.ScrollHeadBob(isRunning && CanRun(), isCrouching, input.MovementAxis);
 
-                    yawTransform.localPosition = Vector3Extensions.ExpDecay(
-                        yawTransform.localPosition,
+                    yawTransform.localPosition = yawTransform.localPosition.ExpDecay(
                         (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
                         smoothHeadBobSpeed, Time.deltaTime);
                 }
@@ -590,8 +586,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                     headBob.ResetHeadBob();
 
                 if (!duringCrouchAnimation)
-                    yawTransform.localPosition = Vector3Extensions.ExpDecay(
-                        yawTransform.localPosition,
+                    yawTransform.localPosition = yawTransform.localPosition.ExpDecay(
                         new Vector3(0f, headBob.CurrentStateHeight, 0f),
                         smoothHeadBobSpeed, Time.deltaTime);
             }
@@ -644,7 +639,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 finalMoveVector.y = Mathf.Clamp(
                     finalMoveVector.y -= stickToGroundForce * Time.deltaTime, -stickToGroundForce, jumpSpeed);
             }
-            else
+            else if (!characterController.isGrounded || !isSloping)
             {
                 inAirTimer += Time.deltaTime;
                 finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;
@@ -653,12 +648,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 
         void ApplyMovement()
         {
-           characterController.Move(finalMoveVector * Time.deltaTime);
-            // if ((flags & CollisionFlags.Above) != 0)
-            //     finalMoveVector.y = -0.5f;
+            var flags = characterController.Move(finalMoveVector * Time.deltaTime);
+            if ((flags & CollisionFlags.Above) != 0f)
+                finalMoveVector.y = -0.5f;
         }
 
-        void RotateTowardsCamera() => transform.rotation = QuaternionExtensions.ExpDecay(
-            transform.rotation, yawTransform.rotation, smoothRotateSpeed, Time.deltaTime);
+        void RotateTowardsCamera() => transform.rotation = transform.rotation.ExpDecay(
+            yawTransform.rotation, smoothRotateSpeed, Time.deltaTime);
     }
 }
