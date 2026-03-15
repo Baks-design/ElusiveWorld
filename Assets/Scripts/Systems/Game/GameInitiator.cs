@@ -4,17 +4,16 @@ using UnityEditor.SceneManagement;
 #endif
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles;
-using ElusiveWorld.Core.Assets.Scripts.Graphics;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
 using ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Tendency;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Unity.Cinemachine;
 using Cysharp.Threading.Tasks;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
@@ -32,17 +31,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         [SerializeField] ProjectilePoolSpawner projectilePool;
         [SerializeField] ProjectileDecalPoolSpawner projectileDecalPool;
         [SerializeField] TendencyManager tendency;
-        [SerializeField] PostProcessingManager postProcessing;
-        [SerializeField] SceneLoader scenes;
+        [SerializeField] SceneLoader sceneLoader;
         [SerializeField] PersistenceManager persistence;
-        static readonly int sceneIndex = 0;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
 #if UNITY_EDITOR
             EditorSceneManager.playModeStartScene =
-                AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorBuildSettings.scenes[sceneIndex].path);
+                AssetDatabase.LoadAssetAtPath<SceneAsset>(EditorBuildSettings.scenes[0].path);
 #endif
         }
 
@@ -51,18 +48,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             BindComponents();
             BindSystems();
             RegisterServices();
-            loadingScreen.Show();
-
-            using var loadingScreenDisposable = new ShowLoadingScreenDisposable(loadingScreen);
-            loadingScreenDisposable.SetLoadingBarPercent(0f);
             await InitializeSystems();
-            loadingScreenDisposable.SetLoadingBarPercent(0.25f);
             await CreateObjects();
-            loadingScreenDisposable.SetLoadingBarPercent(0.50f);
             await InitializeObjects();
-            loadingScreenDisposable.SetLoadingBarPercent(0.75f);
             await PrepareGame();
-            loadingScreenDisposable.SetLoadingBarPercent(1f);
             await BeginGame();
         }
 
@@ -75,21 +64,31 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         void BindComponents()
         {
             eventSystem = Instantiate(eventSystem);
+            DontDestroyOnLoad(eventSystem);
             cinemachineBrain = Instantiate(cinemachineBrain);
+            DontDestroyOnLoad(cinemachineBrain);
             loadingScreen = Instantiate(loadingScreen);
+            DontDestroyOnLoad(loadingScreen);
         }
 
         void BindSystems()
         {
             input = Instantiate(input);
+            DontDestroyOnLoad(input);
             sound = Instantiate(sound);
+            DontDestroyOnLoad(sound);
             music = Instantiate(music);
+            DontDestroyOnLoad(music);
             tendency = Instantiate(tendency);
+            DontDestroyOnLoad(tendency);
             projectilePool = Instantiate(projectilePool);
+            DontDestroyOnLoad(projectilePool);
             projectileDecalPool = Instantiate(projectileDecalPool);
-            postProcessing = Instantiate(postProcessing);
-            scenes = Instantiate(scenes);
+            DontDestroyOnLoad(projectileDecalPool);
+            sceneLoader = Instantiate(sceneLoader);
+            DontDestroyOnLoad(sceneLoader);
             persistence = Instantiate(persistence);
+            DontDestroyOnLoad(persistence);
         }
 
         void RegisterServices()
@@ -100,8 +99,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryRegisterService(tendency);
             IServiceLocator.Default.TryRegisterService(projectilePool);
             IServiceLocator.Default.TryRegisterService(projectileDecalPool);
-            IServiceLocator.Default.TryRegisterService(postProcessing);
-            IServiceLocator.Default.TryRegisterService(scenes);
+            IServiceLocator.Default.TryRegisterService(loadingScreen);
+            IServiceLocator.Default.TryRegisterService(sceneLoader);
             IServiceLocator.Default.TryRegisterService(persistence);
         }
 
@@ -111,11 +110,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             sound.Initialize();
             music.Initialize();
             tendency.Initialize();
-            postProcessing.Initialize();
-            await scenes.LoadSceneGroup(0);
+            sceneLoader.Initialize();
+            await sceneLoader.LoadSceneGroup(0);
         }
 
-        async UniTask CreateObjects() => player = Instantiate(player);
+        async UniTask CreateObjects()
+        {
+            player = Instantiate(player);
+            DontDestroyOnLoad(player);
+        }
 
         async UniTask InitializeObjects()
         {
@@ -140,9 +143,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryUnregisterService(tendency);
             IServiceLocator.Default.TryUnregisterService(projectilePool);
             IServiceLocator.Default.TryUnregisterService(projectileDecalPool);
-            IServiceLocator.Default.TryUnregisterService(postProcessing);
-            IServiceLocator.Default.TryUnregisterService(scenes);
+            IServiceLocator.Default.TryUnregisterService(sceneLoader);
             IServiceLocator.Default.TryUnregisterService(persistence);
+            IServiceLocator.Default.TryUnregisterService(loadingScreen);
         }
 
         void Dispose()
@@ -154,8 +157,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             projectilePool.Dispose();
             projectileDecalPool.Dispose();
             player.Dispose();
-            postProcessing.Dispose();
-            scenes.Dispose();
+            sceneLoader.Dispose();
             persistence.Dispose();
         }
     }

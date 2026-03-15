@@ -4,8 +4,8 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -30,33 +30,57 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
         public void Initialize(SoundData data)
         {
             Data = data;
+            Debug.Assert(data != null, "Sound emitter data is null.", this);
+            Debug.Assert(data.settings != null, $"{data.name} + settings is null.", data);
 
-            audioSource.clip = data.clip;
-            audioSource.outputAudioMixerGroup = data.mixerGroup;
-            audioSource.loop = data.loop;
-            audioSource.playOnAwake = data.playOnAwake;
+            var clip = data.GetClip();
+            Debug.Assert(clip != null, $"{data.name} + clip is null.", this);
 
-            audioSource.mute = data.mute;
-            audioSource.bypassEffects = data.bypassEffects;
-            audioSource.bypassListenerEffects = data.bypassListenerEffects;
-            audioSource.bypassReverbZones = data.bypassReverbZones;
-
-            audioSource.priority = data.priority;
+            audioSource.clip = data.GetClip();
             audioSource.volume = data.volume;
             audioSource.pitch = data.pitch;
-            audioSource.panStereo = data.panStereo;
-            audioSource.spatialBlend = data.spatialBlend;
-            audioSource.reverbZoneMix = data.reverbZoneMix;
-            audioSource.dopplerLevel = data.dopplerLevel;
-            audioSource.spread = data.spread;
 
-            audioSource.minDistance = data.minDistance;
-            audioSource.maxDistance = data.maxDistance;
+            audioSource.playOnAwake = false;
 
-            audioSource.ignoreListenerVolume = data.ignoreListenerVolume;
-            audioSource.ignoreListenerPause = data.ignoreListenerPause;
+            var settings = data.settings;
 
-            audioSource.rolloffMode = data.rolloffMode;
+            audioSource.outputAudioMixerGroup = settings.mixerGroup;
+            audioSource.loop = settings.loop;
+
+            audioSource.mute = settings.mute;
+            audioSource.bypassEffects = settings.bypassEffects;
+            audioSource.bypassListenerEffects = settings.bypassListenerEffects;
+            audioSource.bypassReverbZones = settings.bypassReverbZones;
+
+            audioSource.priority = settings.priority;
+            audioSource.panStereo = settings.panStereo;
+            audioSource.spatialBlend = settings.spatialBlend;
+            audioSource.reverbZoneMix = settings.reverbZoneMix;
+            audioSource.dopplerLevel = settings.dopplerLevel;
+            audioSource.spread = settings.spread;
+
+            audioSource.minDistance = settings.minDistance;
+            audioSource.maxDistance = settings.maxDistance;
+
+            audioSource.ignoreListenerVolume = settings.ignoreListenerVolume;
+            audioSource.ignoreListenerPause = settings.ignoreListenerPause;
+
+            audioSource.rolloffMode = settings.rolloffMode;
+
+            if (settings.rolloffMode != AudioRolloffMode.Custom)
+                return;
+
+            if (settings.customRolloffCurve is { length: > 0 })
+                audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.customRolloffCurve);
+
+            if (settings.spatialBlendCurve is { length: > 0 })
+                audioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.spatialBlendCurve);
+
+            if (settings.reverbZoneMixCurve is { length: > 0 })
+                audioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.reverbZoneMixCurve);
+
+            if (settings.spreadCurve is { length: > 0 })
+                audioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.spreadCurve);
         }
 
         public void Play()

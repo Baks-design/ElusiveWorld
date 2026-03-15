@@ -1,20 +1,22 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 {
-    public class WeaponController : PlayerComponent 
+    public class WeaponController : PlayerComponent, IEarlyUpdate
     {
         InputManager input;
         Weapon[] weapons;
         AimController aimController;
         bool shootHeld;
 
-        void Awake() => weapons = GetComponentsInChildren<Weapon>();
-
         void Start()
         {
+            UpdateManager.RegisterEarlyUpdate(this);
+            weapons = GetComponentsInChildren<Weapon>();
             aimController = Player.FetchComponent<AimController>();
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnShootPressed += OnShootPressed;
@@ -22,7 +24,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
             input.OnReloadPressed += OnReloadPressed;
         }
 
-        void Update()
+        void IEarlyUpdate.EarlyUpdate()
         {
             if (shootHeld)
                 foreach (var weapon in weapons)
@@ -37,6 +39,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
             input.OnShootPressed -= OnShootPressed;
             input.OnShootReleased -= OnShootReleased;
             input.OnReloadPressed -= OnReloadPressed;
+            UpdateManager.UnregisterEarlyUpdate(this);
         }
 
         void OnShootPressed()

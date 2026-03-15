@@ -1,6 +1,6 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons.Data;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons

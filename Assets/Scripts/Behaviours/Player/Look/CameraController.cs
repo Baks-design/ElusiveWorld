@@ -1,12 +1,14 @@
-﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using Unity.Cinemachine;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
-    public class CameraController : MonoBehaviour
+    public class CameraController : MonoBehaviour, IEarlyUpdate
     {
         [Header("Look Settings")]
         [SerializeField] Vector2 sensitivity = Vector2.zero;
@@ -26,21 +28,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
         float desiredYaw;
         float desiredPitch;
 
-        void Awake()
+        void Start()
         {
+            UpdateManager.RegisterEarlyUpdate(this);
+
+            input = IServiceLocator.Default.GetService<InputManager>();
+            input.OnZoomPressed += OnZoomPressed;
+            input.OnZoomReleased += OnZoomReleased;
+
             GetComponents();
             InitValues();
             InitComponents();
         }
 
-        void Start()
-        {
-            input = IServiceLocator.Default.GetService<InputManager>();
-            input.OnZoomPressed += OnZoomPressed;
-            input.OnZoomReleased += OnZoomReleased;
-        }
-
-        void LateUpdate()
+        void IEarlyUpdate.EarlyUpdate()
         {
             CalculateRotation();
             PassRotation();
@@ -52,6 +53,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
         {
             input.OnZoomPressed -= OnZoomPressed;
             input.OnZoomReleased -= OnZoomReleased;
+            UpdateManager.UnregisterEarlyUpdate(this);
         }
 
         void GetComponents()

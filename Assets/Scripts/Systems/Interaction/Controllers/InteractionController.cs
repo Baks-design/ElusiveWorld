@@ -1,14 +1,16 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Bases;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Components;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Data;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 {
-    public class InteractionController : PlayerComponent //TODO: Add get itens from Environment
+    public class InteractionController : PlayerComponent, IEarlyUpdate  //TODO: Add get itens from environment
     {
         [Header("Data")]
         [SerializeField] InteractionData interactionData;
@@ -26,12 +28,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         void Start()
         {
             cam = Camera.main;
+            UpdateManager.RegisterEarlyUpdate(this);
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnInteractPressed += OnInteractPressed;
             input.OnInteractReleased += OnInteractReleased;
         }
 
-        void Update()
+        void IEarlyUpdate.EarlyUpdate()
         {
             CheckForInteractable();
             CheckForInteractableInput();
@@ -41,6 +44,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         {
             input.OnInteractPressed -= OnInteractPressed;
             input.OnInteractReleased -= OnInteractReleased;
+            UpdateManager.UnregisterEarlyUpdate(this);
         }
 
         void OnInteractPressed()

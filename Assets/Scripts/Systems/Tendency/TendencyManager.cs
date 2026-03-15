@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Tendency.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Tendency

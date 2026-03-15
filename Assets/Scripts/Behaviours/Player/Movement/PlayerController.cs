@@ -1,4 +1,4 @@
-﻿using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement

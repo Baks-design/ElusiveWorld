@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using UnityEngine;
 using UnityEngine.Pool;
 

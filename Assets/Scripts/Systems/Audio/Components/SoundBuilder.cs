@@ -10,7 +10,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
         Vector3 position = Vector3.zero;
         bool randomPitch;
 
-        public SoundBuilder(SoundManager soundManager) => this.soundManager = soundManager;
+        public SoundBuilder(SoundManager soundManager) 
+            => this.soundManager = soundManager;
 
         public SoundBuilder WithPosition(Vector3 position)
         {
@@ -32,14 +33,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
                 return;
             }
 
+            if (soundData.settings == null)
+            {
+                Debug.LogError($"SoundData {soundData.name} settings is null", soundData);
+                return;
+            }
+
             if (!soundManager.CanPlaySound(soundData)) return;
 
             var soundEmitter = soundManager.Get();
             soundEmitter.Initialize(soundData);
-            soundEmitter.transform.position = position;
-            soundEmitter.transform.parent = soundManager.transform;
+            var transform = soundEmitter.transform;
+            transform.position = position;
+            transform.parent = soundManager.transform;
 
             if (randomPitch) soundEmitter.WithRandomPitch();
+            
             if (soundData.frequentSound) 
                 soundEmitter.Node = soundManager.FrequentSoundEmitters.AddLast(soundEmitter);
 

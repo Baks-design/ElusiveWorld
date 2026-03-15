@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
 using UnityEngine;
 using UnityEngine.Pool;
 

@@ -5,6 +5,7 @@
   <Project Path="Unity.AppUI.csproj" />
   <Project Path="Unity.Localization.csproj" />
   <Project Path="Unity.Behavior.GraphFramework.csproj" />
+  <Project Path="ElusiveWorld.Core.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
   <Project Path="Unity.ProBuilder.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
@@ -33,7 +34,6 @@
   <Project Path="Eflatun.SceneReference.Editor.csproj" />
   <Project Path="Unity.ProBuilder.Csg.csproj" />
   <Project Path="Unity.Animation.Rigging.csproj" />
-  <Project Path="ElusiveWorld.Core.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.Animation.Rigging.Editor.csproj" />

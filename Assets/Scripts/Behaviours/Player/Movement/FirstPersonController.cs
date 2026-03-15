@@ -5,12 +5,14 @@ using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour
+    public class FirstPersonController : MonoBehaviour, IEarlyUpdate
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -119,9 +121,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             GetComponents();
             InitVariables();
             SubscribeInputs();
+            UpdateManager.RegisterEarlyUpdate(this);
         }
 
-        void Update()
+        void IEarlyUpdate.EarlyUpdate()
         {
             RotateTowardsCamera();
             ComputeCollisions();
@@ -138,16 +141,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             HandleRunFOV();
             HandleCameraSway();
             HandleLanding();
+            ApplyGravity();
+            ApplyMovement();
             previouslyGrounded = isGrounded;
         }
 
-        void FixedUpdate()
+        void OnDisable()
         {
-            ApplyGravity();
-            ApplyMovement();
+            UnsubscribeInputs();
+            UpdateManager.UnregisterEarlyUpdate(this);
         }
-
-        void OnDisable() => UnsubscribeInputs();
 
         void UnsubscribeInputs()
         {

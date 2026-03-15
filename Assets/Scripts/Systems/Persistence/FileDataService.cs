@@ -16,7 +16,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
         public FileDataService(ISerializer serializer)
         {
             this.serializer = serializer;
-            
             dataPath = Application.persistentDataPath;
             fileExtension = "json";
         }

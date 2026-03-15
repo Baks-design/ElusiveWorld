@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using ZLinq;
@@ -62,8 +62,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
         {
             GameData = new GameData
             {
-                Name = "Game",
-                CurrentLevelName = "Demo"
+                Name = "GameTest",
+                CurrentLevelName =  "PlayerTest"
             };
             SceneManager.LoadScene(GameData.CurrentLevelName);
         }
@@ -75,7 +75,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
             GameData = dataService.Load(gameName);
 
             if (string.IsNullOrWhiteSpace(GameData.CurrentLevelName))
-                GameData.CurrentLevelName = "Demo";
+                GameData.CurrentLevelName = "PlayerTest";
 
             SceneManager.LoadScene(GameData.CurrentLevelName);
         }

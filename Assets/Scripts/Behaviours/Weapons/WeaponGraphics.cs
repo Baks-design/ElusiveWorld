@@ -3,12 +3,14 @@ using LitMotion;
 using LitMotion.Extensions;
 using Unity.Cinemachine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 {
-    public class WeaponGraphics : WeaponComponent<WeaponGraphics>
+    public class WeaponGraphics : WeaponComponent<WeaponGraphics>, IEarlyUpdate
     {
         [SerializeField] Vector2 smoothAmount = new(30f, 30f);
         [SerializeField, MinMaxRangeSlider(-90f, 90f)] Vector2 minMaxYawRotationAngle = new(-30f, 30f);
@@ -23,12 +25,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 
         void Start()
         {
+            UpdateManager.RegisterEarlyUpdate(this);
             input = IServiceLocator.Default.GetService<InputManager>();
             Weapon.OnWeaponReloadPressed += OnWeaponReloadPressed;
             Weapon.OnWeaponShootSucceed += OnWeaponShootSucceed;
         }
 
-        void Update()
+        void IEarlyUpdate.EarlyUpdate()
         {
             if (Weapon.DuringReload) return;
 
@@ -37,11 +40,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 
             desiredPitch -= input.LookAxis.y * smoothAmount.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, minMaxPitchRotationAngle.x, minMaxPitchRotationAngle.y);
-        }
-
-        void LateUpdate()
-        {
-            if (Weapon.DuringReload) return;
 
             var targetRotation = Quaternion.Euler(desiredPitch, desiredYaw, 0f);
             transform.localRotation = transform.localRotation.ExpDecay(
@@ -56,6 +54,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
             if (reloadMotion.IsActive()) reloadMotion.Cancel();
             if (shootRotationMotion.IsActive()) shootRotationMotion.Cancel();
             if (shootPositionMotion.IsActive()) shootPositionMotion.Cancel();
+
+            UpdateManager.UnregisterEarlyUpdate(this);
         }
 
         void OnWeaponReloadPressed()

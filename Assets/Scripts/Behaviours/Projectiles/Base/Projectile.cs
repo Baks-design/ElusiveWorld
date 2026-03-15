@@ -1,12 +1,15 @@
-﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Data;
+﻿using System.Collections;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Utils.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
 {
-    public abstract class Projectile : MonoBehaviour
+    public abstract class Projectile : MonoBehaviour, IEarlyUpdate
     {
         [SerializeField] protected ProjectileData projectileData;
         [SerializeField] protected LayerMask collisionLayers;
@@ -17,18 +20,45 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
         protected RaycastHit hitInfo;
         protected IObjectPool<Projectile> pool;
         ProjectileDecalPoolSpawner decalPool;
-        
+        bool pendingUnregister = false;
+
         protected virtual void Awake() => CastData();
         protected abstract void CastData();
 
-        void Start() => decalPool = IServiceLocator.Default.GetService<ProjectileDecalPoolSpawner>();
-
-        void Update()
+        void Start()
         {
+            decalPool = IServiceLocator.Default.GetService<ProjectileDecalPoolSpawner>();
+            UpdateManager.RegisterEarlyUpdate(this);
+        }
+
+        void IEarlyUpdate.EarlyUpdate()
+        {
+            if (pendingUnregister) return;
             UpdatePosition(Time.deltaTime);
             CheckForCollision();
             CheckForLifetime();
             UpdateLastPosition();
+        }
+
+        void OnDisable()
+        {
+            if (gameObject.activeInHierarchy)
+            {
+                pendingUnregister = true;
+                StartCoroutine(DelayedUnregister());
+            }
+            else
+                UpdateManager.UnregisterEarlyUpdate(this);
+        }
+
+        IEnumerator DelayedUnregister()
+        {
+            yield return null;
+            if (pendingUnregister)
+            {
+                UpdateManager.UnregisterEarlyUpdate(this);
+                pendingUnregister = false;
+            }
         }
 
         protected virtual void UpdatePosition(float deltaTime) { }

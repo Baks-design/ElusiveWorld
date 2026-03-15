@@ -1,37 +1,20 @@
 using UnityEngine;
-using UnityEngine.Audio;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data
 {
-    [CreateAssetMenu(fileName = "SoundData", menuName = "Data/Systems/Sound/SoundData")]
+    [CreateAssetMenu(fileName = "SoundData", menuName = "Data/Systems/Audio/SoundData")]
     public class SoundData : ScriptableObject
     {
-        public AudioClip clip;
-        public AudioMixerGroup mixerGroup;
-        public bool loop = false;
-        public bool playOnAwake = true;
+        public AudioClip[] clips;
+        public SoundDataSettings settings;
         public bool frequentSound;
-
-        public bool mute = false;
-        public bool bypassEffects = false;
-        public bool bypassListenerEffects = false;
-        public bool bypassReverbZones = false;
-
-        public int priority = 128;
         public float volume = 1f;
         public float pitch = 1f;
-        public float panStereo = 0f;
-        public float spatialBlend = 0f;
-        public float reverbZoneMix = 1f;
-        public float dopplerLevel = 1f;
-        public float spread = 0f;
 
-        public float minDistance = 1f;
-        public float maxDistance = 500f;
-
-        public bool ignoreListenerVolume = true;
-        public bool ignoreListenerPause = true;
-
-        public AudioRolloffMode rolloffMode = AudioRolloffMode.Logarithmic;
+        public AudioClip GetClip()
+        {
+            if (clips == null || clips.Length == 0)  return null;
+            return clips.Length == 1 ? clips[0] : clips[Random.Range(0, clips.Length)];
+        }
     }
 }

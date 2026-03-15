@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
 using UnityEngine;
@@ -20,66 +19,42 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
         public event Action<string> OnSceneUnloaded = delegate { };
         public event Action OnSceneGroupLoaded = delegate { };
 
-        public async UniTask LoadScenes(
-            SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false,
-            CancellationToken cancellationToken = default)
+        public async Awaitable LoadScenes(SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
         {
             ActiveSceneGroup = group;
             var loadedScenes = new List<string>();
 
-            await UnloadScenes(cancellationToken);
+            await UnloadScenes();
 
             var sceneCount = SceneManager.sceneCount;
             for (var i = 0; i < sceneCount; i++)
                 loadedScenes.Add(SceneManager.GetSceneAt(i).name);
 
             var totalScenesToLoad = ActiveSceneGroup.Scenes.Count;
-            var loadedCount = 0f;
-
-            // Clear previous handles
-            handleGroup.Handles.Clear();
-
+            var operationGroup = new AsyncOperationGroup(totalScenesToLoad);
             for (var i = 0; i < totalScenesToLoad; i++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 var sceneData = group.Scenes[i];
-                if (reloadDupScenes == false && loadedScenes.Contains(sceneData.Name))
+                if (reloadDupScenes == false && loadedScenes.Contains(sceneData.Name)) continue;
+
+                if (sceneData.Reference.State == SceneReferenceState.Regular)
                 {
-                    loadedCount++;
-                    progress?.Report(loadedCount / totalScenesToLoad);
-                    continue;
+                    var operation = SceneManager.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
+                    operationGroup.Operations.Add(operation);
+                }
+                else if (sceneData.Reference.State == SceneReferenceState.Addressable)
+                {
+                    var sceneHandle = Addressables.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
+                    handleGroup.Handles.Add(sceneHandle);
                 }
 
-                try
-                {
-                    if (sceneData.Reference.State == SceneReferenceState.Regular)
-                    {
-                        var operation = SceneManager.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
-                        if (operation != null)
-                            await operation.ToUniTask(cancellationToken: cancellationToken);
-                    }
-                    else if (sceneData.Reference.State == SceneReferenceState.Addressable)
-                    {
-                        var handle = Addressables.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
-                        handleGroup.Handles.Add(handle);
-                        await handle.ToUniTask(cancellationToken: cancellationToken);
-                    }
+                OnSceneLoaded.Invoke(sceneData.Name);
+            }
 
-                    OnSceneLoaded.Invoke(sceneData.Name);
-                }
-                catch (OperationCanceledException)
-                {
-                    Debug.Log($"Scene loading cancelled: {sceneData.Name}");
-                    throw;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"Failed to load scene {sceneData.Name}: {e}");
-                }
-
-                loadedCount++;
-                progress?.Report(loadedCount / totalScenesToLoad);
+            while (!operationGroup.IsDone || !handleGroup.IsDone)
+            {
+                progress?.Report((operationGroup.Progress + handleGroup.Progress) / 2f);
+                await Awaitable.WaitForSecondsAsync(1f);
             }
 
             var activeScene = SceneManager.GetSceneByName(ActiveSceneGroup.FindSceneNameByType(SceneType.ActiveScene));
@@ -89,7 +64,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             OnSceneGroupLoaded.Invoke();
         }
 
-        public async UniTask UnloadScenes(CancellationToken cancellationToken = default)
+        public async Awaitable UnloadScenes()
         {
             var scenes = new List<string>();
             var activeScene = SceneManager.GetActiveScene().name;
@@ -97,55 +72,39 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             var sceneCount = SceneManager.sceneCount;
             for (var i = sceneCount - 1; i > 0; i--)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 var sceneAt = SceneManager.GetSceneAt(i);
                 if (!sceneAt.isLoaded) continue;
 
                 var sceneName = sceneAt.name;
                 if (sceneName.Equals(activeScene) || sceneName == "Initiator") continue;
-
-                var isAddressableScene = handleGroup.Handles.AsValueEnumerable().Any(h =>
-                    h.IsValid() && h.Result.Scene.name == sceneName);
-
-                if (isAddressableScene) continue;
+                if (handleGroup.Handles.AsValueEnumerable().Any(
+                    h => h.IsValid() && h.Result.Scene.name == sceneName)) continue;
 
                 scenes.Add(sceneName);
             }
 
-            // Unload regular scenes in parallel
-            var unloadTasks = new List<UniTask>();
+            var operationGroup = new AsyncOperationGroup(scenes.Count);
+
             foreach (var scene in scenes)
             {
                 var operation = SceneManager.UnloadSceneAsync(scene);
-                if (operation != null)
-                {
-                    unloadTasks.Add(operation.ToUniTask(cancellationToken: cancellationToken));
-                    OnSceneUnloaded.Invoke(scene);
-                }
+                if (operation == null) continue;
+
+                operationGroup.Operations.Add(operation);
+
+                OnSceneUnloaded.Invoke(scene);
             }
 
-            // Wait for all regular scene unloads
-            if (unloadTasks.Count > 0)
-                await UniTask.WhenAll(unloadTasks);
-
-            // Unload addressable scenes using stored handles
-            var addressableUnloadTasks = new List<UniTask>();
             foreach (var handle in handleGroup.Handles)
-            {
                 if (handle.IsValid())
-                {
-                    var unloadHandle = Addressables.UnloadSceneAsync(handle);
-                    addressableUnloadTasks.Add(unloadHandle.ToUniTask(cancellationToken: cancellationToken));
-                }
-            }
-
-            if (addressableUnloadTasks.Count > 0)
-                await UniTask.WhenAll(addressableUnloadTasks);
-
+                    await Addressables.UnloadSceneAsync(handle);
+           
             handleGroup.Handles.Clear();
 
-            await Resources.UnloadUnusedAssets().ToUniTask(cancellationToken: cancellationToken);
+            while (!operationGroup.IsDone)
+                await Awaitable.WaitForSecondsAsync(1f); 
+
+            await Resources.UnloadUnusedAssets();
         }
     }
 }

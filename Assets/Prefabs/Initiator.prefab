@@ -54,6 +54,5 @@ MonoBehaviour:
   projectilePool: {fileID: 5146666841426261338, guid: 926b8baa9d65f9c4abb2746cc84be7ba, type: 3}
   projectileDecalPool: {fileID: 7918443009791496191, guid: adcb48e3660c4f5498a619ecc32141d5, type: 3}
   tendency: {fileID: 7115538368144214681, guid: 9aecb45861714cd438a9be94de86f39f, type: 3}
-  postProcessing: {fileID: 1506142661779532371, guid: 63dad20a30bd7304494db7bd6801c3f6, type: 3}
-  scenes: {fileID: 3040448204710312497, guid: b366565a694b66d41b6990240c344db4, type: 3}
+  sceneLoader: {fileID: 3040448204710312497, guid: b366565a694b66d41b6990240c344db4, type: 3}
   persistence: {fileID: 3158808466665977837, guid: df52934d7b35617468cdb55fb8657e0e, type: 3}
