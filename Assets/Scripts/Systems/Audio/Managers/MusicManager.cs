@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Audio;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 {
-    public class MusicManager : MonoBehaviour, IEarlyUpdate, IService
+    public class MusicManager : MonoBehaviour, ILateUpdate, IService
     {
         [SerializeField] AudioMixerGroup musicMixerGroup;
         [SerializeField] List<AudioClip> initialPlaylist;
@@ -23,13 +23,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public void Initialize()
         {
-            UpdateManager.RegisterEarlyUpdate(this);
+            UpdateManager.RegisterLateUpdate(this);
+            
             originalPlaylist = new List<AudioClip>(initialPlaylist);
             foreach (var clip in initialPlaylist)
                 AddToPlaylist(clip);
         }
 
-        void IEarlyUpdate.EarlyUpdate()
+        void ILateUpdate.LateUpdate()
         {
             HandleCrossFade();
 
@@ -37,7 +38,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 PlayNextTrack();
         }
 
-        public void Dispose() => UpdateManager.UnregisterEarlyUpdate(this);
+        public void Dispose() => UpdateManager.UnregisterLateUpdate(this);
 
         void HandleCrossFade()
         {

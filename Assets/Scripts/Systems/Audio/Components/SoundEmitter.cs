@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
@@ -14,11 +12,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
     [RequireComponent(typeof(AudioSource))]
     public class SoundEmitter : MonoBehaviour
     {
-        [SerializeField] AudioSource audioSource;
-        CancellationTokenSource playCTS;
+        CancellationTokenSource playCancellationSource;
+        AudioSource audioSource;
         SoundManager soundManager;
 
-        public SoundData Data { get; private set; }
+        public SoundData Data { get; set; }
         public LinkedListNode<SoundEmitter> Node { get; set; }
 
         void Awake()
@@ -33,6 +31,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             Debug.Assert(data != null, "Sound emitter data is null.", this);
             Debug.Assert(data.settings != null, $"{data.name} + settings is null.", data);
 
+            var settings = data.settings;
+
             var clip = data.GetClip();
             Debug.Assert(clip != null, $"{data.name} + clip is null.", this);
 
@@ -41,8 +41,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             audioSource.pitch = data.pitch;
 
             audioSource.playOnAwake = false;
-
-            var settings = data.settings;
 
             audioSource.outputAudioMixerGroup = settings.mixerGroup;
             audioSource.loop = settings.loop;
@@ -67,8 +65,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 
             audioSource.rolloffMode = settings.rolloffMode;
 
-            if (settings.rolloffMode != AudioRolloffMode.Custom)
-                return;
+            if (settings.rolloffMode != AudioRolloffMode.Custom) return;
 
             if (settings.customRolloffCurve is { length: > 0 })
                 audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.customRolloffCurve);
@@ -83,59 +80,43 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
                 audioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.spreadCurve);
         }
 
-        public void Play()
+        public async Awaitable Play()
         {
-            if (playCTS != null)
+            if (playCancellationSource != null)
             {
-                playCTS.Cancel();
-                playCTS.Dispose();
+                playCancellationSource.Cancel();
+                await Awaitable.NextFrameAsync();
             }
 
-            playCTS = new CancellationTokenSource();
             audioSource.Play();
-            WaitForSoundToEnd().Forget();
+
+            playCancellationSource = new CancellationTokenSource();
+            await WaitForSoundToEnd(playCancellationSource.Token);
         }
 
-        async UniTaskVoid WaitForSoundToEnd()
+        async Awaitable WaitForSoundToEnd(CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var combinedToken = playCTS.Token.CombineWithDestroyToken(this);
-                await UniTask.WaitWhile(() => audioSource.isPlaying, cancellationToken: combinedToken);
+            while (audioSource.isPlaying)
+                await Awaitable.NextFrameAsync();
 
-                Stop();
-            }
-            catch (OperationCanceledException)
-            {
-                if (playCTS != null && !playCTS.IsCancellationRequested)
-                    Cleanup();
-            }
+            await Stop(cancellationToken);
         }
 
-        public void Stop()
+        public async Awaitable Stop(CancellationToken cancellationToken = default)
         {
-            if (playCTS != null)
+            if (playCancellationSource != null)
             {
-                playCTS.Cancel();
-                playCTS.Dispose();
-                playCTS = null;
+                playCancellationSource.Cancel();
+                await Awaitable.NextFrameAsync();
+                playCancellationSource = null;
             }
 
             audioSource.Stop();
 
-            if (this != null && gameObject != null)
-                soundManager.ReturnToPool(this);
+            soundManager.ReturnToPool(this);
         }
 
-        void Cleanup()
-        {
-            playCTS?.Dispose();
-            playCTS = null;
-        }
-
-        public void WithRandomPitch(float min = -0.05f, float max = 0.05f) =>
-            audioSource.pitch += Random.Range(min, max);
-
-        void OnDestroy() => Cleanup();
+        public void WithRandomPitch(float min = -0.05f, float max = 0.05f)
+            => audioSource.pitch += Random.Range(min, max);
     }
 }

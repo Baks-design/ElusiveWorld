@@ -14,6 +14,7 @@ using UnityEngine.EventSystems;
 using Unity.Cinemachine;
 using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
@@ -49,10 +50,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             BindSystems();
             RegisterServices();
             await InitializeSystems();
-            await CreateObjects();
-            await InitializeObjects();
-            await PrepareGame();
-            await BeginGame();
+            CreateObjects();
+            InitializeObjects();
+            PrepareGame();
+            BeginGame();
         }
 
         void OnDestroy()
@@ -114,26 +115,26 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             await sceneLoader.LoadSceneGroup(0);
         }
 
-        async UniTask CreateObjects()
+        void CreateObjects()
         {
             player = Instantiate(player);
             DontDestroyOnLoad(player);
         }
 
-        async UniTask InitializeObjects()
+        void InitializeObjects()
         {
-            player.Initialize();
             projectilePool.Initialize();
             projectileDecalPool.Initialize();
+            player.Initialize();
         }
 
-        async UniTask PrepareGame()
+        void PrepareGame()
         {
             input.EnableGameplay();
             player.MoveToRandomPosition();
         }
 
-        async UniTask BeginGame() { }
+        void BeginGame() { }
 
         void UnregisterServices()
         {

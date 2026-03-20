@@ -1,11 +1,13 @@
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
 {
-    public class PlayerSoundController : MonoBehaviour
+    public class PlayerSoundController : MonoBehaviour, IUpdate
     {
         [Header("Components")]
         [SerializeField] Transform groundCheckPoint;
@@ -15,9 +17,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
 
         void Start()
         {
+            UpdateManager.RegisterUpdate(this);
             GetComponents();
             Initialize();
         }
+
+        void IUpdate.Update() => footstepsSounds.Update();
+
+        void OnDisable() => UpdateManager.UnregisterUpdate(this);
+
+        void OnDrawGizmosSelected() => footstepsSounds?.DrawGizmos();
 
         void GetComponents()
         {
@@ -33,9 +42,5 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
         }
 
         void Initialize() => footstepsSounds.Initialize(groundCheckPoint, soundBuilder);
-
-        void Update() => footstepsSounds.Update();
-
-        void OnDrawGizmosSelected() => footstepsSounds?.DrawGizmos();
     }
 }

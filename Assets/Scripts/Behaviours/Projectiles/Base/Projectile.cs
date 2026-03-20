@@ -1,15 +1,14 @@
-﻿using System.Collections;
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Data;
+﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using UnityEngine;
 using UnityEngine.Pool;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
 {
-    public abstract class Projectile : MonoBehaviour, IEarlyUpdate
+    public abstract class Projectile : MonoBehaviour, IUpdate
     {
         [SerializeField] protected ProjectileData projectileData;
         [SerializeField] protected LayerMask collisionLayers;
@@ -25,13 +24,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
         protected virtual void Awake() => CastData();
         protected abstract void CastData();
 
-        void Start()
-        {
-            decalPool = IServiceLocator.Default.GetService<ProjectileDecalPoolSpawner>();
-            UpdateManager.RegisterEarlyUpdate(this);
-        }
+        void OnEnable() => UpdateManager.RegisterUpdate(this);
 
-        void IEarlyUpdate.EarlyUpdate()
+        void Start() => decalPool = IServiceLocator.Default.GetService<ProjectileDecalPoolSpawner>();
+
+        void IUpdate.Update()
         {
             if (pendingUnregister) return;
             UpdatePosition(Time.deltaTime);
@@ -45,18 +42,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
             if (gameObject.activeInHierarchy)
             {
                 pendingUnregister = true;
-                StartCoroutine(DelayedUnregister());
+                _ = DelayedUnregister();
             }
             else
-                UpdateManager.UnregisterEarlyUpdate(this);
+                UpdateManager.UnregisterUpdate(this);
         }
 
-        IEnumerator DelayedUnregister()
+        async Awaitable DelayedUnregister()
         {
-            yield return null;
+            await Awaitable.NextFrameAsync();
+
             if (pendingUnregister)
             {
-                UpdateManager.UnregisterEarlyUpdate(this);
+                UpdateManager.UnregisterUpdate(this);
                 pendingUnregister = false;
             }
         }

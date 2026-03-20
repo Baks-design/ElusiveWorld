@@ -1,10 +1,12 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
-    public class CameraBreathing : MonoBehaviour
+    public class CameraBreathing : MonoBehaviour, ILateUpdate
     {
         [Header("Data")]
         [SerializeField] PerlinNoiseData data;
@@ -16,9 +18,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
         Vector3 finalRot;
         Vector3 finalPos;
 
-        void Start() => perlinNoiseScroller = new PerlinNoiseScroller(data);
+        void Start()
+        {
+            UpdateManager.RegisterLateUpdate(this);
+            perlinNoiseScroller = new PerlinNoiseScroller(data);
+        }
 
-        void LateUpdate() 
+        void ILateUpdate.LateUpdate()
         {
             if (data == null) return;
 
@@ -81,5 +87,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
                     break;
             }
         }
+
+        void OnDisable() => UpdateManager.UnregisterLateUpdate(this);
     }
 }

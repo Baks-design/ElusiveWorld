@@ -1,5 +1,5 @@
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Helpers;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
 {
-    public class PlayerEntity : MonoBehaviour, IEarlyUpdate, IBind<PlayerData>
+    public class PlayerEntity : MonoBehaviour, IUpdate, IBind<PlayerData>
     {
         [SerializeField] PlayerData data;
 
@@ -20,14 +20,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
             transform.SetPositionAndRotation(data.position, data.rotation);
         }
 
-        void OnEnable() => UpdateManager.RegisterEarlyUpdate(this);
+        void Start() => UpdateManager.RegisterUpdate(this);
 
-        void IEarlyUpdate.EarlyUpdate()
+        void IUpdate.Update()
         {
             data.position = transform.position;
             data.rotation = transform.rotation;
         }
 
-        void OnDisable() => UpdateManager.UnregisterEarlyUpdate(this);
+        void OnDisable() => UpdateManager.UnregisterUpdate(this);
     }
 }

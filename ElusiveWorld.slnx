@@ -5,7 +5,6 @@
   <Project Path="Unity.AppUI.csproj" />
   <Project Path="Unity.Localization.csproj" />
   <Project Path="Unity.Behavior.GraphFramework.csproj" />
-  <Project Path="ElusiveWorld.Core.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
   <Project Path="Unity.ProBuilder.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
@@ -45,6 +44,7 @@
   <Project Path="Unity.ProBuilder.Editor.csproj" />
   <Project Path="Unity.ResourceManager.csproj" />
   <Project Path="UnityEditor.TestRunner.csproj" />
+  <Project Path="ElusiveWorld.Core.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.Runtime.csproj" />
   <Project Path="Unity.UnifiedRayTracing.Runtime.csproj" />
   <Project Path="ZLinq.Unity.UnityCollectoins.csproj" />

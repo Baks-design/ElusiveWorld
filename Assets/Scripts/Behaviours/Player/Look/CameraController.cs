@@ -1,6 +1,6 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using Unity.Cinemachine;
@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 {
-    public class CameraController : MonoBehaviour, IEarlyUpdate
+    public class CameraController : MonoBehaviour, ILateUpdate
     {
         [Header("Look Settings")]
         [SerializeField] Vector2 sensitivity = Vector2.zero;
@@ -30,7 +30,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 
         void Start()
         {
-            UpdateManager.RegisterEarlyUpdate(this);
+            UpdateManager.RegisterLateUpdate(this);
 
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnZoomPressed += OnZoomPressed;
@@ -41,7 +41,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
             InitComponents();
         }
 
-        void IEarlyUpdate.EarlyUpdate()
+        void ILateUpdate.LateUpdate()
         {
             CalculateRotation();
             PassRotation();
@@ -51,9 +51,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 
         void OnDisable()
         {
+            UpdateManager.UnregisterLateUpdate(this);
+
             input.OnZoomPressed -= OnZoomPressed;
             input.OnZoomReleased -= OnZoomReleased;
-            UpdateManager.UnregisterEarlyUpdate(this);
         }
 
         void GetComponents()
@@ -64,6 +65,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 
         void InitValues()
         {
+            cam.Priority = 99;
             yaw = transform.eulerAngles.y;
             desiredYaw = yaw;
         }
@@ -74,9 +76,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
             cameraSway.Init(cam.transform);
         }
 
-        void OnZoomPressed() => cameraZoom.ChangeFOV();
+        void OnZoomPressed() => _ = cameraZoom.ChangeFOV();
 
-        void OnZoomReleased() => cameraZoom.ChangeFOV();
+        void OnZoomReleased() => _ = cameraZoom.ChangeFOV();
 
         void CalculateRotation()
         {
@@ -106,6 +108,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 
         public void HandleSway(Vector3 inputVector, float rawXInput) => cameraSway.SwayPlayer(inputVector, rawXInput);
 
-        public void ChangeRunFOV(bool returning) => cameraZoom.ChangeRunFOV(returning);
+        public void ChangeRunFOV(bool returning) => _ = cameraZoom.ChangeRunFOV(returning);
     }
 }

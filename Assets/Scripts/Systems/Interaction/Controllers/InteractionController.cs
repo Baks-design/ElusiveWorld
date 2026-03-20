@@ -1,7 +1,7 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Bases;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Components;
@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 {
-    public class InteractionController : PlayerComponent, IEarlyUpdate  //TODO: Add get itens from environment
+    public class InteractionController : PlayerComponent, IUpdate  //TODO: Add get itens from environment
     {
         [Header("Data")]
         [SerializeField] InteractionData interactionData;
@@ -27,14 +27,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 
         void Start()
         {
+            UpdateManager.RegisterUpdate(this);
+
             cam = Camera.main;
-            UpdateManager.RegisterEarlyUpdate(this);
+
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnInteractPressed += OnInteractPressed;
             input.OnInteractReleased += OnInteractReleased;
         }
 
-        void IEarlyUpdate.EarlyUpdate()
+        void IUpdate.Update()
         {
             CheckForInteractable();
             CheckForInteractableInput();
@@ -44,7 +46,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         {
             input.OnInteractPressed -= OnInteractPressed;
             input.OnInteractReleased -= OnInteractReleased;
-            UpdateManager.UnregisterEarlyUpdate(this);
+
+            UpdateManager.UnregisterUpdate(this);
         }
 
         void OnInteractPressed()

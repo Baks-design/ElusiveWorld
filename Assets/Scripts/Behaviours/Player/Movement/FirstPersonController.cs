@@ -1,18 +1,18 @@
 ﻿using System;
 using UnityEngine;
-using LitMotion;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement.Data;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using System.Threading;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 {
     [RequireComponent(typeof(CharacterController))]
-    public class FirstPersonController : MonoBehaviour, IEarlyUpdate
+    public class FirstPersonController : MonoBehaviour, IUpdate
     {
         [Header("References")]
         [SerializeField] CameraController cameraController;
@@ -34,11 +34,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         [SerializeField, Range(0.2f, 0.9f)] float crouchPercent = 0.6f;
         [SerializeField] float crouchTransitionDuration = 1f;
         [SerializeField] AnimationCurve crouchTransitionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-        [Header("Slide Settings")]
-        [SerializeField, Range(0.2f, 0.9f)] float slidePercent = 0.6f;
-        [SerializeField] float slideTransitionDuration = 1f;
-        [SerializeField] float maxSlideDuration = 2f;
-        [SerializeField] AnimationCurve slideTransitionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         [Header("Landing Settings")]
         [SerializeField, Range(0.05f, 0.5f)] float lowLandAmount = 0.1f;
         [SerializeField, Range(0.2f, 0.9f)] float highLandAmount = 0.6f;
@@ -61,24 +56,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         [SerializeField] float smoothVelocitySpeed = 5f;
         [SerializeField] float smoothFinalDirectionSpeed = 5f;
         [SerializeField] float smoothHeadBobSpeed = 5f;
-        [Header("Slope Detection")]
-        [SerializeField] float slopeLimit = 45f;
-        [SerializeField] float groundCheckDistance = 1.2f;
-        [SerializeField] int numberOfRaycasts = 5;
-        [SerializeField] float baseSlideSpeed = 5f;
-        [SerializeField] float maxSlideSpeed = 15f;
-        [SerializeField] float slideAcceleration = 2f;
-        [SerializeField] float slideFriction = 1f;
-        [SerializeField] AnimationCurve slopeSpeedCurve;
-        [SerializeField] bool canControlWhileSliding = false;
-        [SerializeField] float controlStrength = 0.5f;
-        [SerializeField] float minSlideAngle = 30f;
         InputManager input;
         HeadBob headBob;
-        CompositeMotionHandle slideMotionHandles;
-        CompositeMotionHandle returnMotionHandles;
-        CompositeMotionHandle crouchMotionHandles;
-        MotionHandle landMotionHandle;
+        CancellationTokenSource landingCancellationSource;
+        CancellationTokenSource crouchCancellationSource;
         Transform yawTransform;
         RaycastHit hitInfo;
         Vector3 finalMoveDir;
@@ -86,45 +67,38 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         Vector3 finalMoveVector;
         Vector3 initCenter;
         Vector3 crouchCenter;
-        Vector3 slideCenter;
         Vector2 smoothInputVector;
         float currentSpeed;
         float smoothCurrentSpeed;
         float finalSmoothCurrentSpeed;
         float walkRunSpeedDifference;
-        float slideCamHeight;
         float finalRayLength;
         float initHeight;
         float initCamHeight;
         float crouchHeight;
         float inAirTimer;
         float crouchCamHeight;
-        float slideHeight;
         float jumpSpeed;
-        float currentSlopeSpeed;
-        float currentSlopeAngle;
         bool duringCrouchAnimation;
         bool duringRunAnimation;
         bool hitWall;
         bool isCrouching;
-        bool isSliding;
         bool isRunning;
         bool isGrounded;
         bool previouslyGrounded;
-        bool isSloping;
 
-        bool CanJump => !isSliding && !isCrouching && characterController.isGrounded;
-        bool CanCrouch => characterController.isGrounded && !isSloping;
+        bool CanJump => !isCrouching && characterController.isGrounded;
+
+        void OnEnable() => UpdateManager.RegisterUpdate(this);
 
         void Start()
         {
             GetComponents();
             InitVariables();
             SubscribeInputs();
-            UpdateManager.RegisterEarlyUpdate(this);
         }
 
-        void IEarlyUpdate.EarlyUpdate()
+        void IUpdate.Update()
         {
             RotateTowardsCamera();
             ComputeCollisions();
@@ -135,7 +109,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             SmoothDir();
             CalculateMovementDirection();
             CalculateSpeed();
-            DetectSlopeAndSlide();
             CalculateFinalMovement();
             HandleHeadBob();
             HandleRunFOV();
@@ -149,16 +122,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         void OnDisable()
         {
             UnsubscribeInputs();
-            UpdateManager.UnregisterEarlyUpdate(this);
-        }
-
-        void UnsubscribeInputs()
-        {
-            input.OnSprintPressed -= OnSprintPressed;
-            input.OnSprintReleased -= OnSprintReleased;
-            input.OnCrouchPressed -= OnCrouchPressed;
-            input.OnCrouchReleased -= OnCrouchReleased;
-            input.OnJumpPressed -= OnJumpPressed;
+            UpdateManager.UnregisterUpdate(this);
         }
 
         void SubscribeInputs()
@@ -167,8 +131,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             input.OnSprintPressed += OnSprintPressed;
             input.OnSprintReleased += OnSprintReleased;
             input.OnCrouchPressed += OnCrouchPressed;
-            input.OnCrouchReleased += OnCrouchReleased;
             input.OnJumpPressed += OnJumpPressed;
+        }
+
+        void UnsubscribeInputs()
+        {
+            input.OnSprintPressed -= OnSprintPressed;
+            input.OnSprintReleased -= OnSprintReleased;
+            input.OnCrouchPressed -= OnCrouchPressed;
+            input.OnJumpPressed -= OnJumpPressed;
         }
 
         void OnSprintPressed()
@@ -184,8 +155,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         }
 
         void OnCrouchPressed() => HandleCrouchInput();
-
-        void OnCrouchReleased() => ReturnToInitHeight();
 
         void OnJumpPressed() => HandleJump();
 
@@ -211,11 +180,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             var crouchStandHeightDifference = initHeight - crouchHeight;
             crouchCamHeight = initCamHeight - crouchStandHeightDifference;
 
-            slideHeight = initHeight * slidePercent;
-            slideCenter = (slideHeight / 2f + characterController.skinWidth) * Vector3.up;
-            var slideStandHeightDifference = initHeight - slideHeight;
-            slideCamHeight = initCamHeight - slideStandHeightDifference;
-
             finalRayLength = rayLength + characterController.center.y;
 
             isGrounded = true;
@@ -227,9 +191,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
             walkRunSpeedDifference = runSpeed - walkSpeed;
 
             jumpSpeed = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * 2f);
-
-            if (slopeSpeedCurve.length == 0)
-                slopeSpeedCurve = AnimationCurve.EaseInOut(minSlideAngle, 0.5f, 90f, 1f);
         }
 
         void SmoothInput() => smoothInputVector = smoothInputVector.ExpDecay(
@@ -239,7 +200,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         {
             smoothCurrentSpeed = smoothCurrentSpeed.ExpDecay(currentSpeed, smoothVelocitySpeed, Time.deltaTime);
 
-            if (isRunning && CanRun() && !isSliding)
+            if (isRunning && CanRun())
             {
                 var walkRunPercent = walkSpeed.InverseEerp(runSpeed, smoothCurrentSpeed);
                 finalSmoothCurrentSpeed = runTransitionCurve.Evaluate(walkRunPercent) * walkRunSpeedDifference + walkSpeed;
@@ -312,7 +273,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         {
             currentSpeed = isRunning && CanRun() ? runSpeed : walkSpeed;
             currentSpeed = isCrouching ? crouchSpeed : currentSpeed;
-            currentSpeed = isSliding ? slideSpeed : currentSpeed;
             currentSpeed = input.MovementAxis == Vector2.zero ? 0f : currentSpeed;
             currentSpeed = input.MovementAxis.y == -1f ?
                 currentSpeed * moveBackwardsSpeedPercent : currentSpeed;
@@ -331,250 +291,118 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
 
         void HandleCrouchInput()
         {
-            if (!CanCrouch) return;
-
-            if (isRunning && !isCrouching && input.MovementAxis != Vector2.zero && CanRun())
-                HandleSlide();
-            else
-                HandleCrouch();
+            if (isGrounded)
+                _ = InvokeCrouchRoutine();
         }
 
-        void HandleSlide()
+        async Awaitable InvokeCrouchRoutine()
         {
-            isSliding = true;
-            headBob.CurrentStateHeight = slideCamHeight;
+            if (CheckIfRoof()) return;
 
-            // Cancel any existing slide motions
-            slideMotionHandles?.Cancel();
-            slideMotionHandles = new CompositeMotionHandle();
-
-            // Character controller height tween
-            LMotion.Create(characterController.height, slideHeight, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(x => characterController.height = x)
-                .AddTo(slideMotionHandles);
-
-            // Character controller center tween
-            LMotion.Create(characterController.center, slideCenter, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(x => characterController.center = x)
-                .AddTo(slideMotionHandles);
-
-            // Yaw transform local position Y tween
-            LMotion.Create(yawTransform.localPosition.y, slideCamHeight, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(y =>
-                {
-                    var pos = yawTransform.localPosition;
-                    pos.y = y;
-                    yawTransform.localPosition = pos;
-                })
-                .AddTo(slideMotionHandles);
-
-            this.Delay(maxSlideDuration, ReturnToInitHeight);
-        }
-
-        void ReturnToInitHeight()
-        {
-            if (CheckIfRoof())
+            if (landingCancellationSource != null)
             {
-                slideMotionHandles?.Cancel();
-                returnMotionHandles?.Cancel();
-                crouchMotionHandles?.Cancel();
-
-                isSliding = false;
-                HandleCrouch();
-                return;
+                landingCancellationSource.Cancel();
+                await Awaitable.NextFrameAsync();
             }
 
-            if (!isSliding) return;
+            if (crouchCancellationSource != null)
+            {
+                crouchCancellationSource.Cancel();
+                await Awaitable.NextFrameAsync();
+            }
 
-            slideMotionHandles?.Cancel();
-            returnMotionHandles?.Cancel();
-            returnMotionHandles = new CompositeMotionHandle();
-
-            isSliding = false;
-            headBob.CurrentStateHeight = initCamHeight;
-
-            // Character controller height tween
-            LMotion.Create(characterController.height, initHeight, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(x => characterController.height = x)
-                .AddTo(returnMotionHandles);
-
-            // Character controller center tween
-            LMotion.Create(characterController.center, initCenter, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(x => characterController.center = x)
-                .AddTo(returnMotionHandles);
-
-            // Yaw transform local position Y tween
-            LMotion.Create(yawTransform.localPosition.y, initCamHeight, slideTransitionDuration)
-                .WithEase(slideTransitionCurve)
-                .Bind(y =>
-                {
-                    var pos = yawTransform.localPosition;
-                    pos.y = y;
-                    yawTransform.localPosition = pos;
-                })
-                .AddTo(returnMotionHandles);
+            crouchCancellationSource = new CancellationTokenSource();
+            await HandleCrouch(crouchCancellationSource.Token);
         }
 
-        void HandleCrouch()
+        async Awaitable HandleCrouch(CancellationToken cancellationToken)
         {
-            if (isCrouching)
-                if (CheckIfRoof())
-                    return;
-
-            if (landMotionHandle.IsActive())
-                landMotionHandle.Cancel();
-
-            crouchMotionHandles?.Cancel();
-            crouchMotionHandles = new CompositeMotionHandle();
-
             duringCrouchAnimation = true;
+
+            var percent = 0f;
+            var speed = 1f / crouchTransitionDuration;
+
+            var currentHeight = characterController.height;
+            var currentCenter = characterController.center;
 
             var desiredHeight = isCrouching ? initHeight : crouchHeight;
             var desiredCenter = isCrouching ? initCenter : crouchCenter;
+
+            var camPos = yawTransform.localPosition;
+            var camCurrentHeight = camPos.y;
             var camDesiredHeight = isCrouching ? initCamHeight : crouchCamHeight;
 
             isCrouching = !isCrouching;
             headBob.CurrentStateHeight = isCrouching ? crouchCamHeight : initCamHeight;
 
-            // Character controller height tween
-            LMotion.Create(characterController.height, desiredHeight, crouchTransitionDuration)
-                .WithEase(crouchTransitionCurve)
-                .Bind(x => characterController.height = x)
-                .AddTo(crouchMotionHandles);
+            while (percent < 1f)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    cancellationToken.ThrowIfCancellationRequested();
 
-            // Character controller center tween
-            LMotion.Create(characterController.center, desiredCenter, crouchTransitionDuration)
-                .WithEase(crouchTransitionCurve)
-                .Bind(x => characterController.center = x)
-                .AddTo(crouchMotionHandles);
+                percent += Time.deltaTime * speed;
+                var smoothPercent = crouchTransitionCurve.Evaluate(percent);
 
-            // Yaw transform local position Y tween with completion callback
-            LMotion.Create(yawTransform.localPosition.y, camDesiredHeight, crouchTransitionDuration)
-                .WithEase(crouchTransitionCurve)
-                .WithOnComplete(() => duringCrouchAnimation = false)
-                .Bind(y =>
-                {
-                    var pos = yawTransform.localPosition;
-                    pos.y = y;
-                    yawTransform.localPosition = pos;
-                })
-                .AddTo(crouchMotionHandles);
+                characterController.height = Mathf.Lerp(currentHeight, desiredHeight, smoothPercent);
+                characterController.center = Vector3.Lerp(currentCenter, desiredCenter, smoothPercent);
+
+                camPos.y = Mathf.Lerp(camCurrentHeight, camDesiredHeight, smoothPercent);
+                yawTransform.localPosition = camPos;
+
+                await Awaitable.NextFrameAsync();
+            }
+
+            duringCrouchAnimation = false;
         }
 
         void HandleLanding()
         {
             if (!previouslyGrounded && isGrounded)
-                InvokeLandingRoutine();
+                _ = InvokeLandingRoutine();
         }
 
-        void InvokeLandingRoutine()
+        async Awaitable InvokeLandingRoutine()
         {
-            if (landMotionHandle.IsActive())
-                landMotionHandle.Cancel();
+            if (landingCancellationSource != null)
+            {
+                landingCancellationSource.Cancel();
+                await Awaitable.NextFrameAsync();
+            }
 
-            StartLandingMotion();
+            landingCancellationSource = new CancellationTokenSource();
+            await LandingRoutine(landingCancellationSource.Token);
         }
 
-        void StartLandingMotion()
+        async Awaitable LandingRoutine(CancellationToken cancellationToken)
         {
-            var startPos = yawTransform.localPosition;
-            var startHeight = startPos.y;
+            var percent = 0f;
+            var speed = 1f / landDuration;
+
+            var localPos = yawTransform.localPosition;
+            var initLandHeight = localPos.y;
+
             var landAmount = inAirTimer > landTimer ? highLandAmount : lowLandAmount;
 
-            // Create and bind the motion
-            landMotionHandle = LMotion.Create(0f, 1f, landDuration)
-                .Bind(x =>
-                {
-                    var pos = yawTransform.localPosition;
-                    pos.y = startHeight + (landCurve.Evaluate(x) * landAmount);
-                    yawTransform.localPosition = pos;
-                });
-        }
-
-        void DetectSlopeAndSlide()
-        {
-            if (FindGroundWithMultipleRays(out var groundHit))
+            while (percent < 1f)
             {
-                var slopeAngle = Vector3.Angle(Vector3.up, groundHit.normal);
-                currentSlopeAngle = slopeAngle;
-                if (slopeAngle > slopeLimit && slopeAngle > minSlideAngle)
-                    StartSliding(groundHit.normal);
-                else if (isSloping && slopeAngle <= slopeLimit)
-                    StopSliding();
+                if (cancellationToken.IsCancellationRequested)
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                percent += Time.deltaTime * speed;
+                var desiredY = landCurve.Evaluate(percent) * landAmount;
+
+                localPos.y = initLandHeight + desiredY;
+                yawTransform.localPosition = localPos;
+
+                await Awaitable.NextFrameAsync();
             }
-            else if (isSloping)
-                isSloping = false;
-        }
-
-        bool FindGroundWithMultipleRays(out RaycastHit bestHit)
-        {
-            bestHit = new RaycastHit();
-            var hitFound = false;
-            var maxDistance = -1f;
-            for (var i = 0; i < numberOfRaycasts; i++)
-            {
-                var angle = i / (float)(numberOfRaycasts - 1) * 360f;
-                var direction = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
-                var rayOrigin = transform.position + 0.5f * characterController.radius * direction;
-                if (Physics.Raycast(rayOrigin, Vector3.down, out var hit, groundCheckDistance,
-                    groundLayer, QueryTriggerInteraction.Ignore))
-                {
-                    if (hit.distance > maxDistance)
-                    {
-                        maxDistance = hit.distance;
-                        bestHit = hit;
-                        hitFound = true;
-                    }
-                }
-            }
-            return hitFound;
-        }
-
-        void StartSliding(Vector3 groundNormal)
-        {
-            if (!isSloping)
-            {
-                isSloping = true;
-                currentSlopeSpeed = baseSlideSpeed;
-            }
-
-            var slideDirection = Vector3.ProjectOnPlane(Vector3.down, groundNormal).normalized;
-
-            var speedMultiplier = slopeSpeedCurve.Evaluate(currentSlopeAngle);
-
-            currentSlopeSpeed = currentSlopeSpeed.ExpDecay(
-                maxSlideSpeed * speedMultiplier, slideAcceleration, Time.deltaTime);
-
-            if (canControlWhileSliding)
-            {
-                var inputDirection = new Vector3(input.MovementAxis.x, 0f, input.MovementAxis.y).normalized;
-                if (inputDirection.magnitude > 0.1f)
-                {
-                    var worldInput = transform.TransformDirection(inputDirection);
-                    worldInput = Vector3.ProjectOnPlane(worldInput, groundNormal).normalized;
-                    slideDirection = slideDirection.ExpDecay(worldInput, controlStrength, Time.deltaTime).normalized;
-                }
-            }
-
-            finalMoveVector = slideDirection * currentSlopeSpeed;
-        }
-
-        void StopSliding()
-        {
-            isSloping = false;
-            finalMoveVector = finalMoveVector.ExpDecay(Vector3.zero, slideFriction, Time.deltaTime);
         }
 
         void HandleHeadBob()
         {
             if (input.MovementAxis != Vector2.zero && isGrounded && !hitWall)
             {
-                if (!duringCrouchAnimation && !isSliding)
+                if (!duringCrouchAnimation)
                 {
                     headBob.ScrollHeadBob(isRunning && CanRun(), isCrouching, input.MovementAxis);
 
@@ -642,7 +470,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
                 finalMoveVector.y = Mathf.Clamp(
                     finalMoveVector.y -= stickToGroundForce * Time.deltaTime, -stickToGroundForce, jumpSpeed);
             }
-            else if (!characterController.isGrounded || !isSloping)
+            else
             {
                 inAirTimer += Time.deltaTime;
                 finalMoveVector += gravityMultiplier * Time.deltaTime * Physics.gravity;

@@ -5,12 +5,12 @@ using Unity.Cinemachine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 {
-    public class WeaponGraphics : WeaponComponent<WeaponGraphics>, IEarlyUpdate
+    public class WeaponGraphics : WeaponComponent<WeaponGraphics>, ILateUpdate
     {
         [SerializeField] Vector2 smoothAmount = new(30f, 30f);
         [SerializeField, MinMaxRangeSlider(-90f, 90f)] Vector2 minMaxYawRotationAngle = new(-30f, 30f);
@@ -25,13 +25,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 
         void Start()
         {
-            UpdateManager.RegisterEarlyUpdate(this);
+            UpdateManager.RegisterLateUpdate(this);
+
             input = IServiceLocator.Default.GetService<InputManager>();
             Weapon.OnWeaponReloadPressed += OnWeaponReloadPressed;
             Weapon.OnWeaponShootSucceed += OnWeaponShootSucceed;
         }
 
-        void IEarlyUpdate.EarlyUpdate()
+        void ILateUpdate.LateUpdate()
         {
             if (Weapon.DuringReload) return;
 
@@ -55,7 +56,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
             if (shootRotationMotion.IsActive()) shootRotationMotion.Cancel();
             if (shootPositionMotion.IsActive()) shootPositionMotion.Cancel();
 
-            UpdateManager.UnregisterEarlyUpdate(this);
+            UpdateManager.UnregisterLateUpdate(this);
         }
 
         void OnWeaponReloadPressed()

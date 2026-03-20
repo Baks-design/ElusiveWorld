@@ -3,12 +3,12 @@ using UnityEngine.UI;
 using Unity.Cinemachine;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Types;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 
-namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
+namespace ElusiveWorld.Core.Assets.Scripts.Systems.UI
 {
-    public class LoadingScreen : MonoBehaviour, IEarlyUpdate, IService
+    public class LoadingScreen : MonoBehaviour, IUpdate, IService
     {
         [SerializeField] Image loadingBar;
         [SerializeField] GameObject loadingCanvas;
@@ -18,11 +18,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         public float TargetProgress { get; set; } = 0f;
 
-        void OnEnable() => UpdateManager.RegisterEarlyUpdate(this);
+        void Start() => UpdateManager.RegisterUpdate(this);
 
-        void OnDisable() => UpdateManager.UnregisterEarlyUpdate(this);
-
-        void IEarlyUpdate.EarlyUpdate()
+        void IUpdate.Update()
         {
             if (!isLoading) return;
             var currentFillAmount = loadingBar.fillAmount;
@@ -30,6 +28,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             var dynamicFillSpeed = progressDifference * fillSpeed;
             SetProgress(currentFillAmount.ExpDecay(TargetProgress, dynamicFillSpeed, Time.deltaTime));
         }
+
+        void OnDisable() => UpdateManager.UnregisterUpdate(this);
 
         public void SetProgress(float progress) => loadingBar.fillAmount = progress;
 
