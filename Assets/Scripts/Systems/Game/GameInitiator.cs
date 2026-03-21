@@ -12,7 +12,6 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Tendency;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Unity.Cinemachine;
-using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 
@@ -105,7 +104,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryRegisterService(persistence);
         }
 
-        async UniTask InitializeSystems()
+        async Awaitable InitializeSystems()
         {
             input.Initialize();
             sound.Initialize();

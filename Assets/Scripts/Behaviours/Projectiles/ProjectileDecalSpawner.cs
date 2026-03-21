@@ -1,5 +1,5 @@
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using LitMotion;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.Rendering.Universal;
@@ -51,25 +51,27 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles
 
             projector.size = decalSize;
 
-            FadeAndRelease(projector, fadeDuration);
+            _ = FadeAndRelease(projector, fadeDuration);
         }
 
-        void FadeAndRelease(DecalProjector projector, float duration)
+        async Awaitable FadeAndRelease(DecalProjector projector, float duration)
         {
-            if (projector == null) return;
-
+            var time = 0f;
             var initialFade = projector.fadeFactor;
 
-            LMotion.Create(initialFade, 0f, duration)
-                .WithOnComplete(() =>
-                {
-                    if (projector != null)
-                    {
-                        projector.fadeFactor = initialFade;
-                        decalPool.Release(projector);
-                    }
-                })
-                .Bind(x => projector.fadeFactor = x);
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                var t = time / duration;
+                projector.fadeFactor = initialFade.ExpDecay(0f, t, Time.deltaTime);
+                await Awaitable.NextFrameAsync();
+            }
+
+            if (projector != null)
+            {
+                projector.fadeFactor = initialFade;
+                decalPool.Release(projector);
+            }
         }
     }
 }

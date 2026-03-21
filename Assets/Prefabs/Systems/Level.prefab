@@ -45,9 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement.SceneLoader
   sceneGroups:
-  - GroupName: LevelBase
+  - GroupName: Base
     Scenes:
-    - Reference:
-        asset: {fileID: 102900000, guid: 92630cbbf57fb554eb34c6c9f9373400, type: 3}
-        guid: 92630cbbf57fb554eb34c6c9f9373400
+    - Reference: {fileID: 102900000, guid: 92630cbbf57fb554eb34c6c9f9373400, type: 3}
+      SceneLoadType: 0
       SceneType: 0

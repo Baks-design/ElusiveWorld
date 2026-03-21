@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Cysharp.Threading.Tasks;
-using Eflatun.SceneReference;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.SceneManagement;
-using ZLinq;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 {
@@ -19,7 +15,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
         public event Action<string> OnSceneUnloaded = delegate { };
         public event Action OnSceneGroupLoaded = delegate { };
 
-        public async Awaitable LoadScenes(SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
+        public async Awaitable LoadScenes(
+            SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
         {
             ActiveSceneGroup = group;
             var loadedScenes = new List<string>();
@@ -35,16 +32,17 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             for (var i = 0; i < totalScenesToLoad; i++)
             {
                 var sceneData = group.Scenes[i];
-                if (reloadDupScenes == false && loadedScenes.Contains(sceneData.Name)) continue;
+                if (reloadDupScenes == false && loadedScenes.Contains(sceneData.Name))
+                    continue;
 
-                if (sceneData.Reference.State == SceneReferenceState.Regular)
+                if (sceneData.SceneLoadType == SceneLoadType.Default)
                 {
-                    var operation = SceneManager.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
+                    var operation = SceneManager.LoadSceneAsync(sceneData.Name, LoadSceneMode.Additive);
                     operationGroup.Operations.Add(operation);
                 }
-                else if (sceneData.Reference.State == SceneReferenceState.Addressable)
+                else if (sceneData.SceneLoadType == SceneLoadType.Addressable)
                 {
-                    var sceneHandle = Addressables.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
+                    var sceneHandle = Addressables.LoadSceneAsync(sceneData.Name, LoadSceneMode.Additive);
                     handleGroup.Handles.Add(sceneHandle);
                 }
 
@@ -77,8 +75,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 
                 var sceneName = sceneAt.name;
                 if (sceneName.Equals(activeScene) || sceneName == "Initiator") continue;
-                if (handleGroup.Handles.AsValueEnumerable().Any(
-                    h => h.IsValid() && h.Result.Scene.name == sceneName)) continue;
+
+                var hasMatchingHandle = false;
+                for (var j = 0; j < handleGroup.Handles.Count; j++)
+                {
+                    var h = handleGroup.Handles[i];
+                    if (h.IsValid() && h.Result.Scene.name == sceneName)
+                    {
+                        hasMatchingHandle = true;
+                        break;
+                    }
+                }
+                if (hasMatchingHandle) continue;
 
                 scenes.Add(sceneName);
             }
@@ -97,12 +105,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 
             foreach (var handle in handleGroup.Handles)
                 if (handle.IsValid())
-                    await Addressables.UnloadSceneAsync(handle);
-           
+                    Addressables.UnloadSceneAsync(handle);
+
             handleGroup.Handles.Clear();
 
             while (!operationGroup.IsDone)
-                await Awaitable.WaitForSecondsAsync(1f); 
+                await Awaitable.WaitForSecondsAsync(1f);
 
             await Resources.UnloadUnusedAssets();
         }

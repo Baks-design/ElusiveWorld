@@ -617,11 +617,10 @@ GameObject:
   - component: {fileID: 8847257110923100009}
   - component: {fileID: 1711785055580326559}
   - component: {fileID: 7882826115928279818}
-  - component: {fileID: 1527444557513268716}
-  - component: {fileID: 8809486617253238583}
   - component: {fileID: 7381742695805626767}
   - component: {fileID: 881720394126368477}
   - component: {fileID: 629586521764251436}
+  - component: {fileID: -856482646595460662}
   m_Layer: 3
   m_Name: FP Controller
   m_TagString: Player
@@ -710,34 +709,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 261cfd557dbef0640b00180b657c7cde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Behaviours.Player.Movement.Player
---- !u!114 &1527444557513268716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9152343567267482405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 371e3af4816247b4780d5a0dda70740c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Types.PlayerDamageReceiver
-  health: {fileID: 8809486617253238583}
-  respawnDelay: 3
---- !u!114 &8809486617253238583
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9152343567267482405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ba627748c4bcc040a1709c1ed1ae63e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Damage.Components.Health
-  <MaxLives>k__BackingField: 3
-  <MaxHealth>k__BackingField: 100
 --- !u!114 &7381742695805626767
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -756,7 +727,6 @@ MonoBehaviour:
   crouchSpeed: 1
   walkSpeed: 3
   runSpeed: 6
-  slideSpeed: 10
   moveBackwardsSpeedPercent: 0.8
   moveSideSpeedPercent: 0.9
   displacementSpeed: 0.05
@@ -808,33 +778,6 @@ MonoBehaviour:
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  slidePercent: 0.3
-  slideTransitionDuration: 0.3
-  maxSlideDuration: 1.25
-  slideTransitionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -892,40 +835,6 @@ MonoBehaviour:
   smoothVelocitySpeed: 3
   smoothFinalDirectionSpeed: 10
   smoothHeadBobSpeed: 5
-  slopeLimit: 45
-  groundCheckDistance: 1.2
-  numberOfRaycasts: 5
-  baseSlideSpeed: 5
-  maxSlideSpeed: 15
-  slideAcceleration: 2
-  slideFriction: 1
-  slopeSpeedCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 30
-      value: 0.5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 90
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  canControlWhileSliding: 1
-  controlStrength: 0.5
-  minSlideAngle: 30
 --- !u!114 &881720394126368477
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -957,6 +866,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9828d733f3eb744cbb1cc3926401180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.WorldTendency.PlayerActionTracker
+--- !u!114 &-856482646595460662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9152343567267482405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c55e0478b38d146a4f934e52c5b162, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Damage.HealthComponent
+  initializeOnStart: 1
+  stats:
+    maxHealth: 100
+    armor: 0
+    dodgeChance: 0
+    blockChance: 0
+    blockReduction: 0.5
+    damageDealtModifiers: []
+    damageResistances: []
+    criticalChance: 0.05
+    criticalDamage: 1.5
+    <CurrentHealth>k__BackingField: 0
 --- !u!1001 &2577826469383075977
 PrefabInstance:
   m_ObjectHideFlags: 0

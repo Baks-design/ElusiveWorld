@@ -23,7 +23,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement
         [SerializeField] float crouchSpeed = 1f;
         [SerializeField] float walkSpeed = 2f;
         [SerializeField] float runSpeed = 3f;
-        [SerializeField] float slideSpeed = 7f;
         [SerializeField, Range(0f, 1f)] float moveBackwardsSpeedPercent = 0.5f;
         [SerializeField, Range(0f, 1f)] float moveSideSpeedPercent = 0.75f;
         [SerializeField] float displacementSpeed = 0.05f;

@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Text;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
 {
@@ -22,7 +23,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
             this.w = w;
         }
 
-        public override readonly string ToString() => $"[{x}, {y}, {z}, {w}]";
+        public override readonly string ToString()
+        {
+            var sb = new StringBuilder(32);
+            sb.Append('[');
+            sb.Append(x);
+            sb.Append(", ");
+            sb.Append(y);
+            sb.Append(", ");
+            sb.Append(z);
+            sb.Append(", ");
+            sb.Append(w);
+            sb.Append(']');
+            return sb.ToString();
+        }
 
         public static implicit operator Quaternion(SerializableQuaternion quaternion) 
             => new(quaternion.x, quaternion.y, quaternion.z, quaternion.w);

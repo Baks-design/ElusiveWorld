@@ -1,16 +1,14 @@
 using System.Collections.Generic;
-using System.Linq;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Interfaces;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using ZLinq;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
 {
-    public class PersistenceManager: MonoBehaviour, IService
+    public class PersistenceManager : MonoBehaviour, IService
     {
         IDataService dataService;
 
@@ -31,10 +29,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
             Bind<PlayerEntity, PlayerData>(GameData.playerData);
         }
 
-        void Bind<T, TData>(TData data) where T : MonoBehaviour, IBind<TData> 
+        void Bind<T, TData>(TData data) where T : MonoBehaviour, IBind<TData>
             where TData : ISaveable, new()
         {
-            var entity = FindObjectsByType<T>(FindObjectsSortMode.None).FirstOrDefault();
+            T entity = default;
+            var objects = FindObjectsByType<T>();
+            for (var i = 0; i < objects.Length; i++)
+            {
+                entity = objects[i];
+                if (entity != null) break;
+            }
             if (entity != null)
             {
                 data ??= new TData { Id = entity.Id };
@@ -42,13 +46,21 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
             }
         }
 
-        void Bind<T, TData>(List<TData> datas) where T : MonoBehaviour, IBind<TData> 
+        void Bind<T, TData>(List<TData> datas) where T : MonoBehaviour, IBind<TData>
             where TData : ISaveable, new()
         {
-            var entities = FindObjectsByType<T>(FindObjectsSortMode.None);
+            var entities = FindObjectsByType<T>();
             foreach (var entity in entities)
             {
-                var data = datas.AsValueEnumerable().FirstOrDefault(d => d.Id == entity.Id);
+                TData data = default;
+                foreach (var d in datas)
+                {
+                    if (d.Id == entity.Id)
+                    {
+                        data = d;
+                        break;
+                    }
+                }
                 if (data == null)
                 {
                     data = new TData { Id = entity.Id };
@@ -63,7 +75,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
             GameData = new GameData
             {
                 Name = "GameTest",
-                CurrentLevelName =  "PlayerTest"
+                CurrentLevelName = "PlayerTest"
             };
             SceneManager.LoadScene(GameData.CurrentLevelName);
         }

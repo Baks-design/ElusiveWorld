@@ -1,5 +1,5 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Data;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Damage.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Damage;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
@@ -71,9 +71,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base
                     return;
 
                 OnHit();
+
                 decalPool.SpawnDecal(hitInfo);
-                if (hitInfo.transform.TryGetComponent<IDamageReceiver>(out var damage))
-                    damage.TakeDamage(projectileData.GeneralSettings.Damage);
+
+                if (hitInfo.collider.TryGetComponent<IDamageable>(out var damageable))
+                {
+                    var damageInfo = new DamageInfo(
+                        projectileData.GeneralSettings.Damage,
+                        projectileData.GeneralSettings.DamageType,
+                        owner.gameObject)
+                    {
+                        target = hitInfo.collider.gameObject,
+                        hitPoint = hitInfo.collider.ClosestPoint(transform.position),
+                        hitDirection = (hitInfo.collider.transform.position - transform.position).normalized
+                    };
+                    damageable.TakeDamage(damageInfo);
+                }
             }
         }
 

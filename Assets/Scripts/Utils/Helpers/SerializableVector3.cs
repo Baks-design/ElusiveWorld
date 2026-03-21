@@ -1,3 +1,4 @@
+using System.Text;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
@@ -18,7 +19,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
             this.z = z;
         }
 
-        public override readonly string ToString() => $"[{x}, {y}, {z}]";
+        public override readonly string ToString()
+        {
+            var sb = new StringBuilder(24); 
+            sb.Append('[');
+            sb.Append(x);
+            sb.Append(", ");
+            sb.Append(y);
+            sb.Append(", ");
+            sb.Append(z);
+            sb.Append(']');
+            return sb.ToString();
+        }
 
         public static implicit operator Vector3(SerializableVector3 vector) 
             => new(vector.x, vector.y, vector.z);

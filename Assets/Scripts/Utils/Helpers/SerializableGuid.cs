@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 
@@ -49,7 +50,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
             );
         }
 
-        public readonly string ToHexString() => $"{Part1:X8}{Part2:X8}{Part3:X8}{Part4:X8}";
+        public readonly string ToHexString()
+        {
+            var sb = new StringBuilder(32);
+            sb.AppendFormat("{0:X8}", Part1);
+            sb.AppendFormat("{0:X8}", Part2);
+            sb.AppendFormat("{0:X8}", Part3);
+            sb.AppendFormat("{0:X8}", Part4);
+            return sb.ToString();
+        }
 
         public readonly Guid ToGuid()
         {

@@ -65,7 +65,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Look
 
         void InitValues()
         {
-            cam.Priority = 99;
             yaw = transform.eulerAngles.y;
             desiredYaw = yaw;
         }
