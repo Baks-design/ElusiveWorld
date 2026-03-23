@@ -1,5 +1,4 @@
-﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles;
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons.Data;
+﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using UnityEngine;
 
@@ -7,8 +6,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 {
     public class WeaponBehaviour : WeaponComponent<WeaponBehaviour>
     {
-        ProjectilePoolSpawner projectilePool;
-
         protected bool CanShootWeapon
         {
             get
@@ -24,8 +21,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 
         void Start()
         {
-            projectilePool = IServiceLocator.Default.GetService<ProjectilePoolSpawner>();
-
             Weapon.OnWeaponReloadStarted += OnWeaponReloadStarted;
             Weapon.OnWeaponReloadCompleted += OnWeaponReloadCompleted;
             Weapon.OnWeaponShootReleased += OnWeaponShootReleased;
@@ -68,14 +63,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
 
             Weapon.CurrentAmmoCount--;
             Weapon.TimeSinceLastShot = Time.time;
-
-            var projectileInstance = projectilePool.SpawnProjectile(
-                Weapon.Projectile,
-                Weapon.ProjectileAnchor.transform.position,
-                Weapon.ProjectileAnchor.transform.rotation,
-                Weapon.Projectile.transform.localScale
-            );
-            if (projectileInstance != null) projectileInstance.OnFire(transform.root);
         }
 
         public virtual void OnWeaponReloadStarted() => Weapon.DuringReload = true;

@@ -15,9 +15,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
         [SerializeField] FootstepsSounds footstepsSounds;
         SoundBuilder soundBuilder;
 
+        void OnEnable() => UpdateManager.RegisterUpdate(this);
+
         void Start()
         {
-            UpdateManager.RegisterUpdate(this);
             GetComponents();
             Initialize();
         }
@@ -26,7 +27,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
 
         void OnDisable() => UpdateManager.UnregisterUpdate(this);
 
-        void OnDrawGizmosSelected() => footstepsSounds?.DrawGizmos();
+        void OnDrawGizmosSelected() => footstepsSounds.DrawGizmos();
 
         void GetComponents()
         {

@@ -3,7 +3,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
@@ -28,8 +27,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         [SerializeField] MusicManager music;
         [SerializeField] SoundManager sound;
         [SerializeField] InputManager input;
-        [SerializeField] ProjectilePoolSpawner projectilePool;
-        [SerializeField] ProjectileDecalPoolSpawner projectileDecalPool;
         [SerializeField] TendencyManager tendency;
         [SerializeField] SceneLoader sceneLoader;
         [SerializeField] PersistenceManager persistence;
@@ -81,10 +78,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             DontDestroyOnLoad(music);
             tendency = Instantiate(tendency);
             DontDestroyOnLoad(tendency);
-            projectilePool = Instantiate(projectilePool);
-            DontDestroyOnLoad(projectilePool);
-            projectileDecalPool = Instantiate(projectileDecalPool);
-            DontDestroyOnLoad(projectileDecalPool);
             sceneLoader = Instantiate(sceneLoader);
             DontDestroyOnLoad(sceneLoader);
             persistence = Instantiate(persistence);
@@ -97,8 +90,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryRegisterService(sound);
             IServiceLocator.Default.TryRegisterService(music);
             IServiceLocator.Default.TryRegisterService(tendency);
-            IServiceLocator.Default.TryRegisterService(projectilePool);
-            IServiceLocator.Default.TryRegisterService(projectileDecalPool);
             IServiceLocator.Default.TryRegisterService(loadingScreen);
             IServiceLocator.Default.TryRegisterService(sceneLoader);
             IServiceLocator.Default.TryRegisterService(persistence);
@@ -122,8 +113,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         void InitializeObjects()
         {
-            projectilePool.Initialize();
-            projectileDecalPool.Initialize();
             player.Initialize();
         }
 
@@ -141,8 +130,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryUnregisterService(sound);
             IServiceLocator.Default.TryUnregisterService(music);
             IServiceLocator.Default.TryUnregisterService(tendency);
-            IServiceLocator.Default.TryUnregisterService(projectilePool);
-            IServiceLocator.Default.TryUnregisterService(projectileDecalPool);
             IServiceLocator.Default.TryUnregisterService(sceneLoader);
             IServiceLocator.Default.TryUnregisterService(persistence);
             IServiceLocator.Default.TryUnregisterService(loadingScreen);
@@ -154,8 +141,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             sound.Dispose();
             music.Dispose();
             tendency.Dispose();
-            projectilePool.Dispose();
-            projectileDecalPool.Dispose();
             player.Dispose();
             sceneLoader.Dispose();
             persistence.Dispose();

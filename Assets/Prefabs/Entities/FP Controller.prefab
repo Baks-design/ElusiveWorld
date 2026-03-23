@@ -467,7 +467,7 @@ MonoBehaviour:
     debugMode: 1
     defaultGroundType:
       groundTypeName: Concrete
-      soundData: {fileID: 11400000, guid: db812b6e6d38d41489220fd2996976f9, type: 2}
+      soundData: {fileID: 11400000, guid: ab5acbaf50ba1be448eee30c9940a9ed, type: 2}
       volume: 1
       pitchVariation: 0.1
       groundLayers:
@@ -475,7 +475,7 @@ MonoBehaviour:
         m_Bits: 1
     groundTypes:
     - groundTypeName: Concrete
-      soundData: {fileID: 11400000, guid: db812b6e6d38d41489220fd2996976f9, type: 2}
+      soundData: {fileID: 11400000, guid: ab5acbaf50ba1be448eee30c9940a9ed, type: 2}
       volume: 1
       pitchVariation: 0.1
       groundLayers:

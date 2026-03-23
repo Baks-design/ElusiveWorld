@@ -7,7 +7,7 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components;
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Sound
 {
     [Serializable]
-    public class FootstepsSounds //FIXME: footsteps function
+    public class FootstepsSounds 
     {
         [Header("Detection Settings")]
         [SerializeField] float raycastDistance = 1.5f;

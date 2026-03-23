@@ -1,5 +1,4 @@
 ﻿using System;
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Projectiles.Base;
 using ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons.Data;
 using UnityEngine;
 
@@ -13,7 +12,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Weapons
         bool duringReload;
 
         [field: SerializeField] public WeaponData Data { get; private set; }
-        [field: SerializeField] public Projectile Projectile { get; private set; }
         public WeaponProjectileAnchor ProjectileAnchor { get; private set; }
         public int CurrentAmmoCount { get => currentAmmoCount; set => currentAmmoCount = value; }
         public float TimeSinceLastShot { get => timeSinceLastShot; set => timeSinceLastShot = value; }
