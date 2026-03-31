@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 {
-    public class InteractionController : PlayerComponent, IUpdate  //TODO: Add get itens from environment
+    public class InteractionController : PlayerComponent, IUpdate 
     {
         [Header("Data")]
         [SerializeField] InteractionData interactionData;

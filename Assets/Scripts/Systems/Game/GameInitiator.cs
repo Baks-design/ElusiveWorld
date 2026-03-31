@@ -60,10 +60,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         void BindComponents()
         {
-            eventSystem = Instantiate(eventSystem);
-            DontDestroyOnLoad(eventSystem);
             cinemachineBrain = Instantiate(cinemachineBrain);
             DontDestroyOnLoad(cinemachineBrain);
+            eventSystem = Instantiate(eventSystem);
+            DontDestroyOnLoad(eventSystem);
             loadingScreen = Instantiate(loadingScreen);
             DontDestroyOnLoad(loadingScreen);
         }
