@@ -406,7 +406,6 @@ GameObject:
   - component: {fileID: 840816771}
   - component: {fileID: 840816770}
   - component: {fileID: 840816769}
-  - component: {fileID: 840816772}
   m_Layer: 0
   m_Name: Damage
   m_TagString: Untagged
@@ -507,30 +506,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 840816767}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &840816772
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 840816767}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4c55e0478b38d146a4f934e52c5b162, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Damage.HealthComponent
-  initializeOnStart: 1
-  stats:
-    maxHealth: 100
-    armor: 0
-    dodgeChance: 0
-    blockChance: 0
-    blockReduction: 0.5
-    damageDealtModifiers: []
-    damageResistances: []
-    criticalChance: 0.05
-    criticalDamage: 1.5
-    <CurrentHealth>k__BackingField: 0
 --- !u!1 &1070076039
 GameObject:
   m_ObjectHideFlags: 0

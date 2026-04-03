@@ -1,4 +1,5 @@
 ﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Interfaces;
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Types
@@ -8,7 +9,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Types
     {
         [field: SerializeField] public Rigidbody Rigid { get; set; }
 
-        void Start() => Rigid = GetComponent<Rigidbody>();
+        void Start() => Rigid = gameObject.GetOrAdd<Rigidbody>(); 
 
         public void OnHold() { }
         public void OnPickUp() { }

@@ -1,5 +1,4 @@
-﻿using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
+﻿using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
@@ -10,7 +9,7 @@ using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 {
-    public class InteractionController : PlayerComponent, IUpdate 
+    public class InteractionController : MonoBehaviour, IUpdate 
     {
         [Header("Data")]
         [SerializeField] InteractionData interactionData;
@@ -25,11 +24,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         bool interacting;
         float holdTimer = 0f;
 
-        void Start()
+        void OnEnable()
         {
-            UpdateManager.RegisterUpdate(this);
-
             cam = Camera.main;
+
+            UpdateManager.RegisterUpdate(this);
 
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnInteractPressed += OnInteractPressed;
@@ -44,10 +43,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
 
         void OnDisable()
         {
+            UpdateManager.UnregisterUpdate(this);
+
             input.OnInteractPressed -= OnInteractPressed;
             input.OnInteractReleased -= OnInteractReleased;
-
-            UpdateManager.UnregisterUpdate(this);
         }
 
         void OnInteractPressed()

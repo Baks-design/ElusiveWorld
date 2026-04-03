@@ -8,7 +8,7 @@ using UnityEngine.Audio;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 {
-    public class MusicManager : MonoBehaviour, ILateUpdate, IService
+    public class MusicManager : MonoBehaviour, IUpdate, IService
     {
         [SerializeField] AudioMixerGroup musicMixerGroup;
         [SerializeField] List<AudioClip> initialPlaylist;
@@ -16,21 +16,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
         [SerializeField] bool loopCurrentTrack = false;
         readonly Queue<AudioClip> playlist = new();
         List<AudioClip> originalPlaylist;
-        AudioSource current;
-        AudioSource previous;
+        AudioSource current, previous;
         const float crossFadeTime = 1f;
         float fading;
 
         public void Initialize()
         {
-            UpdateManager.RegisterLateUpdate(this);
-            
+            current = gameObject.GetOrAdd<AudioSource>();
+
+            UpdateManager.RegisterUpdate(this);
+
             originalPlaylist = new List<AudioClip>(initialPlaylist);
             foreach (var clip in initialPlaylist)
                 AddToPlaylist(clip);
         }
 
-        void ILateUpdate.LateUpdate()
+        void IUpdate.Update()
         {
             HandleCrossFade();
 
@@ -38,7 +39,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 PlayNextTrack();
         }
 
-        public void Dispose() => UpdateManager.UnregisterLateUpdate(this);
+        public void Dispose() => UpdateManager.UnregisterUpdate(this);
 
         void HandleCrossFade()
         {
@@ -98,7 +99,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
             previous = current;
 
-            current = gameObject.GetOrAdd<AudioSource>();
             current.clip = clip;
             current.outputAudioMixerGroup = musicMixerGroup;
             current.loop = loop;

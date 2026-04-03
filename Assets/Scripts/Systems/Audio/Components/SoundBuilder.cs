@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using UnityEngine;
@@ -10,8 +11,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
         Vector3 position = Vector3.zero;
         bool randomPitch;
 
-        public SoundBuilder(SoundManager soundManager)
-            => this.soundManager = soundManager;
+        public SoundBuilder(SoundManager soundManager) => this.soundManager = soundManager;
 
         public SoundBuilder WithPosition(Vector3 position)
         {
@@ -51,7 +51,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             if (soundData.frequentSound)
                 soundEmitter.Node = soundManager.FrequentSoundEmitters.AddLast(soundEmitter);
 
-            _ = soundEmitter.Play();
+            soundEmitter.Play().Forget();
         }
     }
 }

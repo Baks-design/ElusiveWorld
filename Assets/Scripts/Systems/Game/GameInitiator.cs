@@ -2,15 +2,14 @@
 using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Player.Movement;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using Unity.Cinemachine;
+using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
 using ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Tendency;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using Unity.Cinemachine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 
@@ -22,12 +21,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         [SerializeField] EventSystem eventSystem;
         [SerializeField] CinemachineBrain cinemachineBrain;
         [SerializeField] LoadingScreen loadingScreen;
-        [SerializeField] PlayerController player;
         [Header("Systems")]
         [SerializeField] MusicManager music;
         [SerializeField] SoundManager sound;
         [SerializeField] InputManager input;
-        [SerializeField] TendencyManager tendency;
         [SerializeField] SceneLoader sceneLoader;
         [SerializeField] PersistenceManager persistence;
 
@@ -42,13 +39,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async void Start()
         {
-            BindComponents();
-            BindSystems();
-            RegisterServices();
+            await BindComponents();
+            await BindSystems();
+            await RegisterServices();
             await InitializeSystems();
-            CreateObjects();
-            InitializeObjects();
-            PrepareGame();
+            await CreateObjects();
+            await InitializeObjects();
+            await PrepareGame();
             BeginGame();
         }
 
@@ -58,8 +55,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             Dispose();
         }
 
-        void BindComponents()
+        async UniTask BindComponents()
         {
+            DontDestroyOnLoad(this);
             cinemachineBrain = Instantiate(cinemachineBrain);
             DontDestroyOnLoad(cinemachineBrain);
             eventSystem = Instantiate(eventSystem);
@@ -68,7 +66,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             DontDestroyOnLoad(loadingScreen);
         }
 
-        void BindSystems()
+        async UniTask BindSystems()
         {
             input = Instantiate(input);
             DontDestroyOnLoad(input);
@@ -76,51 +74,36 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             DontDestroyOnLoad(sound);
             music = Instantiate(music);
             DontDestroyOnLoad(music);
-            tendency = Instantiate(tendency);
-            DontDestroyOnLoad(tendency);
             sceneLoader = Instantiate(sceneLoader);
             DontDestroyOnLoad(sceneLoader);
             persistence = Instantiate(persistence);
             DontDestroyOnLoad(persistence);
         }
 
-        void RegisterServices()
+        async UniTask RegisterServices()
         {
             IServiceLocator.Default.TryRegisterService(input);
             IServiceLocator.Default.TryRegisterService(sound);
             IServiceLocator.Default.TryRegisterService(music);
-            IServiceLocator.Default.TryRegisterService(tendency);
             IServiceLocator.Default.TryRegisterService(loadingScreen);
             IServiceLocator.Default.TryRegisterService(sceneLoader);
             IServiceLocator.Default.TryRegisterService(persistence);
         }
 
-        async Awaitable InitializeSystems()
+        async UniTask InitializeSystems()
         {
             input.Initialize();
             sound.Initialize();
             music.Initialize();
-            tendency.Initialize();
             sceneLoader.Initialize();
             await sceneLoader.LoadSceneGroup(0);
         }
 
-        void CreateObjects()
-        {
-            player = Instantiate(player);
-            DontDestroyOnLoad(player);
-        }
+        async UniTask CreateObjects() { }
 
-        void InitializeObjects()
-        {
-            player.Initialize();
-        }
+        async UniTask InitializeObjects() { }
 
-        void PrepareGame()
-        {
-            input.EnableGameplay();
-            player.MoveToRandomPosition();
-        }
+        async UniTask PrepareGame() => input.EnableGameplay();
 
         void BeginGame() { }
 
@@ -129,7 +112,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryUnregisterService(input);
             IServiceLocator.Default.TryUnregisterService(sound);
             IServiceLocator.Default.TryUnregisterService(music);
-            IServiceLocator.Default.TryUnregisterService(tendency);
             IServiceLocator.Default.TryUnregisterService(sceneLoader);
             IServiceLocator.Default.TryUnregisterService(persistence);
             IServiceLocator.Default.TryUnregisterService(loadingScreen);
@@ -138,10 +120,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         void Dispose()
         {
             input.Dispose();
-            sound.Dispose();
             music.Dispose();
-            tendency.Dispose();
-            player.Dispose();
             sceneLoader.Dispose();
             persistence.Dispose();
         }

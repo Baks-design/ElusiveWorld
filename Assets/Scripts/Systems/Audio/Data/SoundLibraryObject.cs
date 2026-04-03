@@ -8,6 +8,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data
         [SerializeField] SoundData concreteGroundFootstep;
         [SerializeField] SoundData muddyGroundFootstep;
 
-        public SoundData[] GetClips => new SoundData[] { concreteGroundFootstep, muddyGroundFootstep };
+        public SoundData[] GetClips => new SoundData[]
+        {
+            concreteGroundFootstep,
+            muddyGroundFootstep
+        };
     }
 }

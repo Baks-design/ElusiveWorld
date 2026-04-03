@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
@@ -22,8 +23,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public void Initialize() => InitializePool();
 
-        public void Dispose() { }
-
         public SoundBuilder CreateSoundBuilder() => new(this);
 
         public bool CanPlaySound(SoundData data)
@@ -34,7 +33,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
             {
                 try
                 {
-                    _ = frequentSoundEmitters.First.Value.Stop();
+                    frequentSoundEmitters.First.Value.Stop().Forget();
                     return true;
                 }
                 catch

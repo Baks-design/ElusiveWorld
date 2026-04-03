@@ -18,7 +18,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.UI
 
         public float TargetProgress { get; set; } = 0f;
 
-        void Start() => UpdateManager.RegisterUpdate(this);
+        void OnEnable() => UpdateManager.RegisterUpdate(this);
 
         void IUpdate.Update()
         {

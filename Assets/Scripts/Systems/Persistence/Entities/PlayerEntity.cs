@@ -20,7 +20,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
             transform.SetPositionAndRotation(data.position, data.rotation);
         }
 
-        void Start() => UpdateManager.RegisterUpdate(this);
+        void OnEnable() => UpdateManager.RegisterUpdate(this);
 
         void IUpdate.Update()
         {

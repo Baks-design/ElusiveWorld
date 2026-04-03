@@ -47,6 +47,7 @@ MonoBehaviour:
   sceneGroups:
   - GroupName: Base
     Scenes:
-    - Reference: {fileID: 102900000, guid: 92630cbbf57fb554eb34c6c9f9373400, type: 3}
-      SceneLoadType: 0
+    - Reference:
+        asset: {fileID: 102900000, guid: 92630cbbf57fb554eb34c6c9f9373400, type: 3}
+        guid: 92630cbbf57fb554eb34c6c9f9373400
       SceneType: 0

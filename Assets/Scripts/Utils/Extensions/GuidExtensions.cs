@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Helpers;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
 {
     public static class GuidExtensions
     {
+        const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
+
+        [MethodImpl(INLINE)]
         public static SerializableGuid ToSerializableGuid(this Guid systemGuid)
         {
             var bytes = systemGuid.ToByteArray();
@@ -16,6 +20,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
             );
         }
 
+        [MethodImpl(INLINE)]
         public static Guid ToSystemGuid(this SerializableGuid serializableGuid)
         {
             var bytes = new byte[16];

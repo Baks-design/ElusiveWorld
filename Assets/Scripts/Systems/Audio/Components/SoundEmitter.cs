@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
@@ -21,8 +23,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 
         void Awake()
         {
-            audioSource = gameObject.GetOrAdd<AudioSource>();
             soundManager = IServiceLocator.Default.GetService<SoundManager>();
+            audioSource = gameObject.GetOrAdd<AudioSource>();
+        }
+
+        void OnDisable()
+        {
+            playCancellationSource?.Cancel();
+            playCancellationSource?.Dispose();
         }
 
         public void Initialize(SoundData data)
@@ -31,89 +39,80 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             Debug.Assert(data != null, "Sound emitter data is null.", this);
             Debug.Assert(data.settings != null, $"{data.name} + settings is null.", data);
 
-            var settings = data.settings;
-
             var clip = data.GetClip();
             Debug.Assert(clip != null, $"{data.name} + clip is null.", this);
+
+            var settings = data.settings;
 
             audioSource.clip = data.GetClip();
             audioSource.volume = data.volume;
             audioSource.pitch = data.pitch;
-
             audioSource.playOnAwake = false;
-
             audioSource.outputAudioMixerGroup = settings.mixerGroup;
             audioSource.loop = settings.loop;
-
             audioSource.mute = settings.mute;
             audioSource.bypassEffects = settings.bypassEffects;
             audioSource.bypassListenerEffects = settings.bypassListenerEffects;
             audioSource.bypassReverbZones = settings.bypassReverbZones;
-
             audioSource.priority = settings.priority;
             audioSource.panStereo = settings.panStereo;
             audioSource.spatialBlend = settings.spatialBlend;
             audioSource.reverbZoneMix = settings.reverbZoneMix;
             audioSource.dopplerLevel = settings.dopplerLevel;
             audioSource.spread = settings.spread;
-
             audioSource.minDistance = settings.minDistance;
             audioSource.maxDistance = settings.maxDistance;
-
             audioSource.ignoreListenerVolume = settings.ignoreListenerVolume;
             audioSource.ignoreListenerPause = settings.ignoreListenerPause;
-
             audioSource.rolloffMode = settings.rolloffMode;
 
             if (settings.rolloffMode != AudioRolloffMode.Custom) return;
-
             if (settings.customRolloffCurve is { length: > 0 })
                 audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.customRolloffCurve);
-
             if (settings.spatialBlendCurve is { length: > 0 })
                 audioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.spatialBlendCurve);
-
             if (settings.reverbZoneMixCurve is { length: > 0 })
                 audioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.reverbZoneMixCurve);
-
             if (settings.spreadCurve is { length: > 0 })
                 audioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.spreadCurve);
         }
 
-        public async Awaitable Play()
+        public async UniTask Play()
         {
-            if (playCancellationSource != null)
-            {
-                playCancellationSource.Cancel();
-                await Awaitable.NextFrameAsync();
-            }
+            await StopInternal(returnToPool: false);
 
             audioSource.Play();
-
             playCancellationSource = new CancellationTokenSource();
-            await WaitForSoundToEnd(playCancellationSource.Token);
-        }
 
-        async Awaitable WaitForSoundToEnd(CancellationToken cancellationToken = default)
-        {
-            while (audioSource.isPlaying)
-                await Awaitable.NextFrameAsync();
-
-            await Stop(cancellationToken);
-        }
-
-        public async Awaitable Stop(CancellationToken cancellationToken = default)
-        {
-            if (playCancellationSource != null)
+            try
             {
-                playCancellationSource.Cancel();
-                await Awaitable.NextFrameAsync();
-                playCancellationSource = null;
+                await WaitForSoundToEnd(playCancellationSource.Token);
             }
+            catch (OperationCanceledException) { }
+        }
 
+        async UniTask WaitForSoundToEnd(CancellationToken token)
+        {
+            while (audioSource.isPlaying && !token.IsCancellationRequested)
+                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token);
+
+            if (!token.IsCancellationRequested)
+                await StopInternal(returnToPool: true);
+        }
+
+        public async UniTask Stop() => await StopInternal(returnToPool: true);
+
+        async UniTask StopInternal(bool returnToPool)
+        {
+            if (playCancellationSource == null) return;
+
+            playCancellationSource.Cancel();
             audioSource.Stop();
+            playCancellationSource?.Dispose();
+            playCancellationSource = null;
 
-            soundManager.ReturnToPool(this);
+            if (returnToPool)
+                soundManager.ReturnToPool(this);
         }
 
         public void WithRandomPitch(float min = -0.05f, float max = 0.05f)
