@@ -12,12 +12,14 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
 using ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
+using ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
     public class GameInitiator : MonoBehaviour
     {
         [Header("Components")]
+        [SerializeField] CharactersController characters;
         [SerializeField] EventSystem eventSystem;
         [SerializeField] CinemachineBrain cinemachineBrain;
         [SerializeField] LoadingScreen loadingScreen;
@@ -39,13 +41,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async void Start()
         {
-            await BindComponents();
-            await BindSystems();
-            await RegisterServices();
+            BindComponents().Forget();
+            BindSystems().Forget();
+            RegisterServices().Forget();
             await InitializeSystems();
             await CreateObjects();
-            await InitializeObjects();
-            await PrepareGame();
+            InitializeObjects().Forget();
+            PrepareGame().Forget();
             BeginGame();
         }
 
@@ -58,12 +60,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         async UniTask BindComponents()
         {
             DontDestroyOnLoad(this);
-            cinemachineBrain = Instantiate(cinemachineBrain);
-            DontDestroyOnLoad(cinemachineBrain);
             eventSystem = Instantiate(eventSystem);
             DontDestroyOnLoad(eventSystem);
             loadingScreen = Instantiate(loadingScreen);
             DontDestroyOnLoad(loadingScreen);
+            var brain = await InstantiateAsync(cinemachineBrain).ToUniTask();
+            DontDestroyOnLoad(brain[0]);
         }
 
         async UniTask BindSystems()
@@ -99,7 +101,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             await sceneLoader.LoadSceneGroup(0);
         }
 
-        async UniTask CreateObjects() { }
+        async UniTask CreateObjects()
+        {
+            var chara = await InstantiateAsync(characters).ToUniTask();
+            DontDestroyOnLoad(chara[0]);
+        }
 
         async UniTask InitializeObjects() { }
 

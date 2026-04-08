@@ -52,7 +52,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
         public void StopAll()
         {
             var tempList = new LinkedList<SoundEmitter>(activeSoundEmitters);
-            foreach (var soundEmitter in tempList) _ = soundEmitter.Stop();
+            foreach (var soundEmitter in tempList) soundEmitter.Stop().Forget();
 
             frequentSoundEmitters.Clear();
         }

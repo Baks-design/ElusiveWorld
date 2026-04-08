@@ -33,7 +33,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         /// This method is useful for improved fading effects between Audio Clips.
         /// </summary>
         [MethodImpl(INLINE)]
-        public static float ToLogarithmicFraction(this float fraction) 
+        public static float ToLogarithmicFraction(this float fraction)
             => Mathf.Log10(1f + 9f * fraction) / Mathf.Log10(10f);
     }
 }

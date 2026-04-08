@@ -12,7 +12,7 @@ using Random = UnityEngine.Random;
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 {
     [RequireComponent(typeof(AudioSource))]
-    public class SoundEmitter : MonoBehaviour
+    public class SoundEmitter : MonoBehaviour //FIXME: TASK
     {
         CancellationTokenSource playCancellationSource;
         AudioSource audioSource;
@@ -82,7 +82,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             await StopInternal(returnToPool: false);
 
             audioSource.Play();
-            playCancellationSource = new CancellationTokenSource();
+            playCancellationSource = new ();
 
             try
             {
@@ -106,7 +106,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
         {
             if (playCancellationSource == null) return;
 
-            playCancellationSource.Cancel();
+            playCancellationSource?.Cancel();
             audioSource.Stop();
             playCancellationSource?.Dispose();
             playCancellationSource = null;
