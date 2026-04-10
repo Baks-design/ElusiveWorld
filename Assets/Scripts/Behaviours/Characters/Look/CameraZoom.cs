@@ -1,94 +1,77 @@
 using UnityEngine;
+using System;
+using Unity.Cinemachine;
+using System.Collections;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
-    public class CameraZoom //FIXME: TASKS
+    public class CameraZoom
     {
         readonly LookSettings settings;
-        readonly Camera cam;
+        readonly CinemachineCamera cam;
         readonly float initFOV;
-        CancellationTokenSource tokenChangeAimSource;
-        CancellationTokenSource tokenChangeRunSource;
+        IEnumerator changeFOVRoutine;
+        IEnumerator changeRunFOVRoutine;
         bool running;
+        bool zooming;
 
-        public bool IsCanZooming { get; private set; } = true;
-        public bool IsZooming { get; private set; }
-
-        public CameraZoom(LookSettings settings, Camera cam)
+        public CameraZoom(LookSettings settings, CinemachineCamera cam)
         {
-            this.settings = settings;
-            this.cam = cam;
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.cam = cam != null ? cam : throw new ArgumentNullException(nameof(cam));
 
-            initFOV = cam.fieldOfView;
+            initFOV = cam.Lens.FieldOfView;
         }
 
-        public void Dispose()
+        public void ChangeFOV(MonoBehaviour mono)
         {
-            tokenChangeAimSource?.Cancel();
-            tokenChangeAimSource?.Dispose();
-            tokenChangeRunSource?.Cancel();
-            tokenChangeRunSource?.Dispose();
-        }
-
-        public void ChangeFOV()
-        {
-            if (!IsCanZooming) return;
-
             if (running)
             {
-                IsZooming = !IsZooming;
+                zooming = !zooming;
                 return;
             }
 
-            tokenChangeRunSource?.Cancel();
-            tokenChangeRunSource?.Dispose();
-            tokenChangeAimSource?.Cancel();
-            tokenChangeAimSource?.Dispose();
+            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
+            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
 
-            tokenChangeAimSource = new();
-
-            ChangeFOVRoutine(tokenChangeAimSource.Token).Forget();
+            changeFOVRoutine = ChangeFOVRoutine();
+            mono.StartCoroutine(changeFOVRoutine);
         }
 
-        async UniTask ChangeFOVRoutine(CancellationToken source)
+        IEnumerator ChangeFOVRoutine()
         {
             var percent = 0f;
             var speed = 1f / settings.zoomTransitionDuration;
-            var currentFOV = cam.fieldOfView;
-            var targetFOV = IsZooming ? initFOV : settings.zoomFOV;
+            var currentFOV = cam.Lens.FieldOfView;
+            var targetFOV = zooming ? initFOV : settings.zoomFOV;
 
-            IsZooming = !IsZooming;
+            zooming = !zooming;
 
             while (percent < 1f)
             {
                 percent += Time.deltaTime * speed;
                 var smoothPercent = settings.zoomCurve.Evaluate(percent);
-                cam.fieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
-                await UniTask.Yield(PlayerLoopTiming.PreLateUpdate, source);
+                cam.Lens.FieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
+                yield return null;
             }
         }
 
-        public void ChangeRunFOV(bool returning)
+        public void ChangeRunFOV(MonoBehaviour mono, bool returning)
         {
-            tokenChangeAimSource?.Cancel();
-            tokenChangeAimSource?.Dispose();
-            tokenChangeRunSource?.Cancel();
-            tokenChangeRunSource?.Dispose();
+            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
+            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
 
-            tokenChangeRunSource = new();
-
-            ChangeRunFOVTask(tokenChangeRunSource.Token, returning).Forget();
+            changeRunFOVRoutine = ChangeRunFOVRoutine(returning);
+            mono.StartCoroutine(changeRunFOVRoutine);
         }
 
-        async UniTask ChangeRunFOVTask(CancellationToken source, bool returning)
+        IEnumerator ChangeRunFOVRoutine(bool returning)
         {
             var percent = 0f;
             var duration = returning ? settings.runReturnTransitionDuration : settings.runTransitionDuration;
             var speed = 1f / duration;
-            var currentFOV = cam.fieldOfView;
+            var currentFOV = cam.Lens.FieldOfView;
             var targetFOV = returning ? initFOV : settings.runFOV;
 
             running = !returning;
@@ -97,8 +80,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             {
                 percent += Time.deltaTime * speed;
                 var smoothPercent = settings.runCurve.Evaluate(percent);
-                cam.fieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
-                await UniTask.Yield(PlayerLoopTiming.PreLateUpdate, source);
+                cam.Lens.FieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
+                yield return null;
             }
         }
     }

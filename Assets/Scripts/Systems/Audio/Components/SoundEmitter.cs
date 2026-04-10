@@ -1,7 +1,5 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
@@ -12,26 +10,18 @@ using Random = UnityEngine.Random;
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 {
     [RequireComponent(typeof(AudioSource))]
-    public class SoundEmitter : MonoBehaviour //FIXME: TASK
+    public class SoundEmitter : MonoBehaviour
     {
-        CancellationTokenSource playCancellationSource;
-        AudioSource audioSource;
-        SoundManager soundManager;
+        Coroutine playingCoroutine;
+        AudioSource source;
+        SoundManager sound;
 
         public SoundData Data { get; set; }
         public LinkedListNode<SoundEmitter> Node { get; set; }
 
-        void Awake()
-        {
-            soundManager = IServiceLocator.Default.GetService<SoundManager>();
-            audioSource = gameObject.GetOrAdd<AudioSource>();
-        }
+        void Awake() => source = gameObject.GetOrAdd<AudioSource>();
 
-        void OnDisable()
-        {
-            playCancellationSource?.Cancel();
-            playCancellationSource?.Dispose();
-        }
+        void OnEnable() => sound = IServiceLocator.Default.GetService<SoundManager>();
 
         public void Initialize(SoundData data)
         {
@@ -44,78 +34,64 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 
             var settings = data.settings;
 
-            audioSource.clip = data.GetClip();
-            audioSource.volume = data.volume;
-            audioSource.pitch = data.pitch;
-            audioSource.playOnAwake = false;
-            audioSource.outputAudioMixerGroup = settings.mixerGroup;
-            audioSource.loop = settings.loop;
-            audioSource.mute = settings.mute;
-            audioSource.bypassEffects = settings.bypassEffects;
-            audioSource.bypassListenerEffects = settings.bypassListenerEffects;
-            audioSource.bypassReverbZones = settings.bypassReverbZones;
-            audioSource.priority = settings.priority;
-            audioSource.panStereo = settings.panStereo;
-            audioSource.spatialBlend = settings.spatialBlend;
-            audioSource.reverbZoneMix = settings.reverbZoneMix;
-            audioSource.dopplerLevel = settings.dopplerLevel;
-            audioSource.spread = settings.spread;
-            audioSource.minDistance = settings.minDistance;
-            audioSource.maxDistance = settings.maxDistance;
-            audioSource.ignoreListenerVolume = settings.ignoreListenerVolume;
-            audioSource.ignoreListenerPause = settings.ignoreListenerPause;
-            audioSource.rolloffMode = settings.rolloffMode;
+            source.clip = data.GetClip();
+            source.volume = data.volume;
+            source.pitch = data.pitch;
+            source.playOnAwake = false;
+            source.outputAudioMixerGroup = settings.mixerGroup;
+            source.loop = settings.loop;
+            source.mute = settings.mute;
+            source.bypassEffects = settings.bypassEffects;
+            source.bypassListenerEffects = settings.bypassListenerEffects;
+            source.bypassReverbZones = settings.bypassReverbZones;
+            source.priority = settings.priority;
+            source.panStereo = settings.panStereo;
+            source.spatialBlend = settings.spatialBlend;
+            source.reverbZoneMix = settings.reverbZoneMix;
+            source.dopplerLevel = settings.dopplerLevel;
+            source.spread = settings.spread;
+            source.minDistance = settings.minDistance;
+            source.maxDistance = settings.maxDistance;
+            source.ignoreListenerVolume = settings.ignoreListenerVolume;
+            source.ignoreListenerPause = settings.ignoreListenerPause;
+            source.rolloffMode = settings.rolloffMode;
 
             if (settings.rolloffMode != AudioRolloffMode.Custom) return;
             if (settings.customRolloffCurve is { length: > 0 })
-                audioSource.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.customRolloffCurve);
+                source.SetCustomCurve(AudioSourceCurveType.CustomRolloff, settings.customRolloffCurve);
             if (settings.spatialBlendCurve is { length: > 0 })
-                audioSource.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.spatialBlendCurve);
+                source.SetCustomCurve(AudioSourceCurveType.SpatialBlend, settings.spatialBlendCurve);
             if (settings.reverbZoneMixCurve is { length: > 0 })
-                audioSource.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.reverbZoneMixCurve);
+                source.SetCustomCurve(AudioSourceCurveType.ReverbZoneMix, settings.reverbZoneMixCurve);
             if (settings.spreadCurve is { length: > 0 })
-                audioSource.SetCustomCurve(AudioSourceCurveType.Spread, settings.spreadCurve);
+                source.SetCustomCurve(AudioSourceCurveType.Spread, settings.spreadCurve);
         }
 
-        public async UniTask Play()
+        public void Play()
         {
-            await StopInternal(returnToPool: false);
+            if (playingCoroutine != null) StopCoroutine(playingCoroutine);
+            source.Play();
+            playingCoroutine = StartCoroutine(WaitForSoundToEnd());
+        }
 
-            audioSource.Play();
-            playCancellationSource = new ();
+        IEnumerator WaitForSoundToEnd()
+        {
+            yield return new WaitWhile(() => source.isPlaying);
+            Stop();
+        }
 
-            try
+        public void Stop()
+        {
+            if (playingCoroutine != null)
             {
-                await WaitForSoundToEnd(playCancellationSource.Token);
+                StopCoroutine(playingCoroutine);
+                playingCoroutine = null;
             }
-            catch (OperationCanceledException) { }
-        }
-
-        async UniTask WaitForSoundToEnd(CancellationToken token)
-        {
-            while (audioSource.isPlaying && !token.IsCancellationRequested)
-                await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken: token);
-
-            if (!token.IsCancellationRequested)
-                await StopInternal(returnToPool: true);
-        }
-
-        public async UniTask Stop() => await StopInternal(returnToPool: true);
-
-        async UniTask StopInternal(bool returnToPool)
-        {
-            if (playCancellationSource == null) return;
-
-            playCancellationSource?.Cancel();
-            audioSource.Stop();
-            playCancellationSource?.Dispose();
-            playCancellationSource = null;
-
-            if (returnToPool)
-                soundManager.ReturnToPool(this);
+            source.Stop();
+            sound.ReturnToPool(this);
         }
 
         public void WithRandomPitch(float min = -0.05f, float max = 0.05f)
-            => audioSource.pitch += Random.Range(min, max);
+            => source.pitch += Random.Range(min, max);
     }
 }

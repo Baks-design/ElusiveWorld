@@ -32,6 +32,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
         public event Action OnShootReleased = delegate { };
         public event Action OnReloadPressed = delegate { };
         public event Action OnJumpPressed = delegate { };
+        public event Action OnNextCharacterPressed = delegate { };
+        public event Action OnPreviousCharacterPressed = delegate { };
 
         public void Initialize()
         {
@@ -43,12 +45,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
 
         void AddCallbacks()
         {
-            input ??= new GameInputActions();
-            input.Movement.AddCallbacks(this);
-            input.Look.AddCallbacks(this);
-            input.Interaction.AddCallbacks(this);
-            input.Combat.AddCallbacks(this);
-            input.UI.AddCallbacks(this);
+            input = new GameInputActions();
+            if (input != null)
+            {
+                input.Movement.AddCallbacks(this);
+                input.Look.AddCallbacks(this);
+                input.Interaction.AddCallbacks(this);
+                input.Combat.AddCallbacks(this);
+                input.UI.AddCallbacks(this);
+            }
         }
 
         void RemoveCallbacks()
@@ -122,6 +127,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
         {
             if (context.started) OnInteractPressed();
             if (context.canceled) OnInteractReleased();
+        }
+
+        public void OnNextCharacter(CallbackContext context)
+        {
+            if (context.started) OnNextCharacterPressed();
+        }
+
+        public void OnPreviousCharacter(CallbackContext context)
+        {
+            if (context.started) OnPreviousCharacterPressed();
         }
 
         public void OnShoot(CallbackContext context)

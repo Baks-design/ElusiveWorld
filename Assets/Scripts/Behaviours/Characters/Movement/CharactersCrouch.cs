@@ -1,9 +1,10 @@
 using UnityEngine;
-using LitMotion;
+using System.Collections;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
-    public class CharactersCrouch //FIXME: TASK
+    public class CharactersCrouch
     {
         readonly CharacterController controller;
         readonly Transform camPivot;
@@ -12,13 +13,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly CharactersChecks checks;
         readonly CharactersFlags flags;
         readonly CharactersCameraEffects effects;
-        MotionHandle slideHeightHandle;
-        MotionHandle slideCenterHandle;
-        MotionHandle slideCamHandle;
-        MotionHandle slideReturnHandle;
-        MotionHandle crouchHeightHandle;
-        MotionHandle crouchCenterHandle;
-        MotionHandle crouchCamHandle;
+        Coroutine slideRoutine;
+        public Coroutine crouchRoutine;
 
         public CharactersCrouch(
             MovementSettings settings,
@@ -52,133 +48,151 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             flags.slideCamHeight = flags.initCamHeight - flags.slideStandHeightDifference;
         }
 
-        public void HandleCrouchInput()
+        public void HandleCrouchInput(MonoBehaviour mono, InputManager input)
         {
             if (!checks.CanCrouch()) return;
 
-            if (flags.isRunning
-                && !flags.isCrouching
-                && flags.finalMoveVector.sqrMagnitude > 0.1f
-                && checks.CanRun())
-                HandleSlide();
+            if (ShouldSlide(input))
+                StartSlide(mono);
             else
-                HandleCrouch();
+                ToggleCrouch(mono);
         }
 
-        void HandleSlide()
+        public void OnCrouchReleased(MonoBehaviour mono)
+        {
+            if (flags.isSliding) ReturnToInitHeight(mono);
+        }
+
+        bool ShouldSlide(InputManager input)
+            => flags.isRunning
+            && !flags.isCrouching
+            && input.MovementAxis != Vector2.zero
+            && checks.CanRun();
+
+        void ToggleCrouch(MonoBehaviour mono)
+        {
+            if (flags.isCrouching && checks.CheckIfRoof()) return;
+
+            if (effects.landRoutine != null) mono.StopCoroutine(effects.landRoutine);
+            if (crouchRoutine != null) mono.StopCoroutine(crouchRoutine);
+
+            crouchRoutine = mono.StartCoroutine(CrouchRoutine(mono));
+        }
+
+        IEnumerator CrouchRoutine(MonoBehaviour mono)
+        {
+            flags.duringCrouchAnimation = true;
+
+            var startHeight = controller.height;
+            var startCenter = controller.center;
+            var camStart = camPivot.localPosition.y;
+
+            var targetHeight = flags.isCrouching ? flags.initHeight : flags.crouchHeight;
+            var targetCenter = flags.isCrouching ? flags.initCenter : flags.crouchCenter;
+            var targetCam = flags.isCrouching ? flags.initCamHeight : flags.crouchCamHeight;
+
+            flags.isCrouching = !flags.isCrouching;
+            headBob.CurrentStateHeight = targetCam;
+
+            yield return mono.StartCoroutine(LerpAll(
+                startHeight, targetHeight, startCenter, targetCenter,
+                camStart, targetCam,
+                settings.crouchTransitionDuration, settings.crouchTransitionCurve
+            ));
+
+            flags.duringCrouchAnimation = false;
+        }
+
+        void StartSlide(MonoBehaviour mono)
+        {
+            if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
+            slideRoutine = mono.StartCoroutine(SlideRoutine(mono));
+        }
+
+        IEnumerator SlideRoutine(MonoBehaviour mono)
         {
             flags.isSliding = true;
             flags.duringSlideAnimation = true;
 
             headBob.CurrentStateHeight = flags.slideCamHeight;
 
-            // Cancel any existing motion handles
-            CancelSlideMotions();
+            var startHeight = controller.height;
+            var startCenter = controller.center;
+            var camStart = camPivot.localPosition.y;
 
-            // Animate CharacterController height
-            slideHeightHandle = LMotion.Create(controller.height, flags.slideHeight, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(x => controller.height = x);
+            yield return mono.StartCoroutine(LerpAll(
+                startHeight, flags.slideHeight, startCenter, flags.slideCenter,
+                camStart, flags.slideCamHeight,
+                settings.slideTransitionDuration, settings.slideTransitionCurve
+            ));
 
-            // Animate CharacterController center
-            slideCenterHandle = LMotion.Create(controller.center, flags.slideCenter, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(x => controller.center = x);
+            yield return new WaitForSeconds(settings.maxSlideDuration);
 
-            // Animate camera pivot
-            slideCamHandle = LMotion.Create(camPivot.localPosition.y, flags.slideCamHeight, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(y => camPivot.localPosition = new Vector3(camPivot.localPosition.x, y, camPivot.localPosition.z));
-
-            // Schedule return to initial height
-            slideReturnHandle = LMotion.Create(0f, 1f, settings.maxSlideDuration)
-                .WithOnComplete(() => ReturnToInitHeight())
-                .Bind(_ => { });
+            ReturnToInitHeight(mono);
         }
 
-        void CancelSlideMotions()
-        {
-            if (slideHeightHandle.IsActive()) slideHeightHandle.Cancel();
-            if (slideCenterHandle.IsActive()) slideCenterHandle.Cancel();
-            if (slideCamHandle.IsActive()) slideCamHandle.Cancel();
-            if (slideReturnHandle.IsActive()) slideReturnHandle.Cancel();
-        }
-
-        public void ReturnToInitHeight()
+        public void ReturnToInitHeight(MonoBehaviour mono)
         {
             if (checks.CheckIfRoof())
             {
-                CancelSlideMotions();
                 flags.isSliding = false;
-                HandleCrouch();
+                ToggleCrouch(mono);
                 return;
             }
 
             if (!flags.isSliding) return;
 
-            CancelSlideMotions();
+            if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
+
+            mono.StartCoroutine(ReturnRoutine(mono));
+        }
+
+        IEnumerator ReturnRoutine(MonoBehaviour mono)
+        {
             flags.isSliding = false;
             flags.duringSlideAnimation = false;
 
             headBob.CurrentStateHeight = flags.initCamHeight;
 
-            // Return to initial height
-            LMotion.Create(controller.height, flags.initHeight, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(x => controller.height = x);
+            var startHeight = controller.height;
+            var startCenter = controller.center;
+            var camStart = camPivot.localPosition.y;
 
-            // Return to initial center
-            LMotion.Create(controller.center, flags.initCenter, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(x => controller.center = x);
-
-            // Return camera to initial height
-            LMotion.Create(camPivot.localPosition.y, flags.initCamHeight, settings.slideTransitionDuration)
-                .WithEase(settings.slideTransitionCurve)
-                .Bind(y => camPivot.localPosition = new Vector3(camPivot.localPosition.x, y, camPivot.localPosition.z));
+            yield return mono.StartCoroutine(LerpAll(
+                startHeight, flags.initHeight, startCenter, flags.initCenter,
+                camStart, flags.initCamHeight,
+                settings.slideTransitionDuration, settings.slideTransitionCurve
+            ));
         }
 
-        void HandleCrouch()
+        IEnumerator LerpAll(
+           float hStart, float hEnd, Vector3 cStart, Vector3 cEnd,
+           float camStart, float camEnd, float duration, AnimationCurve curve)
         {
-            if (flags.isCrouching && checks.CheckIfRoof()) return;
+            var time = 0f;
 
-            effects.landingTokenSource?.Cancel();
-            effects.landingTokenSource?.Dispose();
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                var t = time / duration;
+                var eval = curve.Evaluate(t);
 
-            flags.duringCrouchAnimation = true;
+                controller.height = Mathf.Lerp(hStart, hEnd, eval);
+                controller.center = Vector3.Lerp(cStart, cEnd, eval);
 
-            var desiredHeight = flags.isCrouching ? flags.initHeight : flags.crouchHeight;
-            var desiredCenter = flags.isCrouching ? flags.initCenter : flags.crouchCenter;
-            var camDesiredHeight = flags.isCrouching ? flags.initCamHeight : flags.crouchCamHeight;
+                var pos = camPivot.localPosition;
+                pos.y = Mathf.Lerp(camStart, camEnd, eval);
+                camPivot.localPosition = pos;
 
-            flags.isCrouching = !flags.isCrouching;
-            headBob.CurrentStateHeight = flags.isCrouching ? flags.crouchCamHeight : flags.initCamHeight;
+                yield return null;
+            }
 
-            // Cancel any existing crouch motions
-            CancelCrouchMotions();
+            controller.height = hEnd;
+            controller.center = cEnd;
 
-            // Animate CharacterController height
-            crouchHeightHandle = LMotion.Create(controller.height, desiredHeight, settings.crouchTransitionDuration)
-                .WithEase(settings.crouchTransitionCurve)
-                .Bind(x => controller.height = x);
-
-            // Animate CharacterController center
-            crouchCenterHandle = LMotion.Create(controller.center, desiredCenter, settings.crouchTransitionDuration)
-                .WithEase(settings.crouchTransitionCurve)
-                .Bind(x => controller.center = x);
-
-            // Animate camera pivot with completion callback
-            crouchCamHandle = LMotion.Create(camPivot.localPosition.y, camDesiredHeight, settings.crouchTransitionDuration)
-                .WithEase(settings.crouchTransitionCurve)
-                .WithOnComplete(() => flags.duringCrouchAnimation = false)
-                .Bind(y => camPivot.localPosition = new Vector3(camPivot.localPosition.x, y, camPivot.localPosition.z));
-        }
-
-        void CancelCrouchMotions()
-        {
-            if (crouchHeightHandle.IsActive()) crouchHeightHandle.Cancel();
-            if (crouchCenterHandle.IsActive()) crouchCenterHandle.Cancel();
-            if (crouchCamHandle.IsActive()) crouchCamHandle.Cancel();
+            var final = camPivot.localPosition;
+            final.y = camEnd;
+            camPivot.localPosition = final;
         }
     }
 }

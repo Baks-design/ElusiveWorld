@@ -93,9 +93,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void CalculateFinalMovement()
         {
             var finalVector = flags.smoothFinalMoveDir * flags.finalSmoothCurrentSpeed;
-            if (controller.isGrounded) flags.finalMoveVector.y += finalVector.y;
             flags.finalMoveVector.x = finalVector.x;
             flags.finalMoveVector.z = finalVector.z;
+            if (controller.isGrounded) flags.finalMoveVector.y += finalVector.y; //FIXME
         }
 
         public void HandleJump()

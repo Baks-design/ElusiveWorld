@@ -1,12 +1,11 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using Cysharp.Threading.Tasks;
-using System.Threading;
+using System.Collections;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
-    public class CharactersCameraEffects //FIXME: TASK
+    public class CharactersCameraEffects
     {
         readonly MovementSettings settings;
         readonly CharactersFlags flags;
@@ -14,7 +13,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly CharactersLook look;
         readonly Transform camPivot;
         readonly HeadBob headBob;
-        public CancellationTokenSource landingTokenSource;
+        public IEnumerator landRoutine;
 
         public CharactersCameraEffects(
             CharactersFlags flags,
@@ -32,10 +31,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.headBob = headBob;
         }
 
-        public void OnPlayerSprintPressed()
+        public void OnPlayerSprintPressed(InputManager input) //FIXME
         {
             flags.isRunning = true;
-            ChangeToRunFOV();
+            ChangeToRunFOV(input);
         }
 
         public void OnPlayerSprintReleased()
@@ -44,34 +43,32 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             ChangeToInitFOV();
         }
 
-        public void Update(InputManager input)
+        public void Update(MonoBehaviour mono, InputManager input)
         {
             HandleHeadBob(input);
             HandleRunFOV(input);
             HandleCameraSway(input);
-            HandleLanding();
+            HandleLanding(mono);
         }
 
-        void HandleLanding()
+        void HandleLanding(MonoBehaviour mono)
         {
-            if (!flags.previouslyGrounded && flags.isGrounded) InvokeLandingRoutine();
+            if (!flags.previouslyGrounded && flags.isGrounded) InvokeLandingRoutine(mono);
         }
 
-        void InvokeLandingRoutine()
+        void InvokeLandingRoutine(MonoBehaviour mono)
         {
-            landingTokenSource?.Cancel();
-            landingTokenSource?.Dispose();
-            landingTokenSource = new();
-            LandingRoutine(landingTokenSource.Token).Forget();
+            if (landRoutine != null) mono.StopCoroutine(landRoutine);
+            landRoutine = LandingRoutine();
+            mono.StartCoroutine(landRoutine);
         }
 
-        async UniTask LandingRoutine(CancellationToken source)
+        IEnumerator LandingRoutine()
         {
             var percent = 0f;
             var speed = 1f / settings.landDuration;
             var localPos = camPivot.localPosition;
             var initLandHeight = localPos.y;
-
             var landAmount = flags.inAirTimer > settings.landTimer
                 ? settings.highLandAmount : settings.lowLandAmount;
 
@@ -79,11 +76,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             {
                 percent += Time.deltaTime * speed;
                 var desiredY = settings.landCurve.Evaluate(percent) * landAmount;
-
                 localPos.y = initLandHeight + desiredY;
                 camPivot.localPosition = localPos;
-
-                await UniTask.Yield(PlayerLoopTiming.Update, source);
+                yield return null;
             }
         }
 
@@ -141,11 +136,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             }
         }
 
-        void ChangeToRunFOV()
+        void ChangeToRunFOV(InputManager input)
         {
-            if (!checks.CanRun()
-                || flags.finalMoveVector.sqrMagnitude < 0.1f) return;
-
+            if (!checks.CanRun() || input.MovementAxis == Vector2.zero) return;
             flags.duringRunAnimation = true;
             look.ChangeRunFOV(false);
         }
@@ -153,7 +146,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void ChangeToInitFOV()
         {
             if (!flags.duringRunAnimation) return;
-
             flags.duringRunAnimation = false;
             look.ChangeRunFOV(true);
         }

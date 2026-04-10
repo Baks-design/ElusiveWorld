@@ -1,4 +1,3 @@
-using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 using UnityEngine;
@@ -15,7 +14,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 
         public void Dispose() { }
 
-        public async UniTask LoadSceneGroup(int index)
+        public async Awaitable LoadSceneGroup(int index)
         {
             loadingScreen.SetProgress(0f);
             loadingScreen.TargetProgress = 1f;

@@ -51,7 +51,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
             if (soundData.frequentSound)
                 soundEmitter.Node = soundManager.FrequentSoundEmitters.AddLast(soundEmitter);
 
-            soundEmitter.Play().Forget();
+            soundEmitter.Play();
         }
     }
 }

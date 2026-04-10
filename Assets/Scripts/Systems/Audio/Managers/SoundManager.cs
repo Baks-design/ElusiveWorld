@@ -33,7 +33,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
             {
                 try
                 {
-                    frequentSoundEmitters.First.Value.Stop().Forget();
+                    frequentSoundEmitters.First.Value.Stop();
                     return true;
                 }
                 catch
@@ -52,7 +52,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
         public void StopAll()
         {
             var tempList = new LinkedList<SoundEmitter>(activeSoundEmitters);
-            foreach (var soundEmitter in tempList) soundEmitter.Stop().Forget();
+            foreach (var soundEmitter in tempList) soundEmitter.Stop();
 
             frequentSoundEmitters.Clear();
         }

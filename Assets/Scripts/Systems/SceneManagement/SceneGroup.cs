@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ZLinq;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 {
@@ -12,8 +11,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
         public List<SceneData> Scenes;
 
         public string FindSceneNameByType(SceneType sceneType) =>
-            Scenes
-                .AsValueEnumerable()
-                .FirstOrDefault(scene => scene.SceneType == sceneType)?.Reference.Name;
+            Scenes.FirstOrDefault(scene => scene.SceneType == sceneType)?.Reference.Name;
     }
 }

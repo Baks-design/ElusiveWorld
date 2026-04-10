@@ -15,7 +15,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 if (other.TryGetComponent<CharactersController>(out var player))
                     player.CollectCharacter(characterData);
 
-                Destroy(gameObject);
+                if (gameObject != null) Destroy(gameObject);
             }
         }
     }

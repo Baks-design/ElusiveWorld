@@ -6,7 +6,6 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Interfaces;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using ZLinq;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
 {
@@ -32,7 +31,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
 
         void Bind<T, TData>(TData data) where T : MonoBehaviour, IBind<TData> where TData : ISaveable, new()
         {
-            var entity = FindObjectsByType<T>().AsValueEnumerable().FirstOrDefault();
+            var entity = FindObjectsByType<T>().FirstOrDefault();
             if (entity != null)
             {
                 data ??= new TData { Id = entity.Id };
@@ -45,7 +44,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence
             var entities = FindObjectsByType<T>();
             foreach (var entity in entities)
             {
-                var data = datas.AsValueEnumerable().FirstOrDefault(d => d.Id == entity.Id);
+                var data = datas.FirstOrDefault(d => d.Id == entity.Id);
                 if (data == null)
                 {
                     data = new TData { Id = entity.Id };

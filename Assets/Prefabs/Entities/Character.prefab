@@ -405,6 +405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82e297a5a2345fd45a6afb5d3fe0ff63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CharactersLook
+  cam: {fileID: 8198400924548044831}
   camTransform: {fileID: 7410663554583974544}
   yawTranform: {fileID: 4738359264711550235}
   pitchTranform: {fileID: 8670476783501550442}
@@ -469,7 +470,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    zoomTransitionDuration: 0.25
+    zoomTransitionDuration: 0.5
     runFOV: 70
     runCurve:
       serializedVersion: 2

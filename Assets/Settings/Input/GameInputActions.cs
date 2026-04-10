@@ -866,6 +866,24 @@ namespace ElusiveWorld.Core
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""NextCharacter"",
+                    ""type"": ""Button"",
+                    ""id"": ""c53e5a1b-f038-43dc-bd55-7be0af9f64d2"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PreviousCharacter"",
+                    ""type"": ""Button"",
+                    ""id"": ""39b498c8-9343-43c5-9dee-153129978302"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -877,6 +895,28 @@ namespace ElusiveWorld.Core
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6379127a-a540-404c-9111-6985eab6f97c"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""NextCharacter"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0d530b3f-2971-4f22-ba65-273f2c216cb9"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""PreviousCharacter"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -932,6 +972,8 @@ namespace ElusiveWorld.Core
             // Interaction
             m_Interaction = asset.FindActionMap("Interaction", throwIfNotFound: true);
             m_Interaction_Interact = m_Interaction.FindAction("Interact", throwIfNotFound: true);
+            m_Interaction_NextCharacter = m_Interaction.FindAction("NextCharacter", throwIfNotFound: true);
+            m_Interaction_PreviousCharacter = m_Interaction.FindAction("PreviousCharacter", throwIfNotFound: true);
         }
 
         ~@GameInputActions()
@@ -1566,6 +1608,8 @@ namespace ElusiveWorld.Core
         private readonly InputActionMap m_Interaction;
         private List<IInteractionActions> m_InteractionActionsCallbackInterfaces = new List<IInteractionActions>();
         private readonly InputAction m_Interaction_Interact;
+        private readonly InputAction m_Interaction_NextCharacter;
+        private readonly InputAction m_Interaction_PreviousCharacter;
         /// <summary>
         /// Provides access to input actions defined in input action map "Interaction".
         /// </summary>
@@ -1581,6 +1625,14 @@ namespace ElusiveWorld.Core
             /// Provides access to the underlying input action "Interaction/Interact".
             /// </summary>
             public InputAction @Interact => m_Wrapper.m_Interaction_Interact;
+            /// <summary>
+            /// Provides access to the underlying input action "Interaction/NextCharacter".
+            /// </summary>
+            public InputAction @NextCharacter => m_Wrapper.m_Interaction_NextCharacter;
+            /// <summary>
+            /// Provides access to the underlying input action "Interaction/PreviousCharacter".
+            /// </summary>
+            public InputAction @PreviousCharacter => m_Wrapper.m_Interaction_PreviousCharacter;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1610,6 +1662,12 @@ namespace ElusiveWorld.Core
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
+                @NextCharacter.started += instance.OnNextCharacter;
+                @NextCharacter.performed += instance.OnNextCharacter;
+                @NextCharacter.canceled += instance.OnNextCharacter;
+                @PreviousCharacter.started += instance.OnPreviousCharacter;
+                @PreviousCharacter.performed += instance.OnPreviousCharacter;
+                @PreviousCharacter.canceled += instance.OnPreviousCharacter;
             }
 
             /// <summary>
@@ -1624,6 +1682,12 @@ namespace ElusiveWorld.Core
                 @Interact.started -= instance.OnInteract;
                 @Interact.performed -= instance.OnInteract;
                 @Interact.canceled -= instance.OnInteract;
+                @NextCharacter.started -= instance.OnNextCharacter;
+                @NextCharacter.performed -= instance.OnNextCharacter;
+                @NextCharacter.canceled -= instance.OnNextCharacter;
+                @PreviousCharacter.started -= instance.OnPreviousCharacter;
+                @PreviousCharacter.performed -= instance.OnPreviousCharacter;
+                @PreviousCharacter.canceled -= instance.OnPreviousCharacter;
             }
 
             /// <summary>
@@ -1849,6 +1913,20 @@ namespace ElusiveWorld.Core
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnInteract(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "NextCharacter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnNextCharacter(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "PreviousCharacter" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnPreviousCharacter(InputAction.CallbackContext context);
         }
     }
 }

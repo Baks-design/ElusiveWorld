@@ -41,13 +41,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async void Start()
         {
-            BindComponents().Forget();
-            BindSystems().Forget();
-            RegisterServices().Forget();
+            await BindComponents();
+            await BindSystems();
+            await RegisterServices();
             await InitializeSystems();
             await CreateObjects();
-            InitializeObjects().Forget();
-            PrepareGame().Forget();
+            await InitializeObjects();
+            await PrepareGame();
             BeginGame();
         }
 

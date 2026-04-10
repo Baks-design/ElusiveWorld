@@ -13,15 +13,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         [SerializeField] Transform modelParent;
         [SerializeField] CharacterData defaultCharacter;
         readonly List<CharacterData> collectedCharacters = new();
-        int currentCharacterIndex = 0;
         CharacterData currentCharacterData;
         GameObject currentModel;
         Animator currentAnimator;
         InputManager input;
+        int currentCharacterIndex = 0;
 
         void OnEnable()
         {
             UpdateManager.RegisterUpdate(this);
+
             input = IServiceLocator.Default.GetService<InputManager>();
             input.OnShootPressed += NextCharacter;
             input.OnReloadPressed += PreviousCharacter;
@@ -41,13 +42,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void OnDisable()
         {
             UpdateManager.UnregisterUpdate(this);
-            input.OnShootPressed -= NextCharacter;
+
+            input.OnShootPressed -= NextCharacter; 
             input.OnReloadPressed -= PreviousCharacter;
         }
 
         void NextCharacter()
         {
             if (collectedCharacters.Count <= 1) return;
+
             currentCharacterIndex = (currentCharacterIndex + 1) % collectedCharacters.Count;
             SwitchCharacter(currentCharacterIndex);
         }
@@ -55,22 +58,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void PreviousCharacter()
         {
             if (collectedCharacters.Count <= 1) return;
+
             currentCharacterIndex = (currentCharacterIndex - 1 + collectedCharacters.Count) % collectedCharacters.Count;
             SwitchCharacter(currentCharacterIndex);
-        }
-
-        public void CollectCharacter(CharacterData newCharacter)
-        {
-            if (collectedCharacters.Contains(newCharacter))
-            {
-                Debug.Log("Você já tem esse personagem!");
-                return;
-            }
-
-            collectedCharacters.Add(newCharacter);
-            Debug.Log($"Coletou: {newCharacter.characterName}! Total: {collectedCharacters.Count}");
-
-            if (collectedCharacters.Count == 2) SwitchCharacter(1);
         }
 
         void SwitchCharacter(int index)
@@ -97,5 +87,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         }
 
         void OnCharacterChanged() { }
+
+        public void CollectCharacter(CharacterData newCharacter)
+        {
+            if (collectedCharacters.Contains(newCharacter))
+            {
+                Debug.Log("Você já tem esse personagem!");
+                return;
+            }
+
+            collectedCharacters.Add(newCharacter);
+            Debug.Log($"Coletou: {newCharacter.characterName}! Total: {collectedCharacters.Count}");
+
+            if (collectedCharacters.Count == 2) SwitchCharacter(1);
+        }
     }
 }

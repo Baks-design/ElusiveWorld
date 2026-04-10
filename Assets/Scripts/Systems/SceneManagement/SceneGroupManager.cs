@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
-using ZLinq;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 {
@@ -21,7 +19,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
         public event Action<string> OnSceneUnloaded = delegate { };
         public event Action OnSceneGroupLoaded = delegate { };
 
-        public async UniTask LoadScenes(SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
+        public async Awaitable LoadScenes(SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
         {
             ActiveSceneGroup = group;
             var loadedScenes = new List<string>();
@@ -29,11 +27,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             await UnloadScenes();
 
             var sceneCount = SceneManager.sceneCount;
-            for (var i = 0; i < sceneCount; i++)
-                loadedScenes.Add(SceneManager.GetSceneAt(i).name);
+            for (var i = 0; i < sceneCount; i++) loadedScenes.Add(SceneManager.GetSceneAt(i).name);
 
             var totalScenesToLoad = ActiveSceneGroup.Scenes.Count;
-            var loadTasks = new List<UniTask>();
+            var operationGroup = new AsyncOperationGroup(totalScenesToLoad);
 
             for (var i = 0; i < totalScenesToLoad; i++)
             {
@@ -43,20 +40,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
                 if (sceneData.Reference.State == SceneReferenceState.Regular)
                 {
                     var operation = SceneManager.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
-                    loadTasks.Add(operation.ToUniTask());
+                    operationGroup.Operations.Add(operation);
                 }
                 else if (sceneData.Reference.State == SceneReferenceState.Addressable)
                 {
                     var sceneHandle = Addressables.LoadSceneAsync(sceneData.Reference.Path, LoadSceneMode.Additive);
-                    loadTasks.Add(sceneHandle.ToUniTask());
+                    handleGroup.Handles.Add(sceneHandle);
                 }
 
                 OnSceneLoaded.Invoke(sceneData.Name);
-
-                progress?.Report(i / (float)totalScenesToLoad);
             }
 
-            await UniTask.WhenAll(loadTasks);
+            while (!operationGroup.IsDone || !handleGroup.IsDone)
+            {
+                progress?.Report((operationGroup.Progress + handleGroup.Progress) / 2f);
+                await Awaitable.WaitForSecondsAsync(1f);
+            }
 
             var activeScene = SceneManager.GetSceneByName(ActiveSceneGroup.FindSceneNameByType(SceneType.ActiveScene));
             if (activeScene.IsValid()) SceneManager.SetActiveScene(activeScene);
@@ -64,7 +63,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             OnSceneGroupLoaded.Invoke();
         }
 
-        public async UniTask UnloadScenes()
+        public async Awaitable UnloadScenes()
         {
             var scenes = new List<string>();
             var activeScene = SceneManager.GetActiveScene().name;
@@ -76,10 +75,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
                 if (!sceneAt.isLoaded) continue;
 
                 var sceneName = sceneAt.name;
-                if (sceneName.Equals(activeScene) || sceneName == "Initiator") continue;
-                if (handleGroup.Handles.AsValueEnumerable().Any(h => h.IsValid() 
-                    && h.Result.Scene.name == sceneName)) continue;
-
+                if (sceneName.Equals(activeScene)
+                    || sceneName == "Initiator"
+                    || handleGroup.Handles.Any(h => h.IsValid()
+                    && h.Result.Scene.name == sceneName))
+                    continue;
                 scenes.Add(sceneName);
             }
 
@@ -97,13 +97,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 
             foreach (var handle in handleGroup.Handles)
                 if (handle.IsValid())
-                    await Addressables.UnloadSceneAsync(handle);
-
+                    Addressables.UnloadSceneAsync(handle);
             handleGroup.Handles.Clear();
 
-            while (!operationGroup.IsDone) await UniTask.Delay(100);
+            while (!operationGroup.IsDone)
+                await Awaitable.WaitForSecondsAsync(1f);
 
-            await Resources.UnloadUnusedAssets().ToUniTask();
+            await Resources.UnloadUnusedAssets();
         }
     }
 }
@@ -112,11 +112,10 @@ public readonly struct AsyncOperationGroup
 {
     public readonly List<AsyncOperation> Operations;
 
-    public float Progress => Operations.Count == 0
-        ? 0f : Operations.AsValueEnumerable().Average(o => o.progress);
-    public bool IsDone => Operations.AsValueEnumerable().All(o => o.isDone);
+    public float Progress => Operations.Count == 0 ? 0f : Operations.Average(o => o.progress);
+    public bool IsDone => Operations.All(o => o.isDone);
 
-    public AsyncOperationGroup(int initialCapacity)
+    public AsyncOperationGroup(int initialCapacity) 
         => Operations = new List<AsyncOperation>(initialCapacity);
 }
 
@@ -124,10 +123,9 @@ public readonly struct AsyncOperationHandleGroup
 {
     public readonly List<AsyncOperationHandle<SceneInstance>> Handles;
 
-    public float Progress => Handles.Count == 0
-        ? 0f : Handles.AsValueEnumerable().Average(h => h.PercentComplete);
-    public bool IsDone => Handles.Count == 0 || Handles.AsValueEnumerable().All(o => o.IsDone);
+    public float Progress => Handles.Count == 0 ? 0f : Handles.Average(h => h.PercentComplete);
+    public bool IsDone => Handles.Count == 0 || Handles.All(o => o.IsDone);
 
-    public AsyncOperationHandleGroup(int initialCapacity)
+    public AsyncOperationHandleGroup(int initialCapacity) 
         => Handles = new List<AsyncOperationHandle<SceneInstance>>(initialCapacity);
 }
