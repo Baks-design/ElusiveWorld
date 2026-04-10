@@ -17,25 +17,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.data = data;
             this.scrollSpeeds = scrollSpeeds ?? Vector3.one;
 
-            var range = 100f / data.frequency;
-            noiseOffset = new Vector3(
-                Random.Range(0f, range),
-                Random.Range(0f, range),
-                Random.Range(0f, range)
-            );
+            Reset();
         }
 
-        public void Update()
+        public void Update(float dt)
         {
-            var delta = Time.deltaTime * data.frequency;
-            noiseOffset.x += delta * scrollSpeeds.x;
-            noiseOffset.y += delta * scrollSpeeds.y;
-            noiseOffset.z += delta * scrollSpeeds.z;
+            var delta = dt * data.frequency;
 
-            noise.x = Mathf.PerlinNoise(noiseOffset.x, noiseOffset.y);
-            noise.y = Mathf.PerlinNoise(noiseOffset.y, noiseOffset.z);
-            noise.z = Mathf.PerlinNoise(noiseOffset.z, noiseOffset.x);
+            noiseOffset += new Vector3(
+                delta * scrollSpeeds.x,
+                delta * scrollSpeeds.y,
+                delta * scrollSpeeds.z);
 
+            noise = new Vector3(
+                Mathf.PerlinNoise(noiseOffset.x, noiseOffset.y),
+                Mathf.PerlinNoise(noiseOffset.y, noiseOffset.z),
+                Mathf.PerlinNoise(noiseOffset.z, noiseOffset.x));
             noise = (noise - Vector3.one * 0.5f) * data.amplitude;
         }
 
@@ -45,8 +42,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             noiseOffset = new Vector3(
                 Random.Range(0f, range),
                 Random.Range(0f, range),
-                Random.Range(0f, range)
-            );
+                Random.Range(0f, range));
         }
     }
 }

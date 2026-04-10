@@ -35,7 +35,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
             input.OnInteractReleased += OnInteractReleased;
         }
 
-        void IUpdate.Update()
+        void IUpdate.Update(float dt)
         {
             CheckForInteractable();
             CheckForInteractableInput();

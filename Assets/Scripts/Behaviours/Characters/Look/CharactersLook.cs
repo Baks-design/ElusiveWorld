@@ -4,7 +4,6 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfaces;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using Unity.Cinemachine;
-using UnityEngine.InputSystem;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -12,18 +11,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
     {
         [SerializeField] CinemachineCamera cam;
         [SerializeField] Transform camTransform;
-        [SerializeField] Transform yawTranform;
-        [SerializeField] Transform pitchTranform;
+        [SerializeField] Transform yawTransform;
+        [SerializeField] Transform pitchTransform;
         [SerializeField] LookSettings settings;
         CameraRotation rotation;
         CameraSwaying swaying;
         CameraZoom zoom;
         CameraBreathing breathing;
         InputManager input;
+        float dt;
 
         void Awake()
         {
-            rotation = new(settings, yawTranform, pitchTranform);
+            rotation = new(settings, yawTransform, pitchTransform);
             swaying = new(settings, camTransform);
             zoom = new(settings, cam);
             breathing = new(settings, camTransform);
@@ -34,38 +34,35 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             UpdateManager.RegisterLateUpdate(this);
 
             input = IServiceLocator.Default.GetService<InputManager>();
-            if (input != null)
-            {
-                input.OnZoomPressed += OnZoomPressed;
-                input.OnZoomReleased += OnZoomReleased;
-            }
-        }
-
-        void ILateUpdate.LateUpdate()
-        {
-            rotation.Update(input);
-            breathing.Update();
+            if (input == null) return;
+            input.OnZoomPressed += OnZoom;
+            input.OnZoomReleased += OnZoom;
         }
 
         void OnDisable()
         {
             UpdateManager.UnregisterLateUpdate(this);
 
-            if (input != null)
-            {
-                input.OnZoomPressed -= OnZoomPressed;
-                input.OnZoomReleased -= OnZoomReleased;
-            }
+            if (input == null) return;
+            input.OnZoomPressed -= OnZoom;
+            input.OnZoomReleased -= OnZoom;
         }
 
-        void OnZoomPressed() => zoom.ChangeFOV(this);
+        void ILateUpdate.LateUpdate(float dt)
+        {
+            this.dt = dt;
+            
+            if (input == null) return;
+            rotation.Update(input, dt);
+            breathing.Update(dt);
+        }
 
-        void OnZoomReleased() => zoom.ChangeFOV(this);
+        void OnZoom() => zoom.ChangeFOV(this, dt);
 
-        public void ChangeRunFOV(bool returning) 
-            => zoom.ChangeRunFOV(this, returning);
+        public void ChangeRunFOV(bool returning) =>
+            zoom.ChangeRunFOV(this, returning, dt);
 
-        public void HandleSway(Vector3 inputVector, float rawXInput)
-            => swaying.SwayPlayer(inputVector, rawXInput);
+        public void HandleSway(Vector3 inputVector, float rawXInput) =>
+            swaying.SwayPlayer(inputVector, rawXInput, dt);
     }
 }

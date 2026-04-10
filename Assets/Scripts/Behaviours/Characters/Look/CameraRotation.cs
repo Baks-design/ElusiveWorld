@@ -7,8 +7,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
     public class CameraRotation
     {
         readonly LookSettings settings;
-        readonly Transform yawTranform;
-        readonly Transform pitchTranform;
+        readonly Transform yawTransform;
+        readonly Transform pitchTransform;
         Quaternion targetYawRotation;
         Quaternion targetPitchRotation;
         Quaternion currentYawRotation;
@@ -18,43 +18,43 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         public CameraRotation(
             LookSettings settings,
-            Transform yawTranform,
-            Transform pitchTranform)
+            Transform yawTransform,
+            Transform pitchTransform)
         {
             this.settings = settings;
-            this.yawTranform = yawTranform;
-            this.pitchTranform = pitchTranform;
+            this.yawTransform = yawTransform;
+            this.pitchTransform = pitchTransform;
         }
 
-        public void Update(InputManager input)
+        public void Update(InputManager input, float dt)
         {
-            CalculateRotation(input);
-            SmoothRotation();
+            CalculateRotation(input, dt);
+            SmoothRotation(dt);
             ApplyRotation();
         }
 
-        void CalculateRotation(InputManager input)
+        void CalculateRotation(InputManager input, float dt)
         {
-            desiredYaw += input.LookAxis.x * settings.sensitivity.x * Time.deltaTime;
-            desiredPitch -= input.LookAxis.y * settings.sensitivity.y * Time.deltaTime;
+            var look = input.LookAxis;
+
+            desiredYaw += look.x * settings.sensitivity.x * dt;
+            desiredPitch -= look.y * settings.sensitivity.y * dt;
             desiredPitch = Mathf.Clamp(desiredPitch, settings.lookAngleMinMax.x, settings.lookAngleMinMax.y);
 
             targetYawRotation = Quaternion.Euler(0f, desiredYaw, 0f);
             targetPitchRotation = Quaternion.Euler(desiredPitch, 0f, 0f);
         }
 
-        void SmoothRotation()
+        void SmoothRotation(float dt)
         {
-            currentYawRotation = currentYawRotation.ExpDecay(
-                targetYawRotation, settings.smoothAmount.x, Time.deltaTime);
-            currentPitchRotation = currentPitchRotation.ExpDecay(
-                targetPitchRotation, settings.smoothAmount.y, Time.deltaTime);
+            currentYawRotation = currentYawRotation.ExpDecay(targetYawRotation, settings.smoothAmount.x, dt);
+            currentPitchRotation = currentPitchRotation.ExpDecay(targetPitchRotation, settings.smoothAmount.y, dt);
         }
 
         void ApplyRotation()
         {
-            yawTranform.rotation = currentYawRotation;
-            pitchTranform.localRotation = currentPitchRotation;
+            yawTransform.rotation = currentYawRotation;
+            pitchTransform.localRotation = currentPitchRotation;
         }
     }
 }

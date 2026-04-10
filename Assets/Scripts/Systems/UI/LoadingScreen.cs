@@ -20,7 +20,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.UI
 
         void OnEnable() => UpdateManager.RegisterUpdate(this);
 
-        void IUpdate.Update()
+        void IUpdate.Update(float dt)
         {
             if (!isLoading) return;
             var currentFillAmount = loadingBar.fillAmount;

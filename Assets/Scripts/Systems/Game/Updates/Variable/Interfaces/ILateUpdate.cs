@@ -2,6 +2,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable.Interfa
 {
     public interface ILateUpdate
     {
-        void LateUpdate();
+        void LateUpdate(float dt);
     }
 }

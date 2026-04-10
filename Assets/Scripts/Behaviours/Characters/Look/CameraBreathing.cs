@@ -23,44 +23,40 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             originalRotation = camTransform.localEulerAngles;
         }
 
-        public void Update()
+        public void Update(float dt)
         {
             if (!IsCanBreathing) return;
 
-            perlinNoiseScroller.Update();
+            perlinNoiseScroller.Update(dt);
+            var noise = perlinNoiseScroller.Noise;
 
-            var posOffset = GetPositionOffset();
-            var rotOffset = GetRotationOffset();
-            ApplyOffsets(posOffset, rotOffset);
+            var affectPos = ShouldAffectPosition();
+            if (affectPos) ApplyPosition(noise);
+
+            var affectRot = ShouldAffectRotation();
+            if (affectRot) ApplyRotation(noise);
         }
 
-        Vector3 GetPositionOffset() => new(
-            settings.x && ShouldAffectPosition() ? perlinNoiseScroller.Noise.x : 0f,
-            settings.y && ShouldAffectPosition() ? perlinNoiseScroller.Noise.y : 0f,
-            settings.z && ShouldAffectPosition() ? perlinNoiseScroller.Noise.z : 0f
-        );
-
-        Vector3 GetRotationOffset() => new(
-            settings.x && ShouldAffectRotation() ? perlinNoiseScroller.Noise.x : 0f,
-            settings.y && ShouldAffectRotation() ? perlinNoiseScroller.Noise.y : 0f,
-            settings.z && ShouldAffectRotation() ? perlinNoiseScroller.Noise.z : 0f
-        );
-
-        void ApplyOffsets(Vector3 posOffset, Vector3 rotOffset)
+        void ApplyPosition(Vector3 noise)
         {
-            if (ShouldAffectPosition())
-                camTransform.localPosition = new Vector3(
-                    settings.x ? originalPosition.x + posOffset.x : camTransform.localPosition.x,
-                    settings.y ? originalPosition.y + posOffset.y : camTransform.localPosition.y,
-                    settings.z ? originalPosition.z + posOffset.z : camTransform.localPosition.z
-                );
+            var current = camTransform.localPosition;
 
-            if (ShouldAffectRotation())
-                camTransform.localEulerAngles = new Vector3(
-                    settings.x ? originalRotation.x + rotOffset.x : camTransform.localEulerAngles.x,
-                    settings.y ? originalRotation.y + rotOffset.y : camTransform.localEulerAngles.y,
-                    settings.z ? originalRotation.z + rotOffset.z : camTransform.localEulerAngles.z
-                );
+            camTransform.localPosition = new Vector3(
+                settings.x ? originalPosition.x + noise.x : current.x,
+                settings.y ? originalPosition.y + noise.y : current.y,
+                settings.z ? originalPosition.z + noise.z : current.z
+            );
+        }
+
+        void ApplyRotation(Vector3 noise)
+        {
+            var current = camTransform.localEulerAngles;
+
+            camTransform.localEulerAngles = new Vector3(
+                settings.x ? originalRotation.x + noise.x : current.x,
+                settings.y ? originalRotation.y + noise.y : current.y,
+                settings.z ? originalRotation.z + noise.z : current.z
+            );
         }
 
         bool ShouldAffectPosition() =>

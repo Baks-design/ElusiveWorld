@@ -31,7 +31,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 AddToPlaylist(clip);
         }
 
-        void IUpdate.Update()
+        void IUpdate.Update(float dt)
         {
             HandleCrossFade();
 

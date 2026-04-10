@@ -24,7 +24,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             initFOV = cam.Lens.FieldOfView;
         }
 
-        public void ChangeFOV(MonoBehaviour mono)
+        public void ChangeFOV(MonoBehaviour mono, float dt)
         {
             if (running)
             {
@@ -32,57 +32,62 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 return;
             }
 
-            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
-            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
+            StopRoutine(mono, changeRunFOVRoutine);
+            StopRoutine(mono, changeFOVRoutine);
 
-            changeFOVRoutine = ChangeFOVRoutine();
+            changeFOVRoutine = ChangeFOVRoutine(dt);
             mono.StartCoroutine(changeFOVRoutine);
         }
 
-        IEnumerator ChangeFOVRoutine()
+        IEnumerator ChangeFOVRoutine(float dt)
         {
             var percent = 0f;
             var speed = 1f / settings.zoomTransitionDuration;
-            var currentFOV = cam.Lens.FieldOfView;
-            var targetFOV = zooming ? initFOV : settings.zoomFOV;
+            var start = cam.Lens.FieldOfView;
+            var target = zooming ? initFOV : settings.zoomFOV;
 
             zooming = !zooming;
 
             while (percent < 1f)
             {
-                percent += Time.deltaTime * speed;
-                var smoothPercent = settings.zoomCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
+                percent += dt * speed;
+                var t = settings.zoomCurve.Evaluate(percent);
+                cam.Lens.FieldOfView = start.Eerp(target, t);
                 yield return null;
             }
         }
 
-        public void ChangeRunFOV(MonoBehaviour mono, bool returning)
+        public void ChangeRunFOV(MonoBehaviour mono, bool returning, float dt)
         {
-            if (changeFOVRoutine != null) mono.StopCoroutine(changeFOVRoutine);
-            if (changeRunFOVRoutine != null) mono.StopCoroutine(changeRunFOVRoutine);
+            StopRoutine(mono, changeFOVRoutine);
+            StopRoutine(mono, changeRunFOVRoutine);
 
-            changeRunFOVRoutine = ChangeRunFOVRoutine(returning);
+            changeRunFOVRoutine = ChangeRunFOVRoutine(returning, dt);
             mono.StartCoroutine(changeRunFOVRoutine);
         }
 
-        IEnumerator ChangeRunFOVRoutine(bool returning)
+        IEnumerator ChangeRunFOVRoutine(bool returning, float dt)
         {
             var percent = 0f;
             var duration = returning ? settings.runReturnTransitionDuration : settings.runTransitionDuration;
             var speed = 1f / duration;
-            var currentFOV = cam.Lens.FieldOfView;
-            var targetFOV = returning ? initFOV : settings.runFOV;
+            var start = cam.Lens.FieldOfView;
+            var target = returning ? initFOV : settings.runFOV;
 
             running = !returning;
 
             while (percent < 1f)
             {
-                percent += Time.deltaTime * speed;
-                var smoothPercent = settings.runCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = currentFOV.Eerp(targetFOV, smoothPercent);
+                percent += dt * speed;
+                var t = settings.runCurve.Evaluate(percent);
+                cam.Lens.FieldOfView = start.Eerp(target, t);
                 yield return null;
             }
+        }
+
+        void StopRoutine(MonoBehaviour mono, IEnumerator routine)
+        {
+            if (routine != null) mono.StopCoroutine(routine);
         }
     }
 }

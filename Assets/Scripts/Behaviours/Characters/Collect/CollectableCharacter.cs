@@ -10,13 +10,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         void OnTriggerEnter(Collider other)
         {
-            if (characterLayer.ContainsLayer(other.gameObject))
-            {
-                if (other.TryGetComponent<CharactersController>(out var player))
-                    player.CollectCharacter(characterData);
+            if (!characterLayer.ContainsLayer(other.gameObject)) return;
 
-                if (gameObject != null) Destroy(gameObject);
-            }
+            if (other.TryGetComponent<CharactersController>(out var player))
+                player.CollectCharacter(characterData);
+
+            Destroy(gameObject);
         }
     }
 }

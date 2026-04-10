@@ -18,38 +18,38 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.camTransform = camTransform;
         }
 
-        public void SwayPlayer(Vector3 inputVector, float rawXInput)
+        public void SwayPlayer(Vector3 inputVector, float rawXInput, float dt)
         {
             currentRawInput = rawXInput;
 
-            var isMoving = Mathf.Abs(rawXInput) > 0.001f;
-
+            var isMoving = Mathf.Abs(currentRawInput) > 0.001f;
             if (isMoving)
             {
-                var hasDirectionChanged =
-                    Mathf.Sign(currentRawInput) !=
-                    Mathf.Sign(previousRawInput) &&
+                var directionChanged =
+                    Mathf.Sign(currentRawInput) != Mathf.Sign(previousRawInput) &&
                     Mathf.Abs(previousRawInput) > 0.001f;
+                if (directionChanged) changingDirection = true;
 
-                if (hasDirectionChanged) changingDirection = true;
+                var multiplier = changingDirection
+                    ? settings.changeDirectionMultiplier
+                    : 1f;
 
-                var speedMultiplier = changingDirection ? settings.changeDirectionMultiplier : 1f;
-                swayIntensity += inputVector.x * settings.swaySpeed * Time.deltaTime * speedMultiplier;
+                swayIntensity += inputVector.x * settings.swaySpeed * dt * multiplier;
             }
             else
             {
-                if (!isMoving && Mathf.Abs(previousRawInput) < 0.001f) changingDirection = false;
+                if (Mathf.Abs(previousRawInput) < 0.001f) changingDirection = false;
 
-                swayIntensity = swayIntensity.ExpDecay(0f, settings.returnSpeed, Time.deltaTime);
+                swayIntensity = swayIntensity.ExpDecay(0f, settings.returnSpeed, dt);
             }
 
             swayIntensity = Mathf.Clamp(swayIntensity, -1f, 1f);
 
-            var curveValue = settings.swayCurve.Evaluate(Mathf.Abs(swayIntensity));
-            var swayAmount = curveValue * -settings.swayAmount * Mathf.Sign(swayIntensity);
+            var curve = settings.swayCurve.Evaluate(Mathf.Abs(swayIntensity));
+            var sway = curve * -settings.swayAmount * Mathf.Sign(swayIntensity);
 
-            var currentRotation = camTransform.localEulerAngles;
-            camTransform.localRotation = Quaternion.Euler(currentRotation.x, currentRotation.y, swayAmount);
+            var euler = camTransform.localEulerAngles;
+            camTransform.localRotation = Quaternion.Euler(euler.x, euler.y, sway);
 
             previousRawInput = currentRawInput;
         }

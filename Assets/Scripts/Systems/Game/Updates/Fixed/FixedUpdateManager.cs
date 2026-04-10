@@ -113,7 +113,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Fixed
 
             foreach (var update in earlyFixedUpdatesTemp)
             {
-                try { update?.EarlyFixedUpdate(); }
+                try { update?.EarlyFixedUpdate(Time.fixedDeltaTime); }
                 catch (Exception e) { Debug.LogError($"Error in EarlyFixedUpdate: {e}"); }
             }
         }
@@ -125,7 +125,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Fixed
 
             foreach (var update in fixedUpdatesTemp)
             {
-                try { update?.FixedUpdate(); }
+                try { update?.FixedUpdate(Time.fixedDeltaTime); }
                 catch (Exception e) { Debug.LogError($"Error in FixedUpdate: {e}"); }
             }
         }
@@ -137,7 +137,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Fixed
 
             foreach (var update in lateFixedUpdatesTemp)
             {
-                try { update?.LateFixedUpdate(); }
+                try { update?.LateFixedUpdate(Time.fixedDeltaTime); }
                 catch (Exception e) { Debug.LogError($"Error in LateFixedUpdate: {e}"); }
             }
         }

@@ -25,27 +25,40 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         public void Update(InputManager input)
         {
-            CheckIfGrounded();
-            CheckIfWall(input);
+            CheckGrounded();
+            CheckWall(input);
         }
 
-        void CheckIfGrounded()
+        void CheckGrounded()
         {
             var origin = controller.transform.position + controller.center;
+
             flags.isGrounded = Physics.SphereCast(
-                origin, settings.raySphereRadius, Vector3.down,
-                out flags.hitInfo, flags.finalRayLength, settings.groundLayer);
+                origin,
+                settings.raySphereRadius,
+                Vector3.down,
+                out flags.hitInfo,
+                flags.finalRayLength,
+                settings.groundLayer);
         }
 
-        void CheckIfWall(InputManager input)
+        void CheckWall(InputManager input)
         {
+            if (input.MovementAxis == Vector2.zero || flags.finalMoveDir.sqrMagnitude <= 0f)
+            {
+                flags.isHitWall = false;
+                return;
+            }
+
             var origin = controller.transform.position + controller.center;
-            var hitWall = false;
-            if (input.MovementAxis != Vector2.zero && flags.finalMoveDir.sqrMagnitude > 0f)
-                hitWall = Physics.SphereCast(
-                    origin, settings.rayObstacleSphereRadius, flags.finalMoveDir,
-                    out var _, settings.rayObstacleLength, settings.obstacleLayers);
-            flags.isHitWall = hitWall;
+
+            flags.isHitWall = Physics.SphereCast(
+                origin,
+                settings.rayObstacleSphereRadius,
+                flags.finalMoveDir,
+                out _,
+                settings.rayObstacleLength,
+                settings.obstacleLayers);
         }
 
         public bool CheckIfRoof() =>
@@ -53,15 +66,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 controller.transform.position,
                 settings.raySphereRadius,
                 Vector3.up,
-                out var _,
+                out _,
                 flags.initHeight);
 
         public bool CanRun()
         {
-            var normalizedDir = Vector3.zero;
-            if (flags.smoothFinalMoveDir != Vector3.zero) normalizedDir = flags.smoothFinalMoveDir.normalized;
-            var dot = Vector3.Dot(controller.transform.forward, normalizedDir);
-            return dot >= settings.canRunThreshold && !flags.isCrouching;
+            if (flags.isCrouching || flags.smoothFinalMoveDir == Vector3.zero) return false;
+
+            var dot = Vector3.Dot(controller.transform.forward, flags.smoothFinalMoveDir.normalized);
+            return dot >= settings.canRunThreshold;
         }
 
         public bool CanJump() => !flags.isSliding && !flags.isCrouching && controller.isGrounded;

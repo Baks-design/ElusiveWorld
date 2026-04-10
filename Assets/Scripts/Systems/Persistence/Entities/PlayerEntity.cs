@@ -22,7 +22,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
 
         void OnEnable() => UpdateManager.RegisterUpdate(this);
 
-        void IUpdate.Update()
+        void IUpdate.Update(float dt)
         {
             data.position = transform.position;
             data.rotation = transform.rotation;

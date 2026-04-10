@@ -5,7 +5,6 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Unity.Cinemachine;
-using Cysharp.Threading.Tasks;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
@@ -57,18 +56,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             Dispose();
         }
 
-        async UniTask BindComponents()
+        async Awaitable BindComponents()
         {
             DontDestroyOnLoad(this);
             eventSystem = Instantiate(eventSystem);
             DontDestroyOnLoad(eventSystem);
             loadingScreen = Instantiate(loadingScreen);
             DontDestroyOnLoad(loadingScreen);
-            var brain = await InstantiateAsync(cinemachineBrain).ToUniTask();
+            var brain = await InstantiateAsync(cinemachineBrain);
             DontDestroyOnLoad(brain[0]);
         }
 
-        async UniTask BindSystems()
+        async Awaitable BindSystems()
         {
             input = Instantiate(input);
             DontDestroyOnLoad(input);
@@ -82,7 +81,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             DontDestroyOnLoad(persistence);
         }
 
-        async UniTask RegisterServices()
+        async Awaitable RegisterServices()
         {
             IServiceLocator.Default.TryRegisterService(input);
             IServiceLocator.Default.TryRegisterService(sound);
@@ -92,7 +91,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             IServiceLocator.Default.TryRegisterService(persistence);
         }
 
-        async UniTask InitializeSystems()
+        async Awaitable InitializeSystems()
         {
             input.Initialize();
             sound.Initialize();
@@ -101,15 +100,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             await sceneLoader.LoadSceneGroup(0);
         }
 
-        async UniTask CreateObjects()
+        async Awaitable CreateObjects()
         {
-            var chara = await InstantiateAsync(characters).ToUniTask();
+            var chara = await InstantiateAsync(characters);
             DontDestroyOnLoad(chara[0]);
         }
 
-        async UniTask InitializeObjects() { }
+        async Awaitable InitializeObjects() { }
 
-        async UniTask PrepareGame() => input.EnableGameplay();
+        async Awaitable PrepareGame() => input.EnableGameplay();
 
         void BeginGame() { }
 
