@@ -1,5 +1,4 @@
 using UnityEngine;
-using System;
 using Unity.Cinemachine;
 using System.Collections;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
@@ -8,23 +7,27 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
     public class CameraZoom
     {
+        private readonly MonoBehaviour mono;
         readonly LookSettings settings;
         readonly CinemachineCamera cam;
-        readonly float initFOV;
         IEnumerator changeFOVRoutine;
         IEnumerator changeRunFOVRoutine;
         bool running;
         bool zooming;
+        float initFOV;
 
-        public CameraZoom(LookSettings settings, CinemachineCamera cam)
+        public CameraZoom(MonoBehaviour mono, LookSettings settings, CinemachineCamera cam)
         {
-            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            this.cam = cam != null ? cam : throw new ArgumentNullException(nameof(cam));
+            this.mono = mono;
+            this.settings = settings;
+            this.cam = cam;
 
-            initFOV = cam.Lens.FieldOfView;
+            InitializeSettings();
         }
 
-        public void ChangeFOV(MonoBehaviour mono, float dt)
+        void InitializeSettings() => initFOV = cam.Lens.FieldOfView;
+
+        public void ChangeFOV()
         {
             if (running)
             {
@@ -32,14 +35,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 return;
             }
 
-            StopRoutine(mono, changeRunFOVRoutine);
-            StopRoutine(mono, changeFOVRoutine);
+            StopRoutine(changeRunFOVRoutine);
+            StopRoutine(changeFOVRoutine);
 
-            changeFOVRoutine = ChangeFOVRoutine(dt);
+            changeFOVRoutine = ChangeFOVRoutine();
             mono.StartCoroutine(changeFOVRoutine);
         }
 
-        IEnumerator ChangeFOVRoutine(float dt)
+        IEnumerator ChangeFOVRoutine()
         {
             var percent = 0f;
             var speed = 1f / settings.zoomTransitionDuration;
@@ -50,23 +53,23 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             while (percent < 1f)
             {
-                percent += dt * speed;
+                percent += Time.deltaTime * speed;
                 var t = settings.zoomCurve.Evaluate(percent);
                 cam.Lens.FieldOfView = start.Eerp(target, t);
                 yield return null;
             }
         }
 
-        public void ChangeRunFOV(MonoBehaviour mono, bool returning, float dt)
+        public void ChangeRunFOV(bool returning)
         {
-            StopRoutine(mono, changeFOVRoutine);
-            StopRoutine(mono, changeRunFOVRoutine);
+            StopRoutine(changeFOVRoutine);
+            StopRoutine(changeRunFOVRoutine);
 
-            changeRunFOVRoutine = ChangeRunFOVRoutine(returning, dt);
+            changeRunFOVRoutine = ChangeRunFOVRoutine(returning);
             mono.StartCoroutine(changeRunFOVRoutine);
         }
 
-        IEnumerator ChangeRunFOVRoutine(bool returning, float dt)
+        IEnumerator ChangeRunFOVRoutine(bool returning)
         {
             var percent = 0f;
             var duration = returning ? settings.runReturnTransitionDuration : settings.runTransitionDuration;
@@ -78,14 +81,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             while (percent < 1f)
             {
-                percent += dt * speed;
+                percent += Time.deltaTime * speed;
                 var t = settings.runCurve.Evaluate(percent);
                 cam.Lens.FieldOfView = start.Eerp(target, t);
                 yield return null;
             }
         }
 
-        void StopRoutine(MonoBehaviour mono, IEnumerator routine)
+        void StopRoutine(IEnumerator routine)
         {
             if (routine != null) mono.StopCoroutine(routine);
         }

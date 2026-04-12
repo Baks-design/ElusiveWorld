@@ -20,7 +20,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.UI
 
         void OnEnable() => UpdateManager.RegisterUpdate(this);
 
-        void IUpdate.Update(float dt)
+        void IUpdate.Update() => CalculateLoadingBar();
+
+        void OnDisable() => UpdateManager.UnregisterUpdate(this);
+
+        void CalculateLoadingBar()
         {
             if (!isLoading) return;
             var currentFillAmount = loadingBar.fillAmount;
@@ -28,9 +32,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.UI
             var dynamicFillSpeed = progressDifference * fillSpeed;
             SetProgress(currentFillAmount.ExpDecay(TargetProgress, dynamicFillSpeed, Time.deltaTime));
         }
-
-        void OnDisable() => UpdateManager.UnregisterUpdate(this);
-
+        
         public void SetProgress(float progress) => loadingBar.fillAmount = progress;
 
         public void EnableLoadingCanvas(bool enable = true)

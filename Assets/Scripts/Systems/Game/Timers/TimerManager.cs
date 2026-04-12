@@ -15,14 +15,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Timers
         {
             if (timers.Count == 0) return;
 
-            sweep.RefreshWith(timers);
+            sweep.ReplaceWith(timers);
             foreach (var timer in sweep)
                 timer.Tick();
         }
 
         public static void Clear()
         {
-            sweep.RefreshWith(timers);
+            sweep.ReplaceWith(timers);
             foreach (var timer in sweep)
                 timer.Dispose();
 

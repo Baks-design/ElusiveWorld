@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3b749edca0028a4bb6174fcfc6e6d80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Game.GameInitiator
-  characters: {fileID: 617283793062855463, guid: 188ab7b4f20a8f049a8d0e096096f2a4, type: 3}
+  characters: {fileID: 8474282313170226043, guid: 188ab7b4f20a8f049a8d0e096096f2a4, type: 3}
   eventSystem: {fileID: 15372324008939723, guid: c4b6ad06e2e0f18468caa5cca78f1d7a, type: 3}
   cinemachineBrain: {fileID: 440230529483705976, guid: 57b9b8c523f6f2e4a90779a8f7ae78ef, type: 3}
   loadingScreen: {fileID: 6309719376429406705, guid: 73b6cff7b40dd7f43b0147ce0a77d539, type: 3}

@@ -9,6 +9,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
 {
     public class PlayerEntity : MonoBehaviour, IUpdate, IBind<PlayerData>
     {
+        [SerializeField] CharacterController controller;
         [SerializeField] PlayerData data;
 
         [field: SerializeField] public SerializableGuid Id { get; set; } = SerializableGuid.NewGuid();
@@ -17,17 +18,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities
         {
             this.data = data;
             data.Id = Id;
-            transform.SetPositionAndRotation(data.position, data.rotation);
+            controller.transform.SetPositionAndRotation(data.position, data.rotation);
         }
 
         void OnEnable() => UpdateManager.RegisterUpdate(this);
 
-        void IUpdate.Update(float dt)
-        {
-            data.position = transform.position;
-            data.rotation = transform.rotation;
-        }
+        void IUpdate.Update() => SetValues();
 
         void OnDisable() => UpdateManager.UnregisterUpdate(this);
+
+        void SetValues()
+        {
+            data.position = controller.transform.position;
+            data.rotation = controller.transform.rotation;
+        }
     }
 }

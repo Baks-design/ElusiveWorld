@@ -16,27 +16,36 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         InputManager input;
         int currentCharacterIndex;
 
-        void OnEnable()
+        void Awake() => input = IServiceLocator.Default.GetService<InputManager>();
+
+        void OnEnable() => InputSubscribe();
+
+        void Start()
         {
-            input = IServiceLocator.Default.GetService<InputManager>();
+            AddInitializeCharacter();
+            SwitchCharacter(0);
+        }
+
+        void OnDisable() => InputUnsubscribe();
+
+        void InputSubscribe()
+        {
             if (input == null) return;
             input.OnShootPressed += NextCharacter;
             input.OnReloadPressed += PreviousCharacter;
         }
 
-        void Start()
-        {
-            if (defaultCharacter == null) return;
-
-            collectedCharacters.Add(defaultCharacter);
-            SwitchCharacter(0);
-        }
-
-        void OnDisable()
+        void InputUnsubscribe()
         {
             if (input == null) return;
             input.OnShootPressed -= NextCharacter;
             input.OnReloadPressed -= PreviousCharacter;
+        }
+
+        void AddInitializeCharacter()
+        {
+            if (defaultCharacter == null) return;
+            collectedCharacters.Add(defaultCharacter);
         }
 
         void NextCharacter()

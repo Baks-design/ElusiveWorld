@@ -21,58 +21,56 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         CharactersDisplacement displacement;
         CharactersChecks checks;
         CharactersCrouch crouch;
-        float dt;
 
         void Awake()
         {
-            controller.center = new(0f, controller.height / 2f + controller.skinWidth, 0f);
+            input = IServiceLocator.Default.GetService<InputManager>();
+            checks = new(flags, settings, controller, input);
             headBob = new(headBobData, settings.moveBackwardsSpeedPercent, settings.moveSideSpeedPercent);
-            checks = new(flags, settings, controller);
-            effects = new(flags, settings, checks, look, camPivot, headBob);
-            crouch = new(settings, checks, controller, flags, camPivot, headBob, effects);
-            displacement = new(settings, checks, controller, flags, headBob, yawTransform);
+            effects = new(this, flags, settings, checks, look, camPivot, headBob, input);
+            crouch = new(this, settings, checks, controller, flags, camPivot, headBob, input);
+            displacement = new(settings, checks, controller, flags, headBob, yawTransform, input);
         }
 
         void OnEnable()
         {
             UpdateManager.RegisterUpdate(this);
-
-            input = IServiceLocator.Default.GetService<InputManager>();
-            if (input == null) return;
-            input.OnSprintPressed += OnSprintPressed;
-            input.OnSprintPressed += effects.OnPlayerSprintReleased;
-            input.OnCrouchPressed += OnCrouchPressed;
-            input.OnCrouchReleased += OnCrouchReleased;
-            input.OnJumpPressed += displacement.HandleJump;
+            InputSubscribe();
         }
 
-        void IUpdate.Update(float dt)
+        void IUpdate.Update()
         {
-            this.dt = dt;
-            if (input == null) return;
-            
-            displacement.RotateTowardsCamera(dt);
-            checks.Update(input);
-            displacement.UpdateProcess(dt, input);
-            effects.Update(this, input, dt);
-            displacement.UpdateVelocity(dt);
+            displacement.RotateTowardsCamera();
+            checks.Update();
+            displacement.UpdateProcess();
+            effects.Update();
+            displacement.UpdateVelocity();
             flags.previouslyGrounded = flags.isGrounded;
         }
 
         void OnDisable()
         {
             UpdateManager.UnregisterUpdate(this);
-
-            if (input == null) return;
-            input.OnSprintPressed -= OnSprintPressed;
-            input.OnSprintPressed -= effects.OnPlayerSprintReleased;
-            input.OnCrouchPressed -= OnCrouchPressed;
-            input.OnCrouchReleased -= OnCrouchReleased;
-            input.OnJumpPressed -= displacement.HandleJump;
+            InputUnsubscribe();
         }
 
-        void OnSprintPressed() => effects.OnPlayerSprintPressed(input);
-        void OnCrouchPressed() => crouch.HandleCrouchInput(this, input, dt);
-        void OnCrouchReleased() => crouch.ReturnToInitHeight(this, dt);
+        void InputSubscribe()
+        {
+            if (input == null) return;
+            input.OnSprintPressed += effects.OnPlayerSprintPressed;
+            input.OnSprintPressed += effects.OnPlayerSprintReleased;
+            input.OnCrouchPressed += crouch.HandleCrouchInput;
+            input.OnCrouchReleased += crouch.ReturnToInitHeight;
+            input.OnJumpPressed += displacement.HandleJump;
+        }
+        void InputUnsubscribe()
+        {
+            if (input == null) return;
+            input.OnSprintPressed -= effects.OnPlayerSprintPressed;
+            input.OnSprintPressed -= effects.OnPlayerSprintReleased;
+            input.OnCrouchPressed -= crouch.HandleCrouchInput;
+            input.OnCrouchReleased -= crouch.ReturnToInitHeight;
+            input.OnJumpPressed -= displacement.HandleJump;
+        }
     }
 }

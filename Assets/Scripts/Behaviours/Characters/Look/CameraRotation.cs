@@ -9,6 +9,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly LookSettings settings;
         readonly Transform yawTransform;
         readonly Transform pitchTransform;
+        readonly InputManager input;
         Quaternion targetYawRotation;
         Quaternion targetPitchRotation;
         Quaternion currentYawRotation;
@@ -19,36 +20,37 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         public CameraRotation(
             LookSettings settings,
             Transform yawTransform,
-            Transform pitchTransform)
+            Transform pitchTransform,
+            InputManager input)
         {
             this.settings = settings;
             this.yawTransform = yawTransform;
             this.pitchTransform = pitchTransform;
+            this.input = input;
         }
 
-        public void Update(InputManager input, float dt)
+        public void Update()
         {
-            CalculateRotation(input, dt);
-            SmoothRotation(dt);
+            CalculateRotation();
+            SmoothRotation();
             ApplyRotation();
         }
 
-        void CalculateRotation(InputManager input, float dt)
+        void CalculateRotation()
         {
             var look = input.LookAxis;
-
-            desiredYaw += look.x * settings.sensitivity.x * dt;
-            desiredPitch -= look.y * settings.sensitivity.y * dt;
+            desiredYaw += look.x * settings.sensitivity.x * Time.deltaTime;
+            desiredPitch -= look.y * settings.sensitivity.y * Time.deltaTime;
             desiredPitch = Mathf.Clamp(desiredPitch, settings.lookAngleMinMax.x, settings.lookAngleMinMax.y);
 
             targetYawRotation = Quaternion.Euler(0f, desiredYaw, 0f);
             targetPitchRotation = Quaternion.Euler(desiredPitch, 0f, 0f);
         }
 
-        void SmoothRotation(float dt)
+        void SmoothRotation()
         {
-            currentYawRotation = currentYawRotation.ExpDecay(targetYawRotation, settings.smoothAmount.x, dt);
-            currentPitchRotation = currentPitchRotation.ExpDecay(targetPitchRotation, settings.smoothAmount.y, dt);
+            currentYawRotation = currentYawRotation.ExpDecay(targetYawRotation, settings.smoothAmount.x, Time.deltaTime);
+            currentPitchRotation = currentPitchRotation.ExpDecay(targetPitchRotation, settings.smoothAmount.y, Time.deltaTime);
         }
 
         void ApplyRotation()

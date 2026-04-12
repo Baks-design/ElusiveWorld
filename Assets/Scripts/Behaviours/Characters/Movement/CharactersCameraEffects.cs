@@ -7,34 +7,39 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
     public class CharactersCameraEffects
     {
+        readonly MonoBehaviour mono;
         readonly MovementSettings settings;
         readonly CharactersFlags flags;
         readonly CharactersChecks checks;
         readonly CharactersLook look;
         readonly Transform camPivot;
         readonly HeadBob headBob;
-        public IEnumerator landRoutine;
+        readonly InputManager input;
 
         public CharactersCameraEffects(
+            MonoBehaviour mono,
             CharactersFlags flags,
             MovementSettings settings,
             CharactersChecks checks,
             CharactersLook look,
             Transform camPivot,
-            HeadBob headBob)
+            HeadBob headBob,
+            InputManager input)
         {
+            this.mono = mono;
             this.settings = settings;
             this.flags = flags;
             this.checks = checks;
             this.look = look;
             this.camPivot = camPivot;
             this.headBob = headBob;
+            this.input = input;
         }
 
-        public void OnPlayerSprintPressed(InputManager input)
+        public void OnPlayerSprintPressed()
         {
             flags.isRunning = true;
-            TryStartRunFOV(input);
+            TryStartRunFOV();
         }
 
         public void OnPlayerSprintReleased()
@@ -43,28 +48,28 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             StopRunFOV();
         }
 
-        public void Update(MonoBehaviour mono, InputManager input, float dt)
+        public void Update()
         {
-            HandleHeadBob(input, dt);
-            HandleRunFOV(input);
+            HandleHeadBob();
+            HandleRunFOV();
             look.HandleSway(flags.smoothInputVector, input.MovementAxis.x);
-            HandleLanding(mono, dt);
+            HandleLanding();
         }
 
-        void HandleLanding(MonoBehaviour mono, float dt)
+        void HandleLanding()
         {
-            if (!flags.previouslyGrounded && flags.isGrounded) StartLandingRoutine(mono, dt);
+            if (!flags.previouslyGrounded && flags.isGrounded) StartLandingRoutine();
         }
 
-        void StartLandingRoutine(MonoBehaviour mono, float dt)
+        void StartLandingRoutine()
         {
-            if (landRoutine != null) mono.StopCoroutine(landRoutine);
+            if (flags.landRoutine != null) mono.StopCoroutine(flags.landRoutine);
 
-            landRoutine = LandingRoutine(dt);
-            mono.StartCoroutine(landRoutine);
+            flags.landRoutine = LandingRoutine();
+            mono.StartCoroutine(flags.landRoutine);
         }
 
-        IEnumerator LandingRoutine(float dt)
+        IEnumerator LandingRoutine()
         {
             var percent = 0f;
             var speed = 1f / settings.landDuration;
@@ -78,7 +83,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             while (percent < 1f)
             {
-                percent += dt * speed;
+                percent += Time.deltaTime * speed;
 
                 var offset = settings.landCurve.Evaluate(percent) * landAmount;
                 localPos.y = startY + offset;
@@ -88,7 +93,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             }
         }
 
-        void HandleHeadBob(InputManager input, float dt)
+        void HandleHeadBob()
         {
             var isMoving = input.MovementAxis != Vector2.zero;
             var canBob = flags.isGrounded && !flags.hitWall;
@@ -101,12 +106,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                     flags.isRunning && checks.CanRun(),
                     flags.isCrouching,
                     input.MovementAxis,
-                    dt);
+                    Time.deltaTime);
 
                 camPivot.localPosition = camPivot.localPosition.ExpDecay(
                     (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
                     settings.smoothHeadBobSpeed,
-                    dt);
+                    Time.deltaTime);
 
                 return;
             }
@@ -118,14 +123,16 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 camPivot.localPosition = camPivot.localPosition.ExpDecay(
                     new Vector3(0f, headBob.CurrentStateHeight, 0f),
                     settings.smoothHeadBobSpeed,
-                    dt);
+                    Time.deltaTime);
         }
 
-        void HandleRunFOV(InputManager input)
+        void HandleRunFOV() //FIXME
         {
             var isMoving = input.MovementAxis != Vector2.zero;
             var canRun = checks.CanRun();
             var blocked = !isMoving || !canRun || flags.hitWall;
+
+            Debug.Log(blocked);
 
             if (!flags.duringRunAnimation && !blocked && flags.isRunning)
             {
@@ -141,9 +148,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             }
         }
 
-        void TryStartRunFOV(InputManager input)
+        void TryStartRunFOV()
         {
-            if (!checks.CanRun() || input.MovementAxis == Vector2.zero) return;
+            if (input.MovementAxis == Vector2.zero || !checks.CanRun()) return;
 
             flags.duringRunAnimation = true;
             look.ChangeRunFOV(false);

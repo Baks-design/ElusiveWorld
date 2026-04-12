@@ -18,7 +18,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.camTransform = camTransform;
         }
 
-        public void SwayPlayer(Vector3 inputVector, float rawXInput, float dt)
+        public void SwayPlayer(Vector3 inputVector, float rawXInput)
         {
             currentRawInput = rawXInput;
 
@@ -34,13 +34,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                     ? settings.changeDirectionMultiplier
                     : 1f;
 
-                swayIntensity += inputVector.x * settings.swaySpeed * dt * multiplier;
+                swayIntensity += inputVector.x * settings.swaySpeed * Time.deltaTime * multiplier;
             }
             else
             {
                 if (Mathf.Abs(previousRawInput) < 0.001f) changingDirection = false;
 
-                swayIntensity = swayIntensity.ExpDecay(0f, settings.returnSpeed, dt);
+                swayIntensity = swayIntensity.ExpDecay(0f, settings.returnSpeed, Time.deltaTime);
             }
 
             swayIntensity = Mathf.Clamp(swayIntensity, -1f, 1f);

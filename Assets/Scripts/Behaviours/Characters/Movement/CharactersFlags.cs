@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
@@ -37,5 +38,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         public bool duringSlideAnimation;
         public float inAirTimer;
         public RaycastHit hitInfo;
+        public IEnumerator landRoutine;
+        public Coroutine crouchRoutine;
     }
 }

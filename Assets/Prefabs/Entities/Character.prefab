@@ -266,6 +266,54 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   characterData: {fileID: 11400000, guid: e386272fc19201d4e8ee984a70b6c242, type: 2}
+--- !u!1 &6546932490737455616
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3240812630660701901}
+  - component: {fileID: 3799024108980029080}
+  m_Layer: 3
+  m_Name: Data_Root
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3240812630660701901
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6546932490737455616}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6355347261507478848}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3799024108980029080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6546932490737455616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 71737bfc0b8197c478a6885f7719544f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.Entities.PlayerEntity
+  controller: {fileID: 8474282313170226043}
+  data:
+    position: {x: 0, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &6677962095056671161
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,6 +716,52 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
+--- !u!1 &9108207853310116415
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8991928880723763535}
+  - component: {fileID: 5265463075694530790}
+  m_Layer: 3
+  m_Name: Characters_Root
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8991928880723763535
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9108207853310116415}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6355347261507478848}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5265463075694530790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9108207853310116415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dbdf56ac41553f409cdc158be7b9e15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CharactersController
+  modelParent: {fileID: 3069621480798629533}
+  defaultCharacter: {fileID: 11400000, guid: e386272fc19201d4e8ee984a70b6c242, type: 2}
 --- !u!1 &9142355988966043972
 GameObject:
   m_ObjectHideFlags: 0
@@ -678,7 +772,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6355347261507478848}
   - component: {fileID: 8474282313170226043}
-  - component: {fileID: 617283793062855463}
   m_Layer: 3
   m_Name: Character
   m_TagString: Player
@@ -699,6 +792,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 8991928880723763535}
+  - {fileID: 3240812630660701901}
   - {fileID: 1286338611520287804}
   - {fileID: 6914190932165939404}
   - {fileID: 3617665472028281807}
@@ -730,17 +825,3 @@ CharacterController:
   m_SkinWidth: 0.01
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.91, z: 0}
---- !u!114 &617283793062855463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9142355988966043972}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dbdf56ac41553f409cdc158be7b9e15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CharactersController
-  modelParent: {fileID: 3069621480798629533}
-  defaultCharacter: {fileID: 11400000, guid: e386272fc19201d4e8ee984a70b6c242, type: 2}

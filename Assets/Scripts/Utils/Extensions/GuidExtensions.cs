@@ -9,26 +9,45 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
 
         [MethodImpl(INLINE)]
-        public static SerializableGuid ToSerializableGuid(this Guid systemGuid)
+        public static SerializableGuid ToSerializableGuid(this Guid guid)
         {
-            var bytes = systemGuid.ToByteArray();
+            Span<byte> bytes = stackalloc byte[16];
+            guid.TryWriteBytes(bytes);
             return new SerializableGuid(
-                BitConverter.ToUInt32(bytes, 0),
-                BitConverter.ToUInt32(bytes, 4),
-                BitConverter.ToUInt32(bytes, 8),
-                BitConverter.ToUInt32(bytes, 12)
+                ReadUInt32(bytes, 0),
+                ReadUInt32(bytes, 4),
+                ReadUInt32(bytes, 8),
+                ReadUInt32(bytes, 12)
             );
         }
 
         [MethodImpl(INLINE)]
-        public static Guid ToSystemGuid(this SerializableGuid serializableGuid)
+        public static Guid ToSystemGuid(this SerializableGuid serializable)
         {
-            var bytes = new byte[16];
-            Buffer.BlockCopy(BitConverter.GetBytes(serializableGuid.Part1), 0, bytes, 0, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(serializableGuid.Part2), 0, bytes, 4, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(serializableGuid.Part3), 0, bytes, 8, 4);
-            Buffer.BlockCopy(BitConverter.GetBytes(serializableGuid.Part4), 0, bytes, 12, 4);
+            Span<byte> bytes = stackalloc byte[16];
+            WriteUInt32(bytes, 0, serializable.Part1);
+            WriteUInt32(bytes, 4, serializable.Part2);
+            WriteUInt32(bytes, 8, serializable.Part3);
+            WriteUInt32(bytes, 12, serializable.Part4);
             return new Guid(bytes);
+        }
+
+        [MethodImpl(INLINE)]
+        static uint ReadUInt32(Span<byte> bytes, int offset) =>
+            (uint)(
+                bytes[offset] |
+                (bytes[offset + 1] << 8) |
+                (bytes[offset + 2] << 16) |
+                (bytes[offset + 3] << 24)
+            );
+
+        [MethodImpl(INLINE)]
+        static void WriteUInt32(Span<byte> bytes, int offset, uint value)
+        {
+            bytes[offset] = (byte)(value);
+            bytes[offset + 1] = (byte)(value >> 8);
+            bytes[offset + 2] = (byte)(value >> 16);
+            bytes[offset + 3] = (byte)(value >> 24);
         }
     }
 }

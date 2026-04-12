@@ -37,7 +37,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
 
         public void Initialize()
         {
-            Helpers.ChangeCursorState(CursorLockMode.Locked);
+            CursorUtility.SetState(CursorLockMode.Locked);
             AddCallbacks();
         }
 
@@ -46,14 +46,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Input
         void AddCallbacks()
         {
             input = new GameInputActions();
-            if (input != null)
-            {
-                input.Movement.AddCallbacks(this);
-                input.Look.AddCallbacks(this);
-                input.Interaction.AddCallbacks(this);
-                input.Combat.AddCallbacks(this);
-                input.UI.AddCallbacks(this);
-            }
+            if (input == null) return;
+            input.Movement.AddCallbacks(this);
+            input.Look.AddCallbacks(this);
+            input.Interaction.AddCallbacks(this);
+            input.Combat.AddCallbacks(this);
+            input.UI.AddCallbacks(this);
         }
 
         void RemoveCallbacks()

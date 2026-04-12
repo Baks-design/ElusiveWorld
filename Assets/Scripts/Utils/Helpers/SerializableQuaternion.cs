@@ -1,19 +1,17 @@
 using UnityEngine;
 using System;
-using System.Text;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
 {
-    /// <summary>
-    /// Represents a serializable version of the Unity Quaternion struct.
-    /// </summary>
     [Serializable]
-    public struct SerializableQuaternion
+    public readonly struct SerializableQuaternion : IEquatable<SerializableQuaternion>
     {
-        public float x;
-        public float y;
-        public float z;
-        public float w;
+        public readonly float x;
+        public readonly float y;
+        public readonly float z;
+        public readonly float w;
+
+        public static SerializableQuaternion Identity => new(0f, 0f, 0f, 1f);
 
         public SerializableQuaternion(float x, float y, float z, float w)
         {
@@ -23,25 +21,37 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Helpers
             this.w = w;
         }
 
-        public override readonly string ToString()
+        public override string ToString() => $"[{x}, {y}, {z}, {w}]";
+
+        public bool Equals(SerializableQuaternion other) => x == other.x && y == other.y && z == other.z && w == other.w;
+
+        public override bool Equals(object obj) => obj is SerializableQuaternion other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(x, y, z, w);
+
+        public static bool operator ==(SerializableQuaternion a, SerializableQuaternion b) => a.Equals(b);
+
+        public static bool operator !=(SerializableQuaternion a, SerializableQuaternion b) => !a.Equals(b);
+
+        public bool Approximately(SerializableQuaternion other, float epsilon = 0.0001f) =>
+            Mathf.Abs(x - other.x) < epsilon &&
+                Mathf.Abs(y - other.y) < epsilon &&
+                Mathf.Abs(z - other.z) < epsilon &&
+                Mathf.Abs(w - other.w) < epsilon;
+
+        public bool SameRotation(SerializableQuaternion other, float epsilon = 0.001f)
         {
-            var sb = new StringBuilder(32);
-            sb.Append('[');
-            sb.Append(x);
-            sb.Append(", ");
-            sb.Append(y);
-            sb.Append(", ");
-            sb.Append(z);
-            sb.Append(", ");
-            sb.Append(w);
-            sb.Append(']');
-            return sb.ToString();
+            var a = (Quaternion)this;
+            var b = (Quaternion)other;
+            return Quaternion.Angle(a, b) < epsilon;
         }
 
-        public static implicit operator Quaternion(SerializableQuaternion quaternion) 
-            => new(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+        public Quaternion ToQuaternion() => new(x, y, z, w);
 
-        public static implicit operator SerializableQuaternion(Quaternion quaternion) 
-            => new(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+        public Quaternion ToNormalizedQuaternion() => ToQuaternion().normalized;
+
+        public static implicit operator Quaternion(SerializableQuaternion q) => new(q.x, q.y, q.z, q.w);
+
+        public static implicit operator SerializableQuaternion(Quaternion q) => new(q.x, q.y, q.z, q.w);
     }
 }

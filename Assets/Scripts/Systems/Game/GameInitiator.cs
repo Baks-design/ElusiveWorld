@@ -11,14 +11,13 @@ using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
 using ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
-using ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
     public class GameInitiator : MonoBehaviour
     {
         [Header("Components")]
-        [SerializeField] CharactersController characters;
+        [SerializeField] CharacterController characters;
         [SerializeField] EventSystem eventSystem;
         [SerializeField] CinemachineBrain cinemachineBrain;
         [SerializeField] LoadingScreen loadingScreen;

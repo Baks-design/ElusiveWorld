@@ -8,25 +8,34 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly CharactersFlags flags;
         readonly MovementSettings settings;
         readonly CharacterController controller;
+        readonly InputManager input;
 
         public CharactersChecks(
             CharactersFlags flags,
             MovementSettings settings,
-            CharacterController controller)
+            CharacterController controller,
+            InputManager input)
         {
             this.flags = flags;
             this.settings = settings;
             this.controller = controller;
+            this.input = input;
 
+            InitializeSettings();
+        }
+
+        void InitializeSettings()
+        {
+            controller.center = new(0f, controller.height / 2f + controller.skinWidth, 0f);
             flags.isGrounded = true;
             flags.previouslyGrounded = true;
             flags.finalRayLength = settings.rayLength + controller.center.y;
         }
 
-        public void Update(InputManager input)
+        public void Update()
         {
             CheckGrounded();
-            CheckWall(input);
+            CheckWall();
         }
 
         void CheckGrounded()
@@ -42,7 +51,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 settings.groundLayer);
         }
 
-        void CheckWall(InputManager input)
+        void CheckWall()
         {
             if (input.MovementAxis == Vector2.zero || flags.finalMoveDir.sqrMagnitude <= 0f)
             {

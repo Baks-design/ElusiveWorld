@@ -20,9 +20,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             Reset();
         }
 
-        public void Update(float dt)
+        public void Update()
         {
-            var delta = dt * data.frequency;
+            var delta = Time.deltaTime * data.frequency;
 
             noiseOffset += new Vector3(
                 delta * scrollSpeeds.x,

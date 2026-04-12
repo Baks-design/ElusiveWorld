@@ -8,30 +8,27 @@ using UnityEngine.Audio;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 {
+    [RequireComponent(typeof(AudioSource))]
     public class MusicManager : MonoBehaviour, IUpdate, IService
     {
+        [SerializeField] AudioSource current;
         [SerializeField] AudioMixerGroup musicMixerGroup;
         [SerializeField] List<AudioClip> initialPlaylist;
         [SerializeField] bool loopPlaylist = true;
         [SerializeField] bool loopCurrentTrack = false;
         readonly Queue<AudioClip> playlist = new();
         List<AudioClip> originalPlaylist;
-        AudioSource current, previous;
+        AudioSource previous;
         const float crossFadeTime = 1f;
         float fading;
 
         public void Initialize()
         {
-            current = gameObject.GetOrAdd<AudioSource>();
-
             UpdateManager.RegisterUpdate(this);
-
-            originalPlaylist = new List<AudioClip>(initialPlaylist);
-            foreach (var clip in initialPlaylist)
-                AddToPlaylist(clip);
+            InitializeSettings();
         }
 
-        void IUpdate.Update(float dt)
+        void IUpdate.Update()
         {
             HandleCrossFade();
 
@@ -41,6 +38,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public void Dispose() => UpdateManager.UnregisterUpdate(this);
 
+        void InitializeSettings()
+        {
+            originalPlaylist = new List<AudioClip>(initialPlaylist);
+            foreach (var clip in initialPlaylist)
+                AddToPlaylist(clip);
+        }
+
         void HandleCrossFade()
         {
             if (fading <= 0f) return;
@@ -48,7 +52,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
             fading += Time.deltaTime;
 
             var fraction = Mathf.Clamp01(fading / crossFadeTime);
-            var logFraction = fraction.ToLogarithmicFraction();
+            var logFraction = fraction.ToPerceptualCurve();
 
             if (previous) previous.volume = 1f - logFraction;
             if (current) current.volume = logFraction;

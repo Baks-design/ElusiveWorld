@@ -6,36 +6,54 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
     public static class ColliderExtensions
     {
         const MethodImplOptions INLINE = MethodImplOptions.AggressiveInlining;
+
         static readonly Collider[] overlapCache = new Collider[32];
 
         [MethodImpl(INLINE)]
         public static bool GetPenetrationsInLayer(
-           this Collider source, LayerMask layerMask, out Vector3 totalCorrection)
+            this Collider source,
+            LayerMask layerMask,
+            out Vector3 totalCorrection)
         {
             totalCorrection = Vector3.zero;
 
             if (source == null) return false;
 
-            var count = Physics.OverlapBoxNonAlloc
-            (
-                source.bounds.center,
-                source.bounds.extents,
+            var bounds = source.bounds;
+            var count = Physics.OverlapBoxNonAlloc(
+                bounds.center,
+                bounds.extents,
                 overlapCache,
                 source.transform.rotation,
-                layerMask
+                layerMask,
+                QueryTriggerInteraction.Ignore
             );
+            if (count == overlapCache.Length)
+            {
+                // Optional: buffer overflow warning
+                // Debug.LogWarning("Overlap buffer full, some collisions may be missed.");
+            }
 
             var collided = false;
-
+            var maxDistance = 0f;
             for (var i = 0; i < count; i++)
             {
                 var other = overlapCache[i];
-                if (other == source) continue;
+                if (other == null || other == source) continue;
 
-                if (source.ComputePenetration(other, out var dir, out var dist))
+                if (Physics.ComputePenetration(
+                    source, source.transform.position, source.transform.rotation,
+                    other, other.transform.position, other.transform.rotation,
+                    out var dir, out var dist))
                 {
                     collided = true;
-                    totalCorrection += dir * dist;
+
+                    // Use max penetration (more stable than summing)
+                    if (dist > maxDistance)
+                    {
+                        maxDistance = dist;
+                        totalCorrection = dir * dist;
+                    }
                 }
             }
 
@@ -44,12 +62,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
 
         [MethodImpl(INLINE)]
         public static bool ComputePenetration(
-            this Collider source, Collider target, out Vector3 direction, out float distance)
+            this Collider source,
+            Collider target,
+            out Vector3 direction,
+            out float distance)
         {
             direction = Vector3.zero;
             distance = 0f;
 
-            if (source == null || target == null) return false;
+            if (source == null || target == null)  return false;
 
             return Physics.ComputePenetration(
                 source, source.transform.position, source.transform.rotation,

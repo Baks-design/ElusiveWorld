@@ -112,7 +112,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable
 
             foreach (var update in earlyUpdatesTemp)
             {
-                try { update?.EarlyUpdate(Time.deltaTime); }
+                try { update?.EarlyUpdate(); }
                 catch (System.Exception e) { Debug.LogError($"Error in EarlyUpdate: {e}"); }
             }
         }
@@ -124,7 +124,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable
 
             foreach (var update in updatesTemp)
             {
-                try { update?.Update(Time.deltaTime); }
+                try { update?.Update(); }
                 catch (System.Exception e) { Debug.LogError($"Error in Update: {e}"); }
             }
         }
@@ -136,7 +136,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game.Updates.Variable
 
             foreach (var update in lateUpdatesTemp)
             {
-                try { update?.LateUpdate(Time.deltaTime); }
+                try { update?.LateUpdate(); }
                 catch (System.Exception e) { Debug.LogError($"Error in LateUpdate: {e}"); }
             }
         }

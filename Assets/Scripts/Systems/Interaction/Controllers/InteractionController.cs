@@ -24,18 +24,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         bool interacting;
         float holdTimer = 0f;
 
-        void OnEnable()
+        void Awake()
         {
             cam = Camera.main;
-
-            UpdateManager.RegisterUpdate(this);
-
             input = IServiceLocator.Default.GetService<InputManager>();
-            input.OnInteractPressed += OnInteractPressed;
-            input.OnInteractReleased += OnInteractReleased;
         }
 
-        void IUpdate.Update(float dt)
+        void OnEnable()
+        {
+            UpdateManager.RegisterUpdate(this);
+            InputSubscrible();
+        }
+
+        void IUpdate.Update()
         {
             CheckForInteractable();
             CheckForInteractableInput();
@@ -44,7 +45,17 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers
         void OnDisable()
         {
             UpdateManager.UnregisterUpdate(this);
+            InputUnsubscrible();
+        }
 
+        void InputSubscrible()
+        {
+            input.OnInteractPressed += OnInteractPressed;
+            input.OnInteractReleased += OnInteractReleased;
+        }
+
+        void InputUnsubscrible()
+        {
             input.OnInteractPressed -= OnInteractPressed;
             input.OnInteractReleased -= OnInteractReleased;
         }

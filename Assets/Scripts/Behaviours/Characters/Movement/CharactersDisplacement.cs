@@ -8,7 +8,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
     {
         readonly CharacterController controller;
         readonly Transform yawTransform;
+        readonly InputManager input;
         readonly MovementSettings settings;
+        readonly HeadBob headBob;
         readonly CharactersChecks checks;
         readonly CharactersFlags flags;
 
@@ -18,45 +20,53 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             CharacterController controller,
             CharactersFlags flags,
             HeadBob headBob,
-            Transform yawTransform)
+            Transform yawTransform,
+            InputManager input)
         {
             this.settings = settings;
             this.checks = checks;
             this.controller = controller;
             this.flags = flags;
+            this.headBob = headBob;
             this.yawTransform = yawTransform;
+            this.input = input;
 
+            InitializeSettings();
+        }
+
+        public void UpdateProcess()
+        {
+            SmoothInput();
+            SmoothSpeed();
+            SmoothDirection();
+            CalculateMovementDirection();
+            CalculateSpeed();
+            CalculateFinalMovement();
+        }
+
+        void InitializeSettings()
+        {
             flags.inAirTimer = 0f;
             headBob.CurrentStateHeight = flags.initCamHeight;
             flags.walkRunSpeedDifference = settings.runSpeed - settings.walkSpeed;
         }
-
-        public void UpdateProcess(float dt, InputManager input)
-        {
-            SmoothInput(dt, input);
-            SmoothSpeed(dt);
-            SmoothDirection(dt);
-            CalculateMovementDirection();
-            CalculateSpeed(input);
-            CalculateFinalMovement();
-        }
-
-        void SmoothInput(float dt, InputManager input) =>
+        
+        void SmoothInput() =>
             flags.smoothInputVector = flags.smoothInputVector.ExpDecay(
                 input.MovementAxis,
                 settings.smoothInputSpeed,
-                dt);
+                Time.deltaTime);
 
-        void SmoothSpeed(float dt)
+        void SmoothSpeed()
         {
             flags.smoothCurrentSpeed = flags.smoothCurrentSpeed.ExpDecay(
                 flags.currentSpeed,
                 settings.smoothVelocitySpeed,
-                dt);
+                Time.deltaTime);
 
             if (flags.isRunning && checks.CanRun() && !flags.isSliding)
             {
-                var percent = 
+                var percent =
                     settings.walkSpeed.InverseEerp(
                     settings.runSpeed,
                     flags.smoothCurrentSpeed);
@@ -70,11 +80,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 flags.finalSmoothCurrentSpeed = flags.smoothCurrentSpeed;
         }
 
-        void SmoothDirection(float dt) =>
+        void SmoothDirection() =>
             flags.smoothFinalMoveDir = flags.smoothFinalMoveDir.ExpDecay(
                 flags.finalMoveDir,
                 settings.smoothFinalDirectionSpeed,
-                dt);
+                Time.deltaTime);
 
         void CalculateMovementDirection()
         {
@@ -88,7 +98,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 : desired;
         }
 
-        void CalculateSpeed(InputManager input)
+        void CalculateSpeed()
         {
             var speed =
                 flags.isSliding ? settings.slideSpeed :
@@ -112,7 +122,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void CalculateFinalMovement()
         {
             var final = flags.smoothFinalMoveDir * flags.finalSmoothCurrentSpeed;
-            
+
             flags.finalMoveVector.x = final.x;
             flags.finalMoveVector.z = final.z;
             if (controller.isGrounded)
@@ -128,36 +138,34 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             flags.isGrounded = false;
         }
 
-        public void UpdateVelocity(float dt)
+        public void UpdateVelocity()
         {
-            ApplyGravity(dt);
-            controller.Move(flags.finalMoveVector * dt);
+            ApplyGravity();
+            controller.Move(flags.finalMoveVector * Time.deltaTime);
         }
 
-        void ApplyGravity(float dt)
+        void ApplyGravity()
         {
             if (controller.isGrounded)
             {
                 flags.inAirTimer = 0f;
-
                 flags.finalMoveVector.y = Mathf.Clamp(
-                    flags.finalMoveVector.y - settings.stickToGroundForce * dt,
+                    flags.finalMoveVector.y - settings.stickToGroundForce * Time.deltaTime,
                     -settings.stickToGroundForce,
                     settings.jumpSpeed);
             }
             else
             {
-                flags.inAirTimer += dt;
-
-                flags.finalMoveVector += settings.gravityMultiplier * dt * Physics.gravity;
+                flags.inAirTimer += Time.deltaTime;
+                flags.finalMoveVector += settings.gravityMultiplier * Time.deltaTime * Physics.gravity;
             }
         }
 
-        public void RotateTowardsCamera(float dt)
+        public void RotateTowardsCamera()
         => controller.transform.rotation =
             controller.transform.rotation.ExpDecay(
             yawTransform.rotation,
             settings.smoothRotateSpeed,
-            dt);
+            Time.deltaTime);
     }
 }

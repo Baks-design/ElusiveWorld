@@ -10,30 +10,37 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly CharacterController controller;
         readonly Transform camPivot;
         readonly HeadBob headBob;
+        readonly MonoBehaviour mono;
         readonly MovementSettings settings;
         readonly CharactersChecks checks;
         readonly CharactersFlags flags;
-        readonly CharactersCameraEffects effects;
+        readonly InputManager input;
         Coroutine slideRoutine;
-        public Coroutine crouchRoutine;
 
         public CharactersCrouch(
+            MonoBehaviour mono,
             MovementSettings settings,
             CharactersChecks checks,
             CharacterController controller,
             CharactersFlags flags,
             Transform camPivot,
             HeadBob headBob,
-            CharactersCameraEffects effects)
+            InputManager input)
         {
+            this.mono = mono;
             this.settings = settings;
             this.checks = checks;
             this.controller = controller;
             this.flags = flags;
             this.camPivot = camPivot;
             this.headBob = headBob;
-            this.effects = effects;
+            this.input = input;
 
+            InitializeSettings();
+        }
+
+        void InitializeSettings()
+        {
             flags.initCenter = controller.center;
             flags.initHeight = controller.height;
             flags.initCamHeight = camPivot.localPosition.y;
@@ -49,32 +56,35 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             flags.slideCamHeight = flags.initCamHeight - flags.slideStandHeightDifference;
         }
 
-        public void HandleCrouchInput(MonoBehaviour mono, InputManager input, float dt)
+        public void HandleCrouchInput()
         {
             if (!checks.CanCrouch()) return;
 
-            if (flags.isRunning && !flags.isCrouching && input.MovementAxis != Vector2.zero && checks.CanRun())
-                StartSlide(mono, dt);
+            if (input.MovementAxis != Vector2.zero
+                && flags.isRunning
+                && !flags.isCrouching
+                && checks.CanRun())
+                StartSlide();
             else
-                ToggleCrouch(mono, dt);
+                ToggleCrouch();
         }
 
-        public void OnCrouchReleased(MonoBehaviour mono, float dt)
+        public void OnCrouchReleased()
         {
-            if (flags.isSliding) ReturnToInitHeight(mono, dt);
+            if (flags.isSliding) ReturnToInitHeight();
         }
 
-        void ToggleCrouch(MonoBehaviour mono, float dt)
+        void ToggleCrouch()
         {
             if (flags.isCrouching && checks.CheckIfRoof()) return;
 
-            if (effects.landRoutine != null) mono.StopCoroutine(effects.landRoutine);
-            if (crouchRoutine != null) mono.StopCoroutine(crouchRoutine);
+            if (flags.landRoutine != null) mono.StopCoroutine(flags.landRoutine);
+            if (flags.crouchRoutine != null) mono.StopCoroutine(flags.crouchRoutine);
 
-            crouchRoutine = mono.StartCoroutine(CrouchRoutine(mono, dt));
+            flags.crouchRoutine = mono.StartCoroutine(CrouchRoutine());
         }
 
-        IEnumerator CrouchRoutine(MonoBehaviour mono, float dt)
+        IEnumerator CrouchRoutine()
         {
             flags.duringCrouchAnimation = true;
 
@@ -96,19 +106,18 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 startCenter, targetCenter,
                 camStart, targetCam,
                 settings.crouchTransitionDuration,
-                settings.crouchTransitionCurve,
-                dt));
+                settings.crouchTransitionCurve));
 
             flags.duringCrouchAnimation = false;
         }
 
-        void StartSlide(MonoBehaviour mono, float dt)
+        void StartSlide()
         {
             if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
-            slideRoutine = mono.StartCoroutine(SlideRoutine(mono, dt));
+            slideRoutine = mono.StartCoroutine(SlideRoutine());
         }
 
-        IEnumerator SlideRoutine(MonoBehaviour mono, float dt)
+        IEnumerator SlideRoutine()
         {
             flags.isSliding = true;
             flags.duringSlideAnimation = true;
@@ -124,20 +133,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 startCenter, flags.slideCenter,
                 camStart, flags.slideCamHeight,
                 settings.slideTransitionDuration,
-                settings.slideTransitionCurve,
-                dt));
+                settings.slideTransitionCurve));
 
-            yield return IEnumeratorExtensions.Wait(settings.maxSlideDuration);
+            yield return settings.maxSlideDuration.Wait();
 
-            ReturnToInitHeight(mono, dt);
+            ReturnToInitHeight();
         }
 
-        public void ReturnToInitHeight(MonoBehaviour mono, float dt)
+        public void ReturnToInitHeight()
         {
             if (checks.CheckIfRoof())
             {
                 flags.isSliding = false;
-                ToggleCrouch(mono, dt);
+                ToggleCrouch();
                 return;
             }
 
@@ -145,10 +153,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
 
-            mono.StartCoroutine(ReturnRoutine(mono, dt));
+            mono.StartCoroutine(ReturnRoutine());
         }
 
-        IEnumerator ReturnRoutine(MonoBehaviour mono, float dt)
+        IEnumerator ReturnRoutine()
         {
             flags.isSliding = false;
             flags.duringSlideAnimation = false;
@@ -164,21 +172,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 startCenter, flags.initCenter,
                 camStart, flags.initCamHeight,
                 settings.slideTransitionDuration,
-                settings.slideTransitionCurve,
-                dt));
+                settings.slideTransitionCurve));
         }
 
         IEnumerator LerpAll(
             float hStart, float hEnd,
             Vector3 cStart, Vector3 cEnd,
             float camStart, float camEnd,
-            float duration, AnimationCurve curve, float dt)
+            float duration, AnimationCurve curve)
         {
             var time = 0f;
-
+            
             while (time < duration)
             {
-                time += dt;
+                time += Time.deltaTime;
                 var t = time / duration;
                 var eval = curve.Evaluate(t);
 
@@ -186,7 +193,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 controller.center = cStart.Eerp(cEnd, eval);
 
                 var pos = camPivot.localPosition;
-                pos.y = camStart.ExpDecay(camEnd, eval, eval);
+                pos.y = camStart.Eerp(camEnd, eval);
                 camPivot.localPosition = pos;
 
                 yield return null;
