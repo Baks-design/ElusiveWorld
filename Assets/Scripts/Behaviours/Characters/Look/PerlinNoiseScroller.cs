@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
@@ -5,44 +6,56 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
     public class PerlinNoiseScroller
     {
         readonly PerlinNoiseData data;
+        readonly Vector3 scrollVelocity;
+        const float MIN_VALUE = 0.0001f;
+        const float OFFSET1 = 17.3f;
+        const float OFFSET2 = 29.1f;
         Vector3 noiseOffset;
         Vector3 noise;
-        Vector3 scrollSpeeds;
 
         public Vector3 Noise => noise;
-        public Vector3 NormalizedNoise => (noise / data.amplitude) + Vector3.one * 0.5f;
-
-        public PerlinNoiseScroller(PerlinNoiseData data, Vector3? scrollSpeeds = null)
+        public Vector3 NormalizedNoise
         {
-            this.data = data;
-            this.scrollSpeeds = scrollSpeeds ?? Vector3.one;
+            get
+            {
+                var amp = Mathf.Max(MIN_VALUE, data.amplitude);
+                return (noise / amp) + Vector3.one * 0.5f;
+            }
+        }
+
+        public PerlinNoiseScroller(PerlinNoiseData data, Vector3? scrollVelocity = null)
+        {
+            this.data = data != null ? data : throw new ArgumentNullException(nameof(data));
+            this.scrollVelocity = scrollVelocity ?? Vector3.one;
 
             Reset();
         }
 
         public void Update()
         {
-            var delta = Time.deltaTime * data.frequency;
+            var dt = Time.deltaTime;
+            noiseOffset += scrollVelocity * dt;
 
-            noiseOffset += new Vector3(
-                delta * scrollSpeeds.x,
-                delta * scrollSpeeds.y,
-                delta * scrollSpeeds.z);
+            var freq = Mathf.Max(MIN_VALUE, data.frequency);
+            var x = noiseOffset.x * freq;
+            var y = noiseOffset.y * freq;
 
             noise = new Vector3(
-                Mathf.PerlinNoise(noiseOffset.x, noiseOffset.y),
-                Mathf.PerlinNoise(noiseOffset.y, noiseOffset.z),
-                Mathf.PerlinNoise(noiseOffset.z, noiseOffset.x));
+                Mathf.PerlinNoise(x, y),
+                Mathf.PerlinNoise(x + OFFSET1, y + OFFSET1),
+                Mathf.PerlinNoise(x + OFFSET2, y + OFFSET2)
+            );
             noise = (noise - Vector3.one * 0.5f) * data.amplitude;
         }
 
         public void Reset()
         {
-            var range = 100f / data.frequency;
+            const float BASE_RANGE = 1000f;
             noiseOffset = new Vector3(
-                Random.Range(0f, range),
-                Random.Range(0f, range),
-                Random.Range(0f, range));
+                UnityEngine.Random.Range(0f, BASE_RANGE),
+                UnityEngine.Random.Range(0f, BASE_RANGE),
+                UnityEngine.Random.Range(0f, BASE_RANGE)
+            );
         }
     }
 }

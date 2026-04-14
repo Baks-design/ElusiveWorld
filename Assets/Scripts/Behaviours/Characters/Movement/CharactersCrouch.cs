@@ -1,210 +1,125 @@
 using UnityEngine;
-using System.Collections;
-using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using System;
+using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
     public class CharactersCrouch
     {
         readonly CharacterController controller;
-        readonly Transform camPivot;
-        readonly HeadBob headBob;
-        readonly MonoBehaviour mono;
-        readonly MovementSettings settings;
         readonly CharactersChecks checks;
+        readonly MovementSettings settings;
         readonly CharactersFlags flags;
         readonly InputManager input;
-        Coroutine slideRoutine;
+        readonly CharactersLook look;
+        Transform camPivot;
+        float currentHeight;
+        float targetHeight;
 
         public CharactersCrouch(
-            MonoBehaviour mono,
             MovementSettings settings,
             CharactersChecks checks,
             CharacterController controller,
             CharactersFlags flags,
-            Transform camPivot,
-            HeadBob headBob,
-            InputManager input)
+            InputManager input,
+            CharactersLook look)
         {
-            this.mono = mono;
-            this.settings = settings;
-            this.checks = checks;
-            this.controller = controller;
-            this.flags = flags;
-            this.camPivot = camPivot;
-            this.headBob = headBob;
-            this.input = input;
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.checks = checks ?? throw new ArgumentNullException(nameof(checks));
+            this.controller = controller != null ? controller : throw new ArgumentNullException(nameof(controller));
+            this.flags = flags ?? throw new ArgumentNullException(nameof(flags));
+            this.input = input != null ? input : throw new ArgumentNullException(nameof(input));
+            this.look = look != null ? look : throw new ArgumentNullException(nameof(look));
 
-            InitializeSettings();
+            Initialize();
         }
 
-        void InitializeSettings()
+        void Initialize()
         {
-            flags.initCenter = controller.center;
             flags.initHeight = controller.height;
-            flags.initCamHeight = camPivot.localPosition.y;
+            flags.initCenter = controller.center;
 
             flags.crouchHeight = flags.initHeight * settings.crouchPercent;
-            flags.crouchCenter = (flags.crouchHeight * 0.5f + controller.skinWidth) * Vector3.up;
-            flags.crouchStandHeightDifference = flags.initHeight - flags.crouchHeight;
-            flags.crouchCamHeight = flags.initCamHeight - flags.crouchStandHeightDifference;
-
             flags.slideHeight = flags.initHeight * settings.slidePercent;
-            flags.slideCenter = (flags.slideHeight * 0.5f + controller.skinWidth) * Vector3.up;
-            flags.slideStandHeightDifference = flags.initHeight - flags.slideHeight;
-            flags.slideCamHeight = flags.initCamHeight - flags.slideStandHeightDifference;
+
+            currentHeight = controller.height;
+            targetHeight = currentHeight;
+
+            camPivot = look.transform.GetChild(0);
+            camPivot.position.Set(0, controller.height * 0.5f, 0f);
         }
 
-        public void HandleCrouchInput()
+        public void OnCrouchPressed()
         {
             if (!checks.CanCrouch()) return;
 
-            if (input.MovementAxis != Vector2.zero
-                && flags.isRunning
-                && !flags.isCrouching
-                && checks.CanRun())
+            var canSlide =
+                input.MovementAxis != Vector2.zero &&
+                flags.isRunning &&
+                !flags.isCrouching &&
+                checks.CanRun();
+
+            if (canSlide)
                 StartSlide();
             else
-                ToggleCrouch();
+                StartCrouch();
         }
 
-        public void OnCrouchReleased()
+        public void OnCrouchReleased() => StopCrouchOrSlide();
+
+        public void Update()
         {
-            if (flags.isSliding) ReturnToInitHeight();
+            UpdateState();
+            UpdateHeight();
         }
 
-        void ToggleCrouch()
+        void UpdateState()
         {
-            if (flags.isCrouching && checks.CheckIfRoof()) return;
+            if (flags.isSliding)
+            {
+                targetHeight = flags.slideHeight;
+                return;
+            }
 
-            if (flags.landRoutine != null) mono.StopCoroutine(flags.landRoutine);
-            if (flags.crouchRoutine != null) mono.StopCoroutine(flags.crouchRoutine);
-
-            flags.crouchRoutine = mono.StartCoroutine(CrouchRoutine());
+            targetHeight = flags.isCrouching ? flags.crouchHeight : flags.initHeight;
         }
 
-        IEnumerator CrouchRoutine()
+        void UpdateHeight()
         {
-            flags.duringCrouchAnimation = true;
+            var newHeight = currentHeight.ExpDecay(targetHeight, settings.crouchSmooth, Time.deltaTime);
+            if (newHeight > currentHeight && checks.CheckIfRoof()) return;
 
-            var startHeight = controller.height;
-            var startCenter = controller.center;
-            var camStart = camPivot.localPosition.y;
+            currentHeight = newHeight;
 
-            var toCrouch = !flags.isCrouching;
+            controller.height = currentHeight;
+            controller.center = Vector3.up * (currentHeight * 0.5f);
 
-            var targetHeight = toCrouch ? flags.crouchHeight : flags.initHeight;
-            var targetCenter = toCrouch ? flags.crouchCenter : flags.initCenter;
-            var targetCam = toCrouch ? flags.crouchCamHeight : flags.initCamHeight;
+            camPivot.position.Set(0, currentHeight * 0.5f, 0f);
+        }
 
-            flags.isCrouching = toCrouch;
-            headBob.CurrentStateHeight = targetCam;
+        void StartCrouch()
+        {
+            if (flags.isCrouching) return;
 
-            yield return mono.StartCoroutine(LerpAll(
-                startHeight, targetHeight,
-                startCenter, targetCenter,
-                camStart, targetCam,
-                settings.crouchTransitionDuration,
-                settings.crouchTransitionCurve));
-
-            flags.duringCrouchAnimation = false;
+            flags.isCrouching = true;
+            flags.isSliding = false;
         }
 
         void StartSlide()
         {
-            if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
-            slideRoutine = mono.StartCoroutine(SlideRoutine());
-        }
+            if (flags.isSliding) return;
 
-        IEnumerator SlideRoutine()
-        {
             flags.isSliding = true;
-            flags.duringSlideAnimation = true;
-
-            headBob.CurrentStateHeight = flags.slideCamHeight;
-
-            var startHeight = controller.height;
-            var startCenter = controller.center;
-            var camStart = camPivot.localPosition.y;
-
-            yield return mono.StartCoroutine(LerpAll(
-                startHeight, flags.slideHeight,
-                startCenter, flags.slideCenter,
-                camStart, flags.slideCamHeight,
-                settings.slideTransitionDuration,
-                settings.slideTransitionCurve));
-
-            yield return settings.maxSlideDuration.Wait();
-
-            ReturnToInitHeight();
+            flags.isCrouching = false;
         }
 
-        public void ReturnToInitHeight()
+        void StopCrouchOrSlide()
         {
-            if (checks.CheckIfRoof())
-            {
-                flags.isSliding = false;
-                ToggleCrouch();
-                return;
-            }
+            if (checks.CheckIfRoof()) return;
 
-            if (!flags.isSliding) return;
-
-            if (slideRoutine != null) mono.StopCoroutine(slideRoutine);
-
-            mono.StartCoroutine(ReturnRoutine());
-        }
-
-        IEnumerator ReturnRoutine()
-        {
+            flags.isCrouching = false;
             flags.isSliding = false;
-            flags.duringSlideAnimation = false;
-
-            headBob.CurrentStateHeight = flags.initCamHeight;
-
-            var startHeight = controller.height;
-            var startCenter = controller.center;
-            var camStart = camPivot.localPosition.y;
-
-            yield return mono.StartCoroutine(LerpAll(
-                startHeight, flags.initHeight,
-                startCenter, flags.initCenter,
-                camStart, flags.initCamHeight,
-                settings.slideTransitionDuration,
-                settings.slideTransitionCurve));
-        }
-
-        IEnumerator LerpAll(
-            float hStart, float hEnd,
-            Vector3 cStart, Vector3 cEnd,
-            float camStart, float camEnd,
-            float duration, AnimationCurve curve)
-        {
-            var time = 0f;
-            
-            while (time < duration)
-            {
-                time += Time.deltaTime;
-                var t = time / duration;
-                var eval = curve.Evaluate(t);
-
-                controller.height = hStart.Eerp(hEnd, eval);
-                controller.center = cStart.Eerp(cEnd, eval);
-
-                var pos = camPivot.localPosition;
-                pos.y = camStart.Eerp(camEnd, eval);
-                camPivot.localPosition = pos;
-
-                yield return null;
-            }
-
-            controller.height = hEnd;
-            controller.center = cEnd;
-
-            var final = camPivot.localPosition;
-            final.y = camEnd;
-            camPivot.localPosition = final;
         }
     }
 }

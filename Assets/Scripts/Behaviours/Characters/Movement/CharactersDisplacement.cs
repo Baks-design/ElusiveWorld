@@ -34,23 +34,29 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             InitializeSettings();
         }
 
-        public void UpdateProcess()
-        {
-            SmoothInput();
-            SmoothSpeed();
-            SmoothDirection();
-            CalculateMovementDirection();
-            CalculateSpeed();
-            CalculateFinalMovement();
-        }
-
         void InitializeSettings()
         {
             flags.inAirTimer = 0f;
             headBob.CurrentStateHeight = flags.initCamHeight;
             flags.walkRunSpeedDifference = settings.runSpeed - settings.walkSpeed;
         }
-        
+
+        public void RotateTowardsCamera() =>
+            controller.transform.rotation = controller.transform.rotation.ExpDecay(
+                yawTransform.rotation,
+                settings.smoothRotateSpeed,
+                Time.deltaTime);
+
+        public void UpdateProcess()
+        {
+            SmoothInput();
+            SmoothSpeed();
+            CalculateMovementDirection();
+            SmoothDirection();
+            CalculateSpeed();
+            CalculateFinalMovement();
+        }
+
         void SmoothInput() =>
             flags.smoothInputVector = flags.smoothInputVector.ExpDecay(
                 input.MovementAxis,
@@ -66,8 +72,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             if (flags.isRunning && checks.CanRun() && !flags.isSliding)
             {
-                var percent =
-                    settings.walkSpeed.InverseEerp(
+                var percent = Mathf.InverseLerp(
+                    settings.walkSpeed,
                     settings.runSpeed,
                     flags.smoothCurrentSpeed);
 
@@ -88,14 +94,13 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         void CalculateMovementDirection()
         {
-            var forward = controller.transform.forward * flags.smoothInputVector.y;
-            var right = controller.transform.right * flags.smoothInputVector.x;
+            var forward = yawTransform.forward * flags.smoothInputVector.y;
+            var right = yawTransform.right * flags.smoothInputVector.x;
+            var desired = Vector3.ClampMagnitude(forward + right, 1f);
 
-            var desired = forward + right;
-
-            flags.finalMoveDir = flags.isGrounded
+            flags.finalMoveDir = controller.isGrounded
                 ? Vector3.ProjectOnPlane(desired, flags.hitInfo.normal)
-                : desired;
+                : flags.finalMoveDir.ExpDecay(desired, settings.airControl, Time.deltaTime);
         }
 
         void CalculateSpeed()
@@ -105,15 +110,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 flags.isCrouching ? settings.crouchSpeed :
                 (flags.isRunning && checks.CanRun() ? settings.runSpeed : settings.walkSpeed);
 
-            if (input.MovementAxis == Vector2.zero)
+            if (flags.smoothInputVector.sqrMagnitude < 0.01f)
             {
                 flags.currentSpeed = 0f;
                 return;
             }
 
-            if (input.MovementAxis.y == -1f)
+            if (input.MovementAxis.y < -0.1f)
                 speed *= settings.moveBackwardsSpeedPercent;
-            if (input.MovementAxis.x != 0f && input.MovementAxis.y == 0f)
+            if (Mathf.Abs(input.MovementAxis.x) > 0.1f && Mathf.Abs(input.MovementAxis.y) < 0.1f)
                 speed *= settings.moveSideSpeedPercent;
 
             flags.currentSpeed = speed;
@@ -122,26 +127,23 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void CalculateFinalMovement()
         {
             var final = flags.smoothFinalMoveDir * flags.finalSmoothCurrentSpeed;
-
-            flags.finalMoveVector.x = final.x;
-            flags.finalMoveVector.z = final.z;
-            if (controller.isGrounded)
-                flags.finalMoveVector.y += final.y;
+            flags.horizontalVelocity.x = final.x;
+            flags.horizontalVelocity.z = final.z;
         }
 
         public void HandleJump()
         {
             if (!checks.CanJump()) return;
 
-            flags.finalMoveVector.y = settings.jumpSpeed;
-            flags.previouslyGrounded = true;
-            flags.isGrounded = false;
+            if (flags.verticalVelocity < 0f) flags.verticalVelocity = 0f;
+            flags.verticalVelocity = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * settings.jumpHeight);
         }
 
         public void UpdateVelocity()
         {
             ApplyGravity();
-            controller.Move(flags.finalMoveVector * Time.deltaTime);
+            HandleSlopeSliding();
+            ApplyMove();
         }
 
         void ApplyGravity()
@@ -149,23 +151,41 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             if (controller.isGrounded)
             {
                 flags.inAirTimer = 0f;
-                flags.finalMoveVector.y = Mathf.Clamp(
-                    flags.finalMoveVector.y - settings.stickToGroundForce * Time.deltaTime,
-                    -settings.stickToGroundForce,
-                    settings.jumpSpeed);
+                if (flags.verticalVelocity < 0f)
+                    flags.verticalVelocity = -settings.stickToGroundForce;
             }
             else
             {
                 flags.inAirTimer += Time.deltaTime;
-                flags.finalMoveVector += settings.gravityMultiplier * Time.deltaTime * Physics.gravity;
+                flags.verticalVelocity += Physics.gravity.y * settings.gravityMultiplier * Time.deltaTime;
             }
         }
 
-        public void RotateTowardsCamera()
-        => controller.transform.rotation =
-            controller.transform.rotation.ExpDecay(
-            yawTransform.rotation,
-            settings.smoothRotateSpeed,
-            Time.deltaTime);
+        void HandleSlopeSliding()
+        {
+            if (!checks.CanSlope())
+            {
+                flags.slideVelocity = Vector3.zero;
+                return;
+            }
+
+            var slopeAngle = Vector3.Angle(flags.hitInfo.normal, Vector3.up);
+            if (slopeAngle <= controller.slopeLimit)
+            {
+                flags.slideVelocity = flags.slideVelocity.ExpDecay(Vector3.zero, settings.slopeAcceleration, Time.deltaTime);
+                return;
+            }
+
+            var slopeDir = Vector3.ProjectOnPlane(Vector3.down, flags.hitInfo.normal).normalized;
+            var target = slopeDir * settings.maxSlopeSpeed;
+            flags.slideVelocity = flags.slideVelocity.ExpDecay(target, settings.slopeAcceleration, Time.deltaTime);
+            flags.horizontalVelocity += flags.slideVelocity;
+        }
+
+        void ApplyMove()
+        {
+            flags.finalMoveVector = flags.horizontalVelocity + Vector3.up * flags.verticalVelocity;
+            controller.Move(flags.finalMoveVector * Time.deltaTime);
+        }
     }
 }

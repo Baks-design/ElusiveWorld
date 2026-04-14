@@ -1,96 +1,70 @@
 using UnityEngine;
 using Unity.Cinemachine;
-using System.Collections;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
     public class CameraZoom
     {
-        private readonly MonoBehaviour mono;
         readonly LookSettings settings;
         readonly CinemachineCamera cam;
-        IEnumerator changeFOVRoutine;
-        IEnumerator changeRunFOVRoutine;
-        bool running;
-        bool zooming;
-        float initFOV;
+        readonly float velocity;
+        float baseFOV;
+        float currentFOV;
+        float targetFOV;
+        bool isZooming;
+        bool isRunning;
 
-        public CameraZoom(MonoBehaviour mono, LookSettings settings, CinemachineCamera cam)
+        public CameraZoom(LookSettings settings, CinemachineCamera cam)
         {
-            this.mono = mono;
-            this.settings = settings;
-            this.cam = cam;
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.cam = cam != null ? cam : throw new ArgumentNullException(nameof(cam));
 
             InitializeSettings();
         }
 
-        void InitializeSettings() => initFOV = cam.Lens.FieldOfView;
-
-        public void ChangeFOV()
+        private void InitializeSettings()
         {
-            if (running)
-            {
-                zooming = !zooming;
-                return;
-            }
-
-            StopRoutine(changeRunFOVRoutine);
-            StopRoutine(changeFOVRoutine);
-
-            changeFOVRoutine = ChangeFOVRoutine();
-            mono.StartCoroutine(changeFOVRoutine);
+            baseFOV = cam.Lens.FieldOfView;
+            currentFOV = baseFOV;
+            targetFOV = baseFOV;
         }
 
-        IEnumerator ChangeFOVRoutine()
+        public void Update()
         {
-            var percent = 0f;
-            var speed = 1f / settings.zoomTransitionDuration;
-            var start = cam.Lens.FieldOfView;
-            var target = zooming ? initFOV : settings.zoomFOV;
-
-            zooming = !zooming;
-
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-                var t = settings.zoomCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = start.Eerp(target, t);
-                yield return null;
-            }
+            currentFOV = currentFOV.Eerp(targetFOV, settings.fovSmooth * Time.deltaTime);
+            cam.Lens.FieldOfView = currentFOV;
         }
 
-        public void ChangeRunFOV(bool returning)
+        public void ToggleZoom()
         {
-            StopRoutine(changeFOVRoutine);
-            StopRoutine(changeRunFOVRoutine);
+            if (isRunning) return;
 
-            changeRunFOVRoutine = ChangeRunFOVRoutine(returning);
-            mono.StartCoroutine(changeRunFOVRoutine);
+            isZooming = !isZooming;
+            UpdateTargetFOV();
         }
 
-        IEnumerator ChangeRunFOVRoutine(bool returning)
+        public void SetRunning(bool running)
         {
-            var percent = 0f;
-            var duration = returning ? settings.runReturnTransitionDuration : settings.runTransitionDuration;
-            var speed = 1f / duration;
-            var start = cam.Lens.FieldOfView;
-            var target = returning ? initFOV : settings.runFOV;
-
-            running = !returning;
-
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-                var t = settings.runCurve.Evaluate(percent);
-                cam.Lens.FieldOfView = start.Eerp(target, t);
-                yield return null;
-            }
+            isRunning = running;
+            UpdateTargetFOV();
         }
 
-        void StopRoutine(IEnumerator routine)
+        void UpdateTargetFOV()
         {
-            if (routine != null) mono.StopCoroutine(routine);
+            if (isRunning)
+                targetFOV = settings.runFOV;
+            else if (isZooming)
+                targetFOV = settings.zoomFOV;
+            else
+                targetFOV = baseFOV;
+        }
+
+        public void SetBaseFOV(float value)
+        {
+            baseFOV = value;
+            UpdateTargetFOV();
         }
     }
 }

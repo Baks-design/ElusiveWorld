@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.CompilerServices;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Helpers;
 
@@ -13,15 +12,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Utils.Extensions
         /// Reads a SerializableGuid written as 4 uints (16 bytes, little-endian).
         /// </summary>
         [MethodImpl(INLINE)]
-        public static SerializableGuid ReadSerializableGuid(this BinaryReader reader)
-        {
-            if (reader == null)  throw new ArgumentNullException(nameof(reader));
-            return new SerializableGuid(
+        public static SerializableGuid Read(this BinaryReader reader) =>
+            new(reader.ReadUInt32(),
                 reader.ReadUInt32(),
                 reader.ReadUInt32(),
-                reader.ReadUInt32(),
-                reader.ReadUInt32()
-            );
-        }
+                reader.ReadUInt32());
     }
 }

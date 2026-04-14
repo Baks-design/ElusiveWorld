@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
@@ -7,70 +8,71 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly CharactersLookFlags flags;
         readonly LookSettings settings;
         readonly Transform camTransform;
-        PerlinNoiseScroller perlinNoiseScroller;
-        Vector3 originalPosition;
-        Vector3 originalRotation;
+        readonly PerlinNoiseScroller perlinNoiseScroller;
+        readonly bool affectPosition;
+        readonly bool affectRotation;
+        Vector3 lastPositionOffset;
+        Quaternion lastRotationOffset = Quaternion.identity;
 
         public CameraBreathing(
             CharactersLookFlags flags,
             LookSettings settings,
             Transform camTransform)
         {
-            this.flags = flags;
-            this.settings = settings;
-            this.camTransform = camTransform;
+            this.flags = flags ?? throw new ArgumentNullException(nameof(flags));
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.camTransform = camTransform != null ? camTransform : throw new ArgumentNullException(nameof(camTransform));
+            if (settings.data == null) throw new ArgumentNullException(nameof(settings.data));
 
-            InitializeSettings();
+            perlinNoiseScroller = new PerlinNoiseScroller(settings.data);
+
+            affectPosition =
+                settings.data.transformTarget == TransformTarget.Position ||
+                settings.data.transformTarget == TransformTarget.Both;
+            affectRotation =
+                settings.data.transformTarget == TransformTarget.Rotation ||
+                settings.data.transformTarget == TransformTarget.Both;
         }
 
         public void Update()
         {
-            if (!flags.IsCanBreathing) return;
+            if (!flags.IsCanBreathing)
+            {
+                ResetOffsets();
+                return;
+            }
+
+            camTransform.localPosition -= lastPositionOffset;
+            camTransform.localRotation *= Quaternion.Inverse(lastRotationOffset);
 
             perlinNoiseScroller.Update();
             var noise = perlinNoiseScroller.Noise;
 
-            var affectPos = ShouldAffectPosition();
-            if (affectPos) ApplyPosition(noise);
+            lastPositionOffset = affectPosition ? GetPositionOffset(noise) : Vector3.zero;
+            lastRotationOffset = affectRotation ? GetRotationOffset(noise) : Quaternion.identity;
 
-            var affectRot = ShouldAffectRotation();
-            if (affectRot) ApplyRotation(noise);
+            camTransform.localPosition += lastPositionOffset;
+            camTransform.localRotation *= lastRotationOffset;
         }
 
-        void InitializeSettings()
+        void ResetOffsets()
         {
-            flags.IsCanBreathing = false;
-            perlinNoiseScroller = new PerlinNoiseScroller(settings.data);
-            originalPosition = camTransform.localPosition;
-            originalRotation = camTransform.localEulerAngles;
+            camTransform.localPosition -= lastPositionOffset;
+            camTransform.localRotation *= Quaternion.Inverse(lastRotationOffset);
+
+            lastPositionOffset = Vector3.zero;
+            lastRotationOffset = Quaternion.identity;
         }
 
-        void ApplyPosition(Vector3 noise)
-        {
-            var current = camTransform.localPosition;
-            camTransform.localPosition = new Vector3(
-                settings.x ? originalPosition.x + noise.x : current.x,
-                settings.y ? originalPosition.y + noise.y : current.y,
-                settings.z ? originalPosition.z + noise.z : current.z
-            );
-        }
+        Vector3 GetPositionOffset(Vector3 noise) =>
+            new(settings.x ? noise.x : 0f,
+                settings.y ? noise.y : 0f,
+                settings.z ? noise.z : 0f);
 
-        void ApplyRotation(Vector3 noise)
-        {
-            var current = camTransform.localEulerAngles;
-            camTransform.localEulerAngles = new Vector3(
-                settings.x ? originalRotation.x + noise.x : current.x,
-                settings.y ? originalRotation.y + noise.y : current.y,
-                settings.z ? originalRotation.z + noise.z : current.z
-            );
-        }
-
-        bool ShouldAffectPosition() =>
-            settings.data.transformTarget == TransformTarget.Position ||
-            settings.data.transformTarget == TransformTarget.Both;
-
-        bool ShouldAffectRotation() =>
-            settings.data.transformTarget == TransformTarget.Rotation ||
-            settings.data.transformTarget == TransformTarget.Both;
+        Quaternion GetRotationOffset(Vector3 noise) =>
+            Quaternion.Euler(
+                settings.x ? noise.x : 0f,
+                settings.y ? noise.y : 0f,
+                settings.z ? noise.z : 0f);
     }
 }

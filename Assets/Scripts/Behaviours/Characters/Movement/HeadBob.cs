@@ -1,3 +1,4 @@
+using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
@@ -8,12 +9,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly float moveBackwardsMultiplier;
         readonly float moveSideMultiplier;
         Vector3 finalOffset;
-        float xScroll;
-        float yScroll;
+        float scroll;
 
         public Vector3 FinalOffset => finalOffset;
         public bool IsReset { get; private set; }
-        public float CurrentStateHeight { get; set; } = 0f;
+        public float CurrentStateHeight { get; set; }
 
         public HeadBob(HeadBobData data, float moveBackwardsMultiplier, float moveSideMultiplier)
         {
@@ -21,64 +21,74 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.moveBackwardsMultiplier = moveBackwardsMultiplier;
             this.moveSideMultiplier = moveSideMultiplier;
 
-            ResetHeadBob();
+            ResetImmediate();
         }
 
         public void ScrollHeadBob(bool isRunning, bool isCrouching, Vector2 input, float deltaTime)
         {
             IsReset = false;
 
-            var amplitudeMultiplier = CalculateAmplitudeMultiplier(isRunning, isCrouching);
-            var frequencyMultiplier = CalculateFrequencyMultiplier(isRunning, isCrouching);
-            var directionMultiplier = CalculateDirectionMultiplier(input);
+            var amplitude = CalculateAmplitudeMultiplier(isRunning, isCrouching);
+            var frequency = CalculateFrequencyMultiplier(isRunning, isCrouching);
+            var direction = CalculateDirectionMultiplier(input);
 
-            xScroll += deltaTime * data.xFrequency * frequencyMultiplier;
-            yScroll += deltaTime * data.yFrequency * frequencyMultiplier;
+            scroll += deltaTime * data.baseFrequency * frequency;
+            scroll = Mathf.Repeat(scroll, 1000f);
 
-            var xValue = data.xCurve.Evaluate(xScroll);
-            var yValue = data.yCurve.Evaluate(yScroll);
+            var x = data.xCurve.Evaluate(scroll);
+            var y = data.yCurve.Evaluate(scroll);
 
-            finalOffset.x = xValue * data.xAmplitude * amplitudeMultiplier * directionMultiplier;
-            finalOffset.y = yValue * data.yAmplitude * amplitudeMultiplier * directionMultiplier;
+            var targetOffset = new Vector3(
+                x * data.xAmplitude * amplitude * direction,
+                y * data.yAmplitude * amplitude * direction,
+                0f
+            );
+
+            finalOffset = finalOffset.ExpDecay(targetOffset, data.smoothing, deltaTime);
         }
 
-        public void ResetHeadBob()
+        public void Reset(float deltaTime)
         {
-            IsReset = true;
-            xScroll = 0f;
-            yScroll = 0f;
+            finalOffset = finalOffset.ExpDecay(Vector3.zero, data.returnSpeed, deltaTime);
+            if (finalOffset.sqrMagnitude < 0.0001f)
+            {
+                finalOffset = Vector3.zero;
+                IsReset = true;
+            }
+        }
+
+        void ResetImmediate()
+        {
+            scroll = 0f;
             finalOffset = Vector3.zero;
+            IsReset = true;
         }
 
         float CalculateAmplitudeMultiplier(bool isRunning, bool isCrouching)
         {
-            var multiplier = 1f;
-
-            if (isRunning) multiplier *= data.runAmplitudeMultiplier;
-            if (isCrouching) multiplier *= data.crouchAmplitudeMultiplier;
-            
-            return multiplier;
+            var m = 1f;
+            if (isRunning) m *= data.runAmplitudeMultiplier;
+            if (isCrouching) m *= data.crouchAmplitudeMultiplier;
+            return m;
         }
 
         float CalculateFrequencyMultiplier(bool isRunning, bool isCrouching)
         {
-            var multiplier = 1f;
-
-            if (isRunning) multiplier *= data.runFrequencyMultiplier;
-            if (isCrouching) multiplier *= data.crouchFrequencyMultiplier;
-
-            return multiplier;
+            var m = 1f;
+            if (isRunning) m *= data.runFrequencyMultiplier;
+            if (isCrouching) m *= data.crouchFrequencyMultiplier;
+            return m;
         }
 
         float CalculateDirectionMultiplier(Vector2 input)
         {
-            var isMovingBackwards = input.y < -0.1f;
-            if (isMovingBackwards) return moveBackwardsMultiplier;
-
-            var isMovingSideways = Mathf.Abs(input.x) > 0.1f && Mathf.Abs(input.y) < 0.1f;
-            if (isMovingSideways) return moveSideMultiplier;
-
-            return 1f;
+            var backward = Mathf.Clamp01(-input.y);
+            var sideways = Mathf.Abs(input.x);
+            var m = 1f.ExpDecay(moveBackwardsMultiplier, backward, Time.deltaTime);
+            m = m.ExpDecay(moveSideMultiplier, sideways, Time.deltaTime);
+            return m;
         }
+
+        public void SetBaseHeight(float height) => CurrentStateHeight = height;
     }
 }

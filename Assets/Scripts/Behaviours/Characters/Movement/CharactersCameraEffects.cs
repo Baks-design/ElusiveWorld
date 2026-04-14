@@ -1,13 +1,11 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
-using System.Collections;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
     public class CharactersCameraEffects
     {
-        readonly MonoBehaviour mono;
         readonly MovementSettings settings;
         readonly CharactersFlags flags;
         readonly CharactersChecks checks;
@@ -15,18 +13,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly Transform camPivot;
         readonly HeadBob headBob;
         readonly InputManager input;
+        float landingTime;
+        float landingDuration;
+        float landingAmount;
+        bool isLanding;
 
         public CharactersCameraEffects(
-            MonoBehaviour mono,
-            CharactersFlags flags,
             MovementSettings settings,
+            CharactersFlags flags,
             CharactersChecks checks,
             CharactersLook look,
             Transform camPivot,
             HeadBob headBob,
             InputManager input)
         {
-            this.mono = mono;
             this.settings = settings;
             this.flags = flags;
             this.checks = checks;
@@ -38,69 +38,70 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         public void OnPlayerSprintPressed()
         {
+            if (!checks.CanRun() || input.MovementAxis == Vector2.zero) return;
+
             flags.isRunning = true;
-            TryStartRunFOV();
+            look.ChangeRunFOV(false);
         }
 
         public void OnPlayerSprintReleased()
         {
             flags.isRunning = false;
-            StopRunFOV();
+            look.ChangeRunFOV(true);
         }
 
         public void Update()
         {
-            HandleHeadBob();
-            HandleRunFOV();
-            look.HandleSway(flags.smoothInputVector, input.MovementAxis.x);
-            HandleLanding();
+            HandleLandingTrigger();
+            UpdateLanding();
+
+            var headbobOffset = HandleHeadBob();
+            var landingOffset = GetLandingOffset();
+            ApplyFinalPosition(headbobOffset + landingOffset);
+
+            look.HandleSway(input.MovementAxis.x);
         }
 
-        void HandleLanding()
+        void HandleLandingTrigger()
         {
-            if (!flags.previouslyGrounded && flags.isGrounded) StartLandingRoutine();
-        }
+            if (flags.previouslyGrounded || !flags.isGrounded || isLanding) return;
+            
+            isLanding = true;
+            landingTime = 0f;
 
-        void StartLandingRoutine()
-        {
-            if (flags.landRoutine != null) mono.StopCoroutine(flags.landRoutine);
+            landingDuration = Mathf.Max(0.0001f, settings.landDuration);
 
-            flags.landRoutine = LandingRoutine();
-            mono.StartCoroutine(flags.landRoutine);
-        }
-
-        IEnumerator LandingRoutine()
-        {
-            var percent = 0f;
-            var speed = 1f / settings.landDuration;
-
-            var localPos = camPivot.localPosition;
-            var startY = localPos.y;
-
-            var landAmount = flags.inAirTimer > settings.landTimer
+            landingAmount = flags.inAirTimer > settings.landTimer
                 ? settings.highLandAmount
                 : settings.lowLandAmount;
-
-            while (percent < 1f)
-            {
-                percent += Time.deltaTime * speed;
-
-                var offset = settings.landCurve.Evaluate(percent) * landAmount;
-                localPos.y = startY + offset;
-
-                camPivot.localPosition = localPos;
-                yield return null;
-            }
         }
 
-        void HandleHeadBob()
+        void UpdateLanding()
+        {
+            if (!isLanding) return;
+
+            landingTime += Time.deltaTime;
+            if (landingTime >= landingDuration)
+                isLanding = false;
+        }
+
+        Vector3 GetLandingOffset()
+        {
+            if (!isLanding) return Vector3.zero;
+
+            var percent = landingTime / landingDuration;
+            var offset = settings.landCurve.Evaluate(percent) * landingAmount;
+            return new Vector3(0f, offset, 0f);
+        }
+
+        Vector3 HandleHeadBob()
         {
             var isMoving = input.MovementAxis != Vector2.zero;
             var canBob = flags.isGrounded && !flags.hitWall;
 
             if (isMoving && canBob)
             {
-                if (flags.duringCrouchAnimation || flags.isSliding) return;
+                if (flags.duringCrouchAnimation || flags.isSliding) return Vector3.zero;
 
                 headBob.ScrollHeadBob(
                     flags.isRunning && checks.CanRun(),
@@ -108,60 +109,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                     input.MovementAxis,
                     Time.deltaTime);
 
-                camPivot.localPosition = camPivot.localPosition.ExpDecay(
-                    (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset,
-                    settings.smoothHeadBobSpeed,
-                    Time.deltaTime);
-
-                return;
+                return (Vector3.up * headBob.CurrentStateHeight) + headBob.FinalOffset;
             }
 
             if (!headBob.IsReset)
-                headBob.ResetHeadBob();
+                headBob.Reset(Time.deltaTime);
 
-            if (!flags.duringCrouchAnimation)
-                camPivot.localPosition = camPivot.localPosition.ExpDecay(
-                    new Vector3(0f, headBob.CurrentStateHeight, 0f),
-                    settings.smoothHeadBobSpeed,
-                    Time.deltaTime);
+            return new Vector3(0f, headBob.CurrentStateHeight, 0f);
         }
 
-        void HandleRunFOV() //FIXME
-        {
-            var isMoving = input.MovementAxis != Vector2.zero;
-            var canRun = checks.CanRun();
-            var blocked = !isMoving || !canRun || flags.hitWall;
-
-            Debug.Log(blocked);
-
-            if (!flags.duringRunAnimation && !blocked && flags.isRunning)
-            {
-                flags.duringRunAnimation = true;
-                look.ChangeRunFOV(false);
-                return;
-            }
-
-            if (flags.duringRunAnimation && blocked)
-            {
-                flags.duringRunAnimation = false;
-                look.ChangeRunFOV(true);
-            }
-        }
-
-        void TryStartRunFOV()
-        {
-            if (input.MovementAxis == Vector2.zero || !checks.CanRun()) return;
-
-            flags.duringRunAnimation = true;
-            look.ChangeRunFOV(false);
-        }
-
-        void StopRunFOV()
-        {
-            if (!flags.duringRunAnimation) return;
-
-            flags.duringRunAnimation = false;
-            look.ChangeRunFOV(true);
-        }
+        void ApplyFinalPosition(Vector3 targetOffset) =>
+            camPivot.localPosition = camPivot.localPosition.ExpDecay(
+                targetOffset,
+                settings.smoothHeadBobSpeed,
+                Time.deltaTime);
     }
 }

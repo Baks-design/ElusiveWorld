@@ -27,8 +27,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             input = IServiceLocator.Default.GetService<InputManager>();
             checks = new(flags, settings, controller, input);
             headBob = new(headBobData, settings.moveBackwardsSpeedPercent, settings.moveSideSpeedPercent);
-            effects = new(this, flags, settings, checks, look, camPivot, headBob, input);
-            crouch = new(this, settings, checks, controller, flags, camPivot, headBob, input);
+            effects = new(settings, flags, checks, look, camPivot, headBob, input);
+            crouch = new(settings, checks, controller, flags, input, look);
             displacement = new(settings, checks, controller, flags, headBob, yawTransform, input);
         }
 
@@ -43,6 +43,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             displacement.RotateTowardsCamera();
             checks.Update();
             displacement.UpdateProcess();
+            crouch.Update();
             effects.Update();
             displacement.UpdateVelocity();
             flags.previouslyGrounded = flags.isGrounded;
@@ -58,18 +59,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         {
             if (input == null) return;
             input.OnSprintPressed += effects.OnPlayerSprintPressed;
-            input.OnSprintPressed += effects.OnPlayerSprintReleased;
-            input.OnCrouchPressed += crouch.HandleCrouchInput;
-            input.OnCrouchReleased += crouch.ReturnToInitHeight;
+            input.OnSprintReleased += effects.OnPlayerSprintReleased;
+            input.OnCrouchPressed += crouch.OnCrouchPressed;
+            input.OnCrouchReleased += crouch.OnCrouchReleased;
             input.OnJumpPressed += displacement.HandleJump;
         }
+
         void InputUnsubscribe()
         {
             if (input == null) return;
             input.OnSprintPressed -= effects.OnPlayerSprintPressed;
-            input.OnSprintPressed -= effects.OnPlayerSprintReleased;
-            input.OnCrouchPressed -= crouch.HandleCrouchInput;
-            input.OnCrouchReleased -= crouch.ReturnToInitHeight;
+            input.OnSprintReleased -= effects.OnPlayerSprintReleased;
+            input.OnCrouchPressed -= crouch.OnCrouchPressed;
+            input.OnCrouchReleased -= crouch.OnCrouchReleased;
             input.OnJumpPressed -= displacement.HandleJump;
         }
     }

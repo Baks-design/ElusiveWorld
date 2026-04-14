@@ -1,5 +1,6 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -9,6 +10,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly MovementSettings settings;
         readonly CharacterController controller;
         readonly InputManager input;
+        const float EPSILON = 0.0001f;
 
         public CharactersChecks(
             CharactersFlags flags,
@@ -16,78 +18,101 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             CharacterController controller,
             InputManager input)
         {
-            this.flags = flags;
-            this.settings = settings;
-            this.controller = controller;
-            this.input = input;
+            this.flags = flags ?? throw new ArgumentNullException(nameof(flags));
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.controller = controller != null ? controller : throw new ArgumentNullException(nameof(controller));
+            this.input = input != null ? input : throw new ArgumentNullException(nameof(input));
 
             InitializeSettings();
         }
 
         void InitializeSettings()
         {
-            controller.center = new(0f, controller.height / 2f + controller.skinWidth, 0f);
             flags.isGrounded = true;
             flags.previouslyGrounded = true;
-            flags.finalRayLength = settings.rayLength + controller.center.y;
         }
 
         public void Update()
         {
+            flags.previouslyGrounded = flags.isGrounded;
             CheckGrounded();
             CheckWall();
         }
 
         void CheckGrounded()
         {
-            var origin = controller.transform.position + controller.center;
-
+            var origin = controller.transform.position + Vector3.up * (controller.radius + 0.01f);
+            var distance = settings.rayLength;
             flags.isGrounded = Physics.SphereCast(
                 origin,
-                settings.raySphereRadius,
+                controller.radius,
                 Vector3.down,
                 out flags.hitInfo,
-                flags.finalRayLength,
-                settings.groundLayer);
+                distance,
+                settings.groundLayer
+            );
         }
 
         void CheckWall()
         {
-            if (input.MovementAxis == Vector2.zero || flags.finalMoveDir.sqrMagnitude <= 0f)
+            if (input.MovementAxis == Vector2.zero || flags.finalMoveDir.sqrMagnitude < EPSILON)
             {
                 flags.isHitWall = false;
                 return;
             }
 
-            var origin = controller.transform.position + controller.center;
+            var dir = flags.finalMoveDir;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < EPSILON)
+            {
+                flags.isHitWall = false;
+                return;
+            }
+            dir.Normalize();
 
+            var origin = controller.transform.position + Vector3.up * (controller.height * 0.5f);
             flags.isHitWall = Physics.SphereCast(
                 origin,
                 settings.rayObstacleSphereRadius,
-                flags.finalMoveDir,
+                dir,
                 out _,
                 settings.rayObstacleLength,
-                settings.obstacleLayers);
+                settings.obstacleLayers
+            );
         }
 
-        public bool CheckIfRoof() =>
-            Physics.SphereCast(
-                controller.transform.position,
-                settings.raySphereRadius,
+        public bool CheckIfRoof()
+        {
+            var origin = controller.transform.position + Vector3.up * (controller.height - controller.radius);
+            return Physics.SphereCast(
+                origin,
+                controller.radius,
                 Vector3.up,
                 out _,
-                flags.initHeight);
+                settings.rayLength
+            );
+        }
 
         public bool CanRun()
         {
-            if (flags.isCrouching || flags.smoothFinalMoveDir == Vector3.zero) return false;
+            if (flags.isCrouching || flags.smoothFinalMoveDir.sqrMagnitude < EPSILON) return false;
 
-            var dot = Vector3.Dot(controller.transform.forward, flags.smoothFinalMoveDir.normalized);
+            var forward = controller.transform.forward;
+            var move = flags.smoothFinalMoveDir.normalized;
+            var dot = Vector3.Dot(forward, move);
             return dot >= settings.canRunThreshold;
         }
 
-        public bool CanJump() => !flags.isSliding && !flags.isCrouching && controller.isGrounded;
+        public bool CanJump() => !flags.isSliding && !flags.isCrouching && flags.isGrounded;
 
-        public bool CanCrouch() => controller.isGrounded;
+        public bool CanCrouch() => flags.isGrounded;
+
+        public bool CanSlope()
+        {
+            if (!flags.isGrounded) return false;
+
+            var angle = Vector3.Angle(flags.hitInfo.normal, Vector3.up);
+            return angle > controller.slopeLimit;
+        }
     }
 }

@@ -26,7 +26,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             input = IServiceLocator.Default.GetService<InputManager>();
             rotation = new(settings, yawTransform, pitchTransform, input);
             swaying = new(settings, camTransform);
-            zoom = new(this, settings, cam);
+            zoom = new(settings, cam);
             breathing = new(flags, settings, camTransform);
         }
 
@@ -39,6 +39,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void ILateUpdate.LateUpdate()
         {
             rotation.Update();
+            zoom.Update();
             breathing.Update();
         }
 
@@ -51,21 +52,19 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void InputSubscribe()
         {
             if (input == null) return;
-            input.OnZoomPressed += zoom.ChangeFOV;
-            input.OnZoomReleased += zoom.ChangeFOV;
+            input.OnZoomPressed += zoom.ToggleZoom;
+            input.OnZoomReleased += zoom.ToggleZoom;
         }
 
         void InputUnsubscribe()
         {
             if (input == null) return;
-            input.OnZoomPressed -= zoom.ChangeFOV;
-            input.OnZoomReleased -= zoom.ChangeFOV;
+            input.OnZoomPressed -= zoom.ToggleZoom;
+            input.OnZoomReleased -= zoom.ToggleZoom;
         }
 
-        public void ChangeRunFOV(bool returning) =>
-            zoom.ChangeRunFOV(returning);
+        public void ChangeRunFOV(bool returning) => zoom.SetRunning(returning);
 
-        public void HandleSway(Vector3 inputVector, float rawXInput) =>
-            swaying.SwayPlayer(inputVector, rawXInput);
+        public void HandleSway(float rawXInput) => swaying.Update(rawXInput);
     }
 }

@@ -10,6 +10,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         public Vector3 finalMoveDir;
         public Vector3 smoothFinalMoveDir;
         public Vector3 finalMoveVector;
+        public Vector3 horizontalVelocity;
+        public Vector3 slideVelocity;
+        public float verticalVelocity;
         public float currentSpeed;
         public float smoothCurrentSpeed;
         public float finalSmoothCurrentSpeed;

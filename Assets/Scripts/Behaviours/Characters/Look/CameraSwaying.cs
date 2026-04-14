@@ -1,5 +1,6 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -7,51 +8,63 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
     {
         readonly LookSettings settings;
         readonly Transform camTransform;
-        float currentRawInput;
-        float previousRawInput;
+        Quaternion lastRotationOffset = Quaternion.identity;
+        float currentInput;
+        float previousInput;
         float swayIntensity;
         bool changingDirection;
 
         public CameraSwaying(LookSettings settings, Transform camTransform)
         {
-            this.settings = settings;
-            this.camTransform = camTransform;
+            this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            this.camTransform = camTransform != null ? camTransform : throw new ArgumentNullException(nameof(camTransform));
         }
 
-        public void SwayPlayer(Vector3 inputVector, float rawXInput)
+        public void Update(float inputX)
         {
-            currentRawInput = rawXInput;
+            currentInput = inputX;
 
-            var isMoving = Mathf.Abs(currentRawInput) > 0.001f;
+            var isMoving = Mathf.Abs(currentInput) > 0.001f;
             if (isMoving)
             {
                 var directionChanged =
-                    Mathf.Sign(currentRawInput) != Mathf.Sign(previousRawInput) &&
-                    Mathf.Abs(previousRawInput) > 0.001f;
-                if (directionChanged) changingDirection = true;
+                    Mathf.Sign(currentInput) != Mathf.Sign(previousInput) &&
+                    Mathf.Abs(previousInput) > 0.001f;
+                changingDirection = directionChanged;
 
-                var multiplier = changingDirection
-                    ? settings.changeDirectionMultiplier
-                    : 1f;
-
-                swayIntensity += inputVector.x * settings.swaySpeed * Time.deltaTime * multiplier;
+                var multiplier = changingDirection ? settings.changeDirectionMultiplier : 1f;
+                swayIntensity += currentInput * settings.swaySpeed * Time.deltaTime * multiplier;
             }
             else
             {
-                if (Mathf.Abs(previousRawInput) < 0.001f) changingDirection = false;
-
                 swayIntensity = swayIntensity.ExpDecay(0f, settings.returnSpeed, Time.deltaTime);
+                changingDirection = false;
             }
 
             swayIntensity = Mathf.Clamp(swayIntensity, -1f, 1f);
 
+            ApplySway();
+
+            previousInput = currentInput;
+        }
+
+        void ApplySway()
+        {
+            camTransform.localRotation *= Quaternion.Inverse(lastRotationOffset);
+
             var curve = settings.swayCurve.Evaluate(Mathf.Abs(swayIntensity));
             var sway = curve * -settings.swayAmount * Mathf.Sign(swayIntensity);
 
-            var euler = camTransform.localEulerAngles;
-            camTransform.localRotation = Quaternion.Euler(euler.x, euler.y, sway);
+            lastRotationOffset = Quaternion.Euler(0f, 0f, sway);
+            camTransform.localRotation *= lastRotationOffset;
+        }
 
-            previousRawInput = currentRawInput;
+        public void Reset()
+        {
+            camTransform.localRotation *= Quaternion.Inverse(lastRotationOffset);
+            lastRotationOffset = Quaternion.identity;
+            swayIntensity = 0f;
+            changingDirection = false;
         }
     }
 }

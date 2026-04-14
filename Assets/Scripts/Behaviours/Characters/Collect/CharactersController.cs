@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
+using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -10,11 +11,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         [SerializeField] Transform modelParent;
         [SerializeField] CharacterData defaultCharacter;
         readonly List<CharacterData> collectedCharacters = new();
+        readonly int colorID = Shader.PropertyToID("_Color");
         CharacterData currentCharacterData;
         GameObject currentModel;
         Animator currentAnimator;
         InputManager input;
         int currentCharacterIndex;
+
+        public event Action<CharacterData> OnCharacterChanged = delegate { };
 
         void Awake() => input = IServiceLocator.Default.GetService<InputManager>();
 
@@ -31,21 +35,22 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void InputSubscribe()
         {
             if (input == null) return;
-            input.OnShootPressed += NextCharacter;
-            input.OnReloadPressed += PreviousCharacter;
+            input.OnNextCharacterPressed += NextCharacter;
+            input.OnPreviousCharacterPressed += PreviousCharacter;
         }
 
         void InputUnsubscribe()
         {
             if (input == null) return;
-            input.OnShootPressed -= NextCharacter;
-            input.OnReloadPressed -= PreviousCharacter;
+            input.OnNextCharacterPressed -= NextCharacter;
+            input.OnPreviousCharacterPressed -= PreviousCharacter;
         }
 
         void AddInitializeCharacter()
         {
             if (defaultCharacter == null) return;
-            collectedCharacters.Add(defaultCharacter);
+            if (!collectedCharacters.Contains(defaultCharacter))
+                collectedCharacters.Add(defaultCharacter);
         }
 
         void NextCharacter()
@@ -66,23 +71,26 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
         void SwitchCharacter(int index)
         {
+            if (collectedCharacters.Count == 0 || index < 0 || index >= collectedCharacters.Count) return;
+
             currentCharacterIndex = index;
             currentCharacterData = collectedCharacters[index];
 
-            if (currentModel != null) Destroy(currentModel);
-
-            currentModel = Instantiate(currentCharacterData.characterModel, modelParent);
-            currentModel.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            var cache = new Dictionary<CharacterData, GameObject>();
+            if (!cache.TryGetValue(currentCharacterData, out currentModel))
+            {
+                currentModel = Instantiate(currentCharacterData.characterModel, modelParent);
+                cache[currentCharacterData] = currentModel;
+                currentModel.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            }
 
             SetupAnimator();
             ApplyVisuals();
 
-            Debug.Log($"Trocou para: {currentCharacterData.characterName}");
+            OnCharacterChanged.Invoke(currentCharacterData);
 
-            OnCharacterChanged();
+            //Debug.Log($"Trocou para: {currentCharacterData.characterName}");
         }
-
-        void OnCharacterChanged() { }
 
         void SetupAnimator()
         {
@@ -94,20 +102,27 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         void ApplyVisuals()
         {
             var renderers = currentModel.GetComponentsInChildren<Renderer>();
-            foreach (var r in renderers) r.material.color = currentCharacterData.characterColor;
+            var block = new MaterialPropertyBlock();
+            foreach (var r in renderers)
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor(colorID, currentCharacterData.characterColor);
+                r.SetPropertyBlock(block);
+            }
         }
 
         public void CollectCharacter(CharacterData newCharacter)
         {
             if (collectedCharacters.Contains(newCharacter))
             {
-                Debug.Log("Você já tem esse personagem!");
+                //Debug.Log("Você já tem esse personagem!");
                 return;
             }
 
             collectedCharacters.Add(newCharacter);
-            Debug.Log($"Coletou: {newCharacter.characterName}! Total: {collectedCharacters.Count}");
-            if (collectedCharacters.Count == 2) SwitchCharacter(1);
+            //Debug.Log($"Coletou: {newCharacter.characterName}! Total: {collectedCharacters.Count}");
+            if (collectedCharacters.Count == 2 && currentCharacterIndex == 0)
+                SwitchCharacter(1);
         }
     }
 }
