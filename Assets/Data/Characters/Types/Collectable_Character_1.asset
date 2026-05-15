@@ -1,0 +1,190 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15fd8f5594759ca4cabb43bb39c28305, type: 3}
+  m_Name: Collectable_Character_1
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CharacterData
+  characterName: 
+  characterModel: {fileID: 4868053707788123211, guid: d6ba145fe2b6edf419e7b11990c7da32, type: 3}
+  characterColor: {r: 1, g: 1, b: 1, a: 1}
+  lookSettings:
+    sensitivity: {x: 3, y: 3}
+    smoothAmount: {x: 5, y: 5}
+    lookAngleMinMax: {x: -60, y: 60}
+    data: {fileID: 11400000, guid: d20f8c77d38d5f94cb1a720721776253, type: 2}
+    x: 1
+    y: 0
+    z: 0
+    swayAmount: 1.5
+    swaySpeed: 3
+    returnSpeed: 3
+    changeDirectionMultiplier: 4
+    swayCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    fovSmooth: 5
+    zoomFOV: 40
+    zoomCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    zoomTransitionDuration: 0.25
+    runFOV: 70
+    runCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    runTransitionDuration: 0.75
+    runReturnTransitionDuration: 0.5
+  movementSettings:
+    crouchSpeed: 1
+    walkSpeed: 3
+    runSpeed: 6
+    jumpSpeed: 6
+    jumpHeight: 2
+    slideSpeed: 10
+    airControl: 10
+    moveBackwardsSpeedPercent: 0.8
+    moveSideSpeedPercent: 0.9
+    canRunThreshold: -0.1
+    runTransitionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    crouchSmooth: 10
+    crouchPercent: 0.6
+    crouchTransitionDuration: 0.5
+    crouchTransitionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    slidePercent: 0.3
+    slideTransitionDuration: 0.3
+    maxSlideDuration: 1.25
+    slideTransitionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    lowLandAmount: 0.1
+    highLandAmount: 0.4
+    landTimer: 0.5
+    landDuration: 0.5
+    landCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    gravityMultiplier: 2.5
+    stickToGroundForce: 1
+    groundLayer:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    rayLength: 0.1
+    raySphereRadius: 0.2
+    slopeGravity: 20
+    slopeAcceleration: 8
+    maxSlopeSpeed: 10
+    obstacleLayers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    rayObstacleLength: 0.4
+    rayObstacleSphereRadius: 0.2
+    smoothRotateSpeed: 10
+    smoothInputSpeed: 10
+    smoothVelocitySpeed: 3
+    smoothFinalDirectionSpeed: 10
+    smoothHeadBobSpeed: 5

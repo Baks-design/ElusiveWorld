@@ -1,0 +1,18 @@
+{
+    "name": "ElusiveWorld.Core.Editor",
+    "rootNamespace": "ElusiveWorld.Core.Editor",
+    "references": [
+        "GUID:4265b0eea12c1794693b72649d5e3bca"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
