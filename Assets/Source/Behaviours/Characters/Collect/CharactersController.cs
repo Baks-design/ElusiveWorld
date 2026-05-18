@@ -6,7 +6,6 @@ using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
-    //TODO: Add Character Manager Service
     public class CharactersController : MonoBehaviour
     {
         [SerializeField] Transform modelParent;
@@ -121,7 +120,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 
             collectedCharacters.Add(newCharacter);
             Debug.Log($"Collected: {newCharacter.characterName}! Total: {collectedCharacters.Count}");
-            
+
             if (collectedCharacters.Count == 2 && currentCharacterIndex == 0)
                 SwitchCharacter(1);
         }

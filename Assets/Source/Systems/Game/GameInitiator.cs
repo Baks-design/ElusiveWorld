@@ -40,12 +40,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         async void Start()
         {
             await BindComponents();
-            await BindSystems();
-            await RegisterServices();
+            _ = BindSystems();
+            _ = RegisterServices();
             await InitializeSystems();
             await CreateObjects();
-            await InitializeObjects();
-            await PrepareGame();
+            _ = InitializeObjects();
+            _ = PrepareGame();
             BeginGame();
         }
 
@@ -82,12 +82,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async Awaitable RegisterServices()
         {
-            IServiceLocator.Default.TryRegisterService(input);
-            IServiceLocator.Default.TryRegisterService(sound);
-            IServiceLocator.Default.TryRegisterService(music);
-            IServiceLocator.Default.TryRegisterService(loadingScreen);
-            IServiceLocator.Default.TryRegisterService(sceneLoader);
-            IServiceLocator.Default.TryRegisterService(persistence);
+            _ = IServiceLocator.Default.TryRegisterService(input);
+            _ = IServiceLocator.Default.TryRegisterService(sound);
+            _ = IServiceLocator.Default.TryRegisterService(music);
+            _ = IServiceLocator.Default.TryRegisterService(loadingScreen);
+            _ = IServiceLocator.Default.TryRegisterService(sceneLoader);
+            _ = IServiceLocator.Default.TryRegisterService(persistence);
         }
 
         async Awaitable InitializeSystems()
@@ -113,12 +113,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         void UnregisterServices()
         {
-            IServiceLocator.Default.TryUnregisterService(input);
-            IServiceLocator.Default.TryUnregisterService(sound);
-            IServiceLocator.Default.TryUnregisterService(music);
-            IServiceLocator.Default.TryUnregisterService(sceneLoader);
-            IServiceLocator.Default.TryUnregisterService(persistence);
-            IServiceLocator.Default.TryUnregisterService(loadingScreen);
+            _ = IServiceLocator.Default.TryUnregisterService(input);
+            _ = IServiceLocator.Default.TryUnregisterService(sound);
+            _ = IServiceLocator.Default.TryUnregisterService(music);
+            _ = IServiceLocator.Default.TryUnregisterService(sceneLoader);
+            _ = IServiceLocator.Default.TryUnregisterService(persistence);
+            _ = IServiceLocator.Default.TryUnregisterService(loadingScreen);
         }
 
         void Dispose()
