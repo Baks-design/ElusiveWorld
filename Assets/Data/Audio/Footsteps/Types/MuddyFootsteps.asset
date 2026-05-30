@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aca7a38337037d49afe4b30057abdc0, type: 3}
+  m_Name: MuddyFootsteps
+  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data.SoundData
+  clips:
+  - {fileID: 8300000, guid: bbc1e88dbd07510429ca88d948337cb1, type: 3}
+  - {fileID: 8300000, guid: c72fac638a492b0429f73357af2ec886, type: 3}
+  - {fileID: 8300000, guid: dcd7fae5ed5019b48b107567f3727337, type: 3}
+  - {fileID: 8300000, guid: ab8ac899c357b214eba4942d49e8d68e, type: 3}
+  - {fileID: 8300000, guid: 7528d5709e4e39e4884000d196218066, type: 3}
+  - {fileID: 8300000, guid: 0327212910ca5734eaa5a4192ee0cc21, type: 3}
+  - {fileID: 8300000, guid: 89e285ebe754ec8469a904b0a9c72885, type: 3}
+  - {fileID: 8300000, guid: 9140ac74a320e5c4592baf166c37fadf, type: 3}
+  - {fileID: 8300000, guid: a2c93165a6ed87e40b2d4e1d58d7cbc8, type: 3}
+  settings: {fileID: 11400000, guid: faf79b1f8680a0746949fe4fd51f8301, type: 2}
+  frequentSound: 1
+  volume: 1
+  pitch: 1
