@@ -95,7 +95,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             input.Initialize();
             sound.Initialize();
             music.Initialize();
-            sceneLoader.Initialize();
             await sceneLoader.LoadSceneGroup(0);
         }
 
@@ -125,7 +124,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         {
             input.Dispose();
             music.Dispose();
-            sceneLoader.Dispose();
             persistence.Dispose();
         }
     }

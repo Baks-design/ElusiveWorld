@@ -2,7 +2,7 @@ using System;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
 {
-    public class LoadingProgress : IProgress<float>
+    public class LoadingProgress : IProgress<float> 
     {
         const float ratio = 1f;
 

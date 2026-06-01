@@ -2,6 +2,7 @@
     "name": "ElusiveWorld.Data",
     "rootNamespace": "ElusiveWorld.Data",
     "references": [
+        "GUID:dec8c36b70a1a8640af02fb9ed1fe551"
     ],
     "includePlatforms": [
         "Editor",

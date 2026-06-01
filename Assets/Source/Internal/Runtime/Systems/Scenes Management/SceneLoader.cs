@@ -1,5 +1,5 @@
+using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Events;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
@@ -8,14 +8,14 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
     {
         [SerializeField] SceneGroup[] sceneGroups;
         readonly SceneGroupManager manager = new();
-        LoadingScreen loadingScreen;
-
-        public void Initialize() => loadingScreen = IServiceLocator.Default.GetService<LoadingScreen>();
 
         public async Awaitable LoadSceneGroup(int index)
-        {
-            loadingScreen.SetProgress(0f);
-            loadingScreen.TargetProgress = 1f;
+        {            
+            EventBus<LoadingScreenEvent>.Raise(new LoadingScreenEvent
+            {
+                currentProgress = 0f,
+                targetProgress = 1f
+            });
 
             if (index < 0 || index >= sceneGroups.Length)
             {
@@ -24,14 +24,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement
             }
 
             var progress = new LoadingProgress();
-            progress.Progressed += target
-                => loadingScreen.TargetProgress = Mathf.Max(target, loadingScreen.TargetProgress);
+            var currentProgress = new LoadingScreenEvent();
+            progress.Progressed += target => currentProgress.targetProgress = Mathf.Max(target, currentProgress.targetProgress);
 
-            loadingScreen.EnableLoadingCanvas(true);
+            EventBus<LoadingScreenEvent>.Raise(new LoadingScreenEvent { enableCanvas = true });
             await manager.LoadScenes(sceneGroups[index], progress, false);
-            loadingScreen.EnableLoadingCanvas(false);
+            EventBus<LoadingScreenEvent>.Raise(new LoadingScreenEvent { enableCanvas = false });
         }
-
-        public void Dispose() { }
     }
 }

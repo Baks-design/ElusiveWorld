@@ -2,6 +2,12 @@
     "name": "ElusiveWorld.Bootstrap",
     "rootNamespace": "ElusiveWorld.Bootstrap",
     "references": [
+        "GUID:dec8c36b70a1a8640af02fb9ed1fe551",
+        "GUID:158f82b3639401546bd160010ff2f233",
+        "GUID:9d041c3bd7e93834fa8737e8072cfedf",
+        "GUID:7073d03640a94114fba6d48aaf72f730",
+        "GUID:1ce0fad7ee41fd842bbf5bd97cedfb14",
+        "GUID:4307f53044263cf4b835bd812fc161a4"
     ],
     "includePlatforms": [
         "Editor",
