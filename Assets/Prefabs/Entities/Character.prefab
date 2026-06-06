@@ -409,6 +409,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    fovSmooth: 5
     zoomFOV: 40
     zoomCurve:
       serializedVersion: 2
@@ -516,7 +517,9 @@ MonoBehaviour:
     walkSpeed: 3
     runSpeed: 6
     jumpSpeed: 6
+    jumpHeight: 2
     slideSpeed: 10
+    airControl: 10
     moveBackwardsSpeedPercent: 0.8
     moveSideSpeedPercent: 0.9
     canRunThreshold: -0.1
@@ -544,6 +547,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+    crouchSmooth: 10
     crouchPercent: 0.6
     crouchTransitionDuration: 0.5
     crouchTransitionCurve:
@@ -641,6 +645,9 @@ MonoBehaviour:
       m_Bits: 1
     rayLength: 0.1
     raySphereRadius: 0.2
+    slopeGravity: 20
+    slopeAcceleration: 8
+    maxSlopeSpeed: 10
     obstacleLayers:
       serializedVersion: 2
       m_Bits: 1
@@ -651,6 +658,27 @@ MonoBehaviour:
     smoothVelocitySpeed: 3
     smoothFinalDirectionSpeed: 10
     smoothHeadBobSpeed: 5
+  raycastConfig:
+    groundLayers:
+      serializedVersion: 2
+      m_Bits: 1
+    groundCheckDistance: 0.1
+    groundedThreshold: 0.15
+    groundCheckOffset: {x: 0, y: 0, z: 0}
+    ceilingCheckDistance: 0.1
+    ceilingRadius: 0.2
+    wallCheckDistance: 0.2
+    wallCheckRays: 4
+    wallCheckAngle: 360
+    maxSlopeAngle: 45
+    slopeCheckDistance: 0.5
+    maxStepHeight: 0.3
+    stepCheckDistance: 0.2
+    drawGizmos: 1
+    groundGizmoColor: {r: 0, g: 1, b: 0, a: 1}
+    wallGizmoColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    slopeGizmoColor: {r: 1, g: 0, b: 0, a: 1}
+  showDebugInfo: 1
 --- !u!1 &7847994031880710634
 GameObject:
   m_ObjectHideFlags: 0

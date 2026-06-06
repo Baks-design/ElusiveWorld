@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters

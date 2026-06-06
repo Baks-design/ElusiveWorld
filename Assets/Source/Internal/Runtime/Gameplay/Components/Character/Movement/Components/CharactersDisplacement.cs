@@ -1,6 +1,7 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Utils.Extensions;
+using ElusiveWorld.Internal.Runtime.Systems.Physics;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -13,6 +14,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly HeadBob headBob;
         readonly CharactersChecks checks;
         readonly CharactersFlags flags;
+        readonly PhysicsService physicsService;
 
         public CharactersDisplacement(
             MovementSettings settings,
@@ -21,7 +23,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             CharactersFlags flags,
             HeadBob headBob,
             Transform yawTransform,
-            InputManager input)
+            InputManager input,
+            PhysicsService physicsService)
         {
             this.settings = settings;
             this.checks = checks;
@@ -30,6 +33,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             this.headBob = headBob;
             this.yawTransform = yawTransform;
             this.input = input;
+            this.physicsService = physicsService;
 
             InitializeSettings();
         }
@@ -54,7 +58,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             CalculateMovementDirection();
             SmoothDirection();
             CalculateSpeed();
-            CalculateFinalMovement();
         }
 
         void SmoothInput() =>
@@ -124,67 +127,37 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             flags.currentSpeed = speed;
         }
 
-        void CalculateFinalMovement()
-        {
-            var final = flags.smoothFinalMoveDir * flags.finalSmoothCurrentSpeed;
-            flags.horizontalVelocity.x = final.x;
-            flags.horizontalVelocity.z = final.z;
-        }
-
         public void HandleJump()
         {
             if (!checks.CanJump()) return;
 
-            if (flags.verticalVelocity < 0f) flags.verticalVelocity = 0f;
-            flags.verticalVelocity = Mathf.Sqrt(2f * Mathf.Abs(Physics.gravity.y) * settings.jumpHeight);
+            if (physicsService.Velocity.y < 0f) 
+                physicsService.Velocity = new Vector2(0f, 0f);
+
+            physicsService.Jump(settings.jumpHeight);
         }
 
         public void UpdateVelocity()
         {
             ApplyGravity();
-            HandleSlopeSliding();
             ApplyMove();
         }
 
         void ApplyGravity()
         {
-            if (controller.isGrounded)
+            if (physicsService.IsGrounded)
             {
                 flags.inAirTimer = 0f;
-                if (flags.verticalVelocity < 0f) flags.verticalVelocity = -settings.stickToGroundForce;
+                if (physicsService.Velocity.y < 0f)
+                    physicsService.Velocity = new Vector2(0f, -settings.stickToGroundForce);
             }
             else
             {
                 flags.inAirTimer += Time.deltaTime;
-                flags.verticalVelocity += Physics.gravity.y * settings.gravityMultiplier * Time.deltaTime;
+                physicsService.ApplyGravity(settings.gravityMultiplier);
             }
         }
 
-        void HandleSlopeSliding()
-        {
-            if (!checks.CanSlope())
-            {
-                flags.slideVelocity = Vector3.zero;
-                return;
-            }
-
-            var slopeAngle = Vector3.Angle(flags.hitInfo.normal, Vector3.up);
-            if (slopeAngle <= controller.slopeLimit)
-            {
-                flags.slideVelocity = flags.slideVelocity.ExpDecay(Vector3.zero, settings.slopeAcceleration, Time.deltaTime);
-                return;
-            }
-
-            var slopeDir = Vector3.ProjectOnPlane(Vector3.down, flags.hitInfo.normal).normalized;
-            var target = slopeDir * settings.maxSlopeSpeed;
-            flags.slideVelocity = flags.slideVelocity.ExpDecay(target, settings.slopeAcceleration, Time.deltaTime);
-            flags.horizontalVelocity += flags.slideVelocity;
-        }
-
-        void ApplyMove()
-        {
-            flags.finalMoveVector = flags.horizontalVelocity + Vector3.up * flags.verticalVelocity;
-            controller.Move(flags.finalMoveVector * Time.deltaTime);
-        }
+        void ApplyMove() => physicsService.Move(flags.smoothFinalMoveDir, flags.finalSmoothCurrentSpeed);
     }
 }

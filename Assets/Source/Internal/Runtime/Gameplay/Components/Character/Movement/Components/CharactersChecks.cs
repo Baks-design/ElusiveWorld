@@ -1,6 +1,7 @@
 using UnityEngine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using System;
+using ElusiveWorld.Internal.Runtime.Systems.Physics;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
 {
@@ -10,18 +11,17 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         readonly MovementSettings settings;
         readonly CharacterController controller;
         readonly InputManager input;
+        readonly PhysicsService physicsService;
         const float EPSILON = 0.0001f;
 
-        public CharactersChecks(
-            CharactersFlags flags,
-            MovementSettings settings,
-            CharacterController controller,
-            InputManager input)
+        public CharactersChecks(CharactersFlags flags, MovementSettings settings, CharacterController controller,
+            InputManager input, PhysicsService physicsService)
         {
             this.flags = flags ?? throw new ArgumentNullException(nameof(flags));
             this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
             this.controller = controller != null ? controller : throw new ArgumentNullException(nameof(controller));
             this.input = input != null ? input : throw new ArgumentNullException(nameof(input));
+            this.physicsService = physicsService ?? throw new ArgumentNullException(nameof(physicsService));
 
             InitializeSettings();
         }
@@ -39,19 +39,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             CheckWall();
         }
 
-        void CheckGrounded()
-        {
-            var origin = controller.transform.position + Vector3.up * (controller.radius + 0.01f);
-            var distance = settings.rayLength;
-            flags.isGrounded = Physics.SphereCast(
-                origin,
-                controller.radius,
-                Vector3.down,
-                out flags.hitInfo,
-                distance,
-                settings.groundLayer
-            );
-        }
+        void CheckGrounded() => flags.isGrounded = physicsService.Raycast.CheckGround(settings.rayLength).Hit;
 
         void CheckWall()
         {
@@ -70,32 +58,15 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             }
             dir.Normalize();
 
-            var origin = controller.transform.position + Vector3.up * (controller.height * 0.5f);
-            flags.isHitWall = Physics.SphereCast(
-                origin,
-                settings.rayObstacleSphereRadius,
-                dir,
-                out _,
-                settings.rayObstacleLength,
-                settings.obstacleLayers
-            );
+            flags.isHitWall = physicsService.Raycast.CheckWall(dir, settings.rayObstacleLength).Hit;
         }
 
-        public bool CheckIfRoof()
-        {
-            var origin = controller.transform.position + Vector3.up * (controller.height - controller.radius);
-            return Physics.SphereCast(
-                origin,
-                controller.radius,
-                Vector3.up,
-                out _,
-                settings.rayLength
-            );
-        }
+        public bool CheckIfRoof() => physicsService.Raycast.CheckCeiling(settings.rayObstacleLength).Hit;
 
         public bool CanRun()
         {
             if (flags.isCrouching || flags.smoothFinalMoveDir.sqrMagnitude < EPSILON) return false;
+
             var forward = controller.transform.forward;
             var move = flags.smoothFinalMoveDir.normalized;
             var dot = Vector3.Dot(forward, move);
@@ -109,6 +80,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
         public bool CanSlope()
         {
             if (!flags.isGrounded) return false;
+
             var angle = Vector3.Angle(flags.hitInfo.normal, Vector3.up);
             return angle > controller.slopeLimit;
         }

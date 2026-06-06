@@ -75,6 +75,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
                 targetHeight = flags.slideHeight;
                 return;
             }
+
             targetHeight = flags.isCrouching ? flags.crouchHeight : flags.initHeight;
         }
 
@@ -84,9 +85,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters
             if (newHeight > currentHeight && checks.CheckIfRoof()) return;
 
             currentHeight = newHeight;
-
             controller.height = currentHeight;
-            controller.center = new Vector3(0, currentHeight * 0.5f, 0f);
+            controller.center = new Vector3(0f, currentHeight * 0.5f, 0f);
         }
 
         void UpdateCrouchOffset()
