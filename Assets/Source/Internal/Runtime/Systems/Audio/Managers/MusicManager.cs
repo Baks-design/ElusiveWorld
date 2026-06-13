@@ -90,7 +90,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
             fading = 0.001f;
         }
 
-
         public void Dispose() => UpdateManager.UnregisterUpdate(this);
     }
 }

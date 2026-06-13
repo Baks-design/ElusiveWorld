@@ -3,14 +3,12 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 #endif
 using UnityEngine;
-using UnityEngine.EventSystems;
 using Unity.Cinemachine;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Input;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Persistence;
 using ElusiveWorld.Core.Assets.Scripts.Systems.SceneManagement;
 using ElusiveWorld.Core.Assets.Scripts.Systems.Game.Services;
-using ElusiveWorld.Core.Assets.Scripts.Systems.UI;
 
 namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 {
@@ -18,9 +16,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
     {
         [Header("Components")]
         [SerializeField] CharacterController characters;
-        [SerializeField] EventSystem eventSystem;
         [SerializeField] CinemachineBrain cinemachineBrain;
-        [SerializeField] LoadingScreen loadingScreen;
         [Header("Systems")]
         [SerializeField] MusicManager music;
         [SerializeField] SoundManager sound;
@@ -58,10 +54,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         async Awaitable BindComponents()
         {
             DontDestroyOnLoad(this);
-            eventSystem = Instantiate(eventSystem);
-            DontDestroyOnLoad(eventSystem);
-            loadingScreen = Instantiate(loadingScreen);
-            DontDestroyOnLoad(loadingScreen);
             var brain = await InstantiateAsync(cinemachineBrain);
             DontDestroyOnLoad(brain[0]);
         }
@@ -85,7 +77,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             _ = IServiceLocator.Default.TryRegisterService(input);
             _ = IServiceLocator.Default.TryRegisterService(sound);
             _ = IServiceLocator.Default.TryRegisterService(music);
-            _ = IServiceLocator.Default.TryRegisterService(loadingScreen);
             _ = IServiceLocator.Default.TryRegisterService(sceneLoader);
             _ = IServiceLocator.Default.TryRegisterService(persistence);
         }
@@ -117,7 +108,6 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
             _ = IServiceLocator.Default.TryUnregisterService(music);
             _ = IServiceLocator.Default.TryUnregisterService(sceneLoader);
             _ = IServiceLocator.Default.TryUnregisterService(persistence);
-            _ = IServiceLocator.Default.TryUnregisterService(loadingScreen);
         }
 
         void Dispose()
