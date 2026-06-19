@@ -122,6 +122,56 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3329529488477912672
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7224756310741494837}
+  - component: {fileID: 1466544140793262010}
+  m_Layer: 3
+  m_Name: Sound
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7224756310741494837
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3329529488477912672}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6355347261507478848}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1466544140793262010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3329529488477912672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5719ffcab737b147bfaba85048437df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Gameplay::ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data.CharacterSound
+  controller: {fileID: 8474282313170226043}
+  rigidbody: {fileID: 0}
+  library: {fileID: 11400000, guid: baea9d9b0ed59c84cb3e1c6745e5339f, type: 2}
+  groundCheck: 0.1
+  footstepInterval: 0.5
+  minFallDistance: 2
 --- !u!1 &3736614503038830460
 GameObject:
   m_ObjectHideFlags: 0
@@ -132,7 +182,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3069621480798629533}
   m_Layer: 3
-  m_Name: Model_Root
+  m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -218,54 +268,6 @@ Transform:
   - {fileID: 4738359264711550235}
   m_Father: {fileID: 1286338611520287804}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &6087758852124860404
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3617665472028281807}
-  - component: {fileID: 8105413882745773324}
-  m_Layer: 3
-  m_Name: Collectable_Root
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3617665472028281807
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6087758852124860404}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6355347261507478848}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8105413882745773324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6087758852124860404}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: debe46b6cdfe1594294c93946fe5f9ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CollectableCharacter
-  characterLayer:
-    serializedVersion: 2
-    m_Bits: 8
-  characterData: {fileID: 11400000, guid: e386272fc19201d4e8ee984a70b6c242, type: 2}
 --- !u!1 &6546932490737455616
 GameObject:
   m_ObjectHideFlags: 0
@@ -277,7 +279,7 @@ GameObject:
   - component: {fileID: 3240812630660701901}
   - component: {fileID: 3799024108980029080}
   m_Layer: 3
-  m_Name: Data_Root
+  m_Name: Data
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -335,7 +337,7 @@ GameObject:
   - component: {fileID: 1286338611520287804}
   - component: {fileID: 900034594662645236}
   m_Layer: 3
-  m_Name: Camera_Root
+  m_Name: Look
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -474,7 +476,7 @@ GameObject:
   - component: {fileID: 6914190932165939404}
   - component: {fileID: 7552461802343959784}
   m_Layer: 3
-  m_Name: Movement_Root
+  m_Name: Movement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -735,7 +737,7 @@ MonoBehaviour:
     LookAtTarget: {fileID: 0}
     CustomLookAtTarget: 0
   Lens:
-    FieldOfView: 60
+    FieldOfView: 40
     OrthographicSize: 10
     NearClipPlane: 0.1
     FarClipPlane: 500
@@ -754,7 +756,7 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
---- !u!1 &9108207853310116415
+--- !u!1 &8329760419642080120
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -762,22 +764,22 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8991928880723763535}
-  - component: {fileID: 5265463075694530790}
+  - component: {fileID: 6841900257162205858}
+  - component: {fileID: 2364423863241720256}
   m_Layer: 3
-  m_Name: Characters_Root
+  m_Name: Interaction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8991928880723763535
+--- !u!4 &6841900257162205858
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9108207853310116415}
+  m_GameObject: {fileID: 8329760419642080120}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -786,20 +788,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6355347261507478848}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5265463075694530790
+--- !u!114 &2364423863241720256
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9108207853310116415}
+  m_GameObject: {fileID: 8329760419642080120}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9dbdf56ac41553f409cdc158be7b9e15, type: 3}
+  m_Script: {fileID: 11500000, guid: 791a343f6b880954d9483e2d55347140, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Behaviours.Characters.CharactersController
-  modelParent: {fileID: 3069621480798629533}
-  defaultCharacter: {fileID: 11400000, guid: e386272fc19201d4e8ee984a70b6c242, type: 2}
+  m_EditorClassIdentifier: ElusiveWorld.Gameplay::ElusiveWorld.Core.Assets.Scripts.Systems.Interaction.Controllers.InteractionController
+  interactionData: {fileID: 11400000, guid: 880e78584e9e4d74daa969dcfcf37b1c, type: 2}
+  rayDistance: 2
+  raySphereRadius: 0.5
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &9142355988966043972
 GameObject:
   m_ObjectHideFlags: 0
@@ -830,11 +836,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8991928880723763535}
   - {fileID: 3240812630660701901}
-  - {fileID: 1286338611520287804}
   - {fileID: 6914190932165939404}
-  - {fileID: 3617665472028281807}
+  - {fileID: 1286338611520287804}
+  - {fileID: 7224756310741494837}
+  - {fileID: 6841900257162205858}
   - {fileID: 3069621480798629533}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

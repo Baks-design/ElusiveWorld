@@ -948,6 +948,7 @@ GameObject:
   - component: {fileID: 1553263413}
   - component: {fileID: 1553263412}
   - component: {fileID: 1553263411}
+  - component: {fileID: 1553263414}
   m_Layer: 0
   m_Name: Concrete
   m_TagString: Untagged
@@ -1048,6 +1049,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1553263409}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1553263414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1553263409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fe4b84fcae283b47a9a0231d1911b4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ElusiveWorld.Gameplay::ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Data.GroundTypeSetter
+  <GroundType>k__BackingField: 0
 --- !u!1 &1870690902
 GameObject:
   m_ObjectHideFlags: 0
@@ -1114,67 +1128,9 @@ Transform:
   - {fileID: 761002024}
   m_Father: {fileID: 1870690903}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &3190503128217878096
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -4.75
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5319131660513111300, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7850127324904290945, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
-      propertyPath: m_Name
-      value: Character Collectable 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6f8f23d918ec77042aa64f7eb8c34553, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 420166404}
   - {fileID: 1870690903}
-  - {fileID: 3190503128217878096}

@@ -8,13 +8,20 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
     {
         readonly SoundManager soundManager;
         Vector3 position = Vector3.zero;
-        bool randomPitch;
+        bool randomPitch = false;
+        float volume = 1f;
 
         public SoundBuilder(SoundManager soundManager) => this.soundManager = soundManager;
 
         public SoundBuilder WithPosition(Vector3 position)
         {
             this.position = position;
+            return this;
+        }
+
+        public SoundBuilder WithVolume(float volume)
+        {
+            this.volume = volume;
             return this;
         }
 
@@ -46,8 +53,9 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Components
 
             if (randomPitch) soundEmitter.WithRandomPitch();
             if (soundData.frequentSound) soundEmitter.Node = soundManager.FrequentSoundEmitters.AddLast(soundEmitter);
+            soundEmitter.Node.Value.AudioSource.volume = volume;
 
-            _ = soundEmitter.Play();
+            soundEmitter.Play();
         }
     }
 }

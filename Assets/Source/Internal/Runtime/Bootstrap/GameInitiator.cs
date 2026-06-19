@@ -36,12 +36,12 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         async void Start()
         {
             await BindComponents();
-            _ = BindSystems();
-            _ = RegisterServices();
+            await BindSystems();
+            await RegisterServices();
             await InitializeSystems();
             await CreateObjects();
-            _ = InitializeObjects();
-            _ = PrepareGame();
+            await InitializeObjects();
+            await PrepareGame();
             BeginGame();
         }
 
@@ -54,8 +54,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
         async Awaitable BindComponents()
         {
             DontDestroyOnLoad(this);
-            var brain = await InstantiateAsync(cinemachineBrain);
-            DontDestroyOnLoad(brain[0]);
+            var brain = Instantiate(cinemachineBrain);
+            DontDestroyOnLoad(brain);
         }
 
         async Awaitable BindSystems()
@@ -74,11 +74,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async Awaitable RegisterServices()
         {
-            _ = IServiceLocator.Default.TryRegisterService(input);
-            _ = IServiceLocator.Default.TryRegisterService(sound);
-            _ = IServiceLocator.Default.TryRegisterService(music);
-            _ = IServiceLocator.Default.TryRegisterService(sceneLoader);
-            _ = IServiceLocator.Default.TryRegisterService(persistence);
+            IServiceLocator.Default.TryRegisterService(input);
+            IServiceLocator.Default.TryRegisterService(sound);
+            IServiceLocator.Default.TryRegisterService(music);
+            IServiceLocator.Default.TryRegisterService(sceneLoader);
+            IServiceLocator.Default.TryRegisterService(persistence);
         }
 
         async Awaitable InitializeSystems()
@@ -91,8 +91,8 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         async Awaitable CreateObjects()
         {
-            var chara = await InstantiateAsync(characters);
-            DontDestroyOnLoad(chara[0]);
+            var chara = Instantiate(characters);
+            DontDestroyOnLoad(chara);
         }
 
         async Awaitable InitializeObjects() { }
@@ -103,11 +103,11 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Game
 
         void UnregisterServices()
         {
-            _ = IServiceLocator.Default.TryUnregisterService(input);
-            _ = IServiceLocator.Default.TryUnregisterService(sound);
-            _ = IServiceLocator.Default.TryUnregisterService(music);
-            _ = IServiceLocator.Default.TryUnregisterService(sceneLoader);
-            _ = IServiceLocator.Default.TryUnregisterService(persistence);
+            IServiceLocator.Default.TryUnregisterService(input);
+            IServiceLocator.Default.TryUnregisterService(sound);
+            IServiceLocator.Default.TryUnregisterService(music);
+            IServiceLocator.Default.TryUnregisterService(sceneLoader);
+            IServiceLocator.Default.TryUnregisterService(persistence);
         }
 
         void Dispose()
