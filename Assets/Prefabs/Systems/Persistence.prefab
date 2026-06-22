@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: ElusiveWorld.Core::ElusiveWorld.Core.Assets.Scripts.Systems.Persistence.PersistenceManager
   <GameData>k__BackingField:
-    Name: 
-    CurrentLevelName: 
+    Name: New Game
+    CurrentLevelName: Test Scene
     playerData:
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 0}

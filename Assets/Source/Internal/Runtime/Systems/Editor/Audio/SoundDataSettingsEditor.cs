@@ -59,10 +59,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Sound
             spreadCurveProperty = serializedObject.FindProperty("spreadCurve");
             reverbZoneMixCurveProperty = serializedObject.FindProperty("reverbZoneMixCurve");
 
-            dummyAudioObject = new GameObject("DummyAudioSource_Preview")
-            {
-                hideFlags = HideFlags.HideAndDontSave
-            };
+            dummyAudioObject = new GameObject("DummyAudioSource_Preview") { hideFlags = HideFlags.HideAndDontSave };
             dummyAudioSource = dummyAudioObject.AddComponent<AudioSource>();
             audioSourceEditor = CreateEditor(dummyAudioSource);
             audio3DGuiMethod = audioSourceEditor.GetType().GetMethod(
@@ -118,7 +115,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Sound
             EditorGUILayout.PropertyField(ignoreListenerPauseProperty);
             EditorGUILayout.Space(10f);
             if (GUILayout.Button("Reset to Defaults")) ResetToDefaults();
-            
+
             serializedObject.ApplyModifiedProperties();
         }
 

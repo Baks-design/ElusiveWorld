@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.SoundManager
   soundEmitterPrefab: {fileID: 795625895203936393, guid: a65e4309951b3b742ad1d0f293c734d4, type: 3}
-  collectionCheck: 1
+  collectionCheck: 0
   defaultCapacity: 10
-  maxPoolSize: 60
+  maxPoolSize: 100
   maxSoundInstances: 30

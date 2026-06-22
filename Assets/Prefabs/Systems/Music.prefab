@@ -45,5 +45,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assets.Scripts.Internal.Runtime.Core.Systems.Audio.MusicManager
   musicMixerGroup: {fileID: 24300002, guid: 3fc3cc8bce87b964faaa6134503a228c, type: 2}
-  initialPlaylist:
-  - {fileID: 0}
+  initialPlaylist: []

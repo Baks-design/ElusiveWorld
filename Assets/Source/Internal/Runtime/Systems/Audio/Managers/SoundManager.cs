@@ -18,23 +18,10 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
         readonly List<SoundEmitter> activeSoundEmitters = new();
         public readonly LinkedList<SoundEmitter> FrequentSoundEmitters = new();
 
-        public void Initialize()
-        {
+        public void Initialize() =>
             soundEmitterPool = new ObjectPool<SoundEmitter>(
                 CreateSoundEmitter, OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject,
                 collectionCheck, defaultCapacity, maxPoolSize);
-
-            PreWarming();
-
-            Debug.Log($"CountInactive: {soundEmitterPool.CountInactive}");
-        }
-
-        void PreWarming() //?
-        {
-            var temp = new SoundEmitter[defaultCapacity];
-            for (var i = 0; i < defaultCapacity; i++) temp[i] = soundEmitterPool.Get();
-            for (var i = 0; i < defaultCapacity; i++) soundEmitterPool.Release(temp[i]);
-        }
 
         SoundEmitter CreateSoundEmitter()
         {
@@ -56,6 +43,7 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
                 FrequentSoundEmitters.Remove(soundEmitter.Node);
                 soundEmitter.Node = null;
             }
+
             soundEmitter.gameObject.SetActive(false);
             activeSoundEmitters.Remove(soundEmitter);
         }
@@ -68,16 +56,17 @@ namespace ElusiveWorld.Core.Assets.Scripts.Systems.Audio.Managers
 
         public bool CanPlaySound(SoundData data)
         {
-            if (!data.frequentSound ||
-                FrequentSoundEmitters.Count < maxSoundInstances)
-                return true;
+            if (!data.frequentSound || FrequentSoundEmitters.Count < maxSoundInstances) return true;
 
             try
             {
                 FrequentSoundEmitters.First.Value.Stop();
                 return true;
             }
-            catch { Debug.Log("SoundEmitter is already released"); }
+            catch
+            {
+                Debug.Log("SoundEmitter is already released");
+            }
 
             return false;
         }
